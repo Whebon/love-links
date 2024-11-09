@@ -11,6 +11,7 @@
 .lovelinks-heart {
 	background-image: url("img/hearts.png");
 	background-size: 300% 200%;
+    transform-origin: center;
 	width: 100px;
 	height: 100px;
 	position: absolute;
@@ -19,9 +20,8 @@
 .lovelinks-gemstone {
     background-image: url(img/gemstones.png);
     background-size: 400% 100%;
+    transform-origin: center;
     width: 40px;
     height: 40px;
     position: absolute;
-    left: 80px;
-    top: 50px;
 }

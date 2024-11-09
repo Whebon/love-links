@@ -23,7 +23,7 @@
 		"module": "AMD", // This is what allows for imports and automatically creates the define function.
 
 		/* Recommended, should not need to change. */
-		"moduleResolution": "node10",
+		"moduleResolution": "node",
 		"lib": [ "dom", "esnext" ],
 		"typeRoots": [
 			"../../node_modules/bga-ts-template/typescript/types", // NEVER CHANGE. This ensures modules have the correct paths.

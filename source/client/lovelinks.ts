@@ -18,8 +18,7 @@ import { Bracelet } from "./components/Bracelet"
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
 {
-	// myGlobalValue: number = 0;
-	// myGlobalArray: string[] = [];
+	public bracelets: Bracelet[] = [];
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -40,13 +39,21 @@ class LoveLinks extends Gamegui
 		}
 
 		// TODO: Set up your game interface here, according to "gamedatas"
-		document.getElementById('game_play_area')!.insertAdjacentHTML('beforeend', `
-			<div class="lovelinks-link">
-				<div class="lovelinks-heart"></div>
-				<div class="lovelinks-heart" style="left: 100px"></div>
-				<div class="lovelinks-gemstone"></div>
-			</div>
-		`);
+		// document.getElementById('game_play_area')!.insertAdjacentHTML('beforeend', `
+		// 	<div class="lovelinks-link">
+		// 		<div class="lovelinks-heart"></div>
+		// 		<div class="lovelinks-heart" style="left: 100px"></div>
+		// 		<div class="lovelinks-gemstone"></div>
+		// 	</div>
+		// `);
+		const gamePlayArea = document.getElementById("game_play_area")!;
+
+		const bracelet = new Bracelet(this, gamePlayArea, 100, 100);
+		bracelet.appendLink(2, 4, 0);
+		bracelet.appendLink(8, 5, 0);
+		bracelet.appendLink(5, 7, 0);
+		bracelet.appendLink(7, 3, 0);
+
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
