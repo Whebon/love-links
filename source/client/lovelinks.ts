@@ -7,44 +7,46 @@
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  */
-
-/**
- * See {@link ../../node_modules/bga-ts-template/docs/typescript/index.md} for a LOT more information on this file.
- * The file include alternative ways to structure this file, how to break it up into multiple files, and more.
- */
-
-// Defines the name of this module. Same as putting this code into a file at path: bgagame/lovelinks.ts
 /// <amd-module name="bgagame/lovelinks"/>
 
 import Gamegui = require('ebg/core/gamegui');
 import "ebg/counter";
 
-/** See {@link BGA.Gamegui} for more information. */
+import { Link } from "./components/Link"
+import { Bracelet } from "./components/Bracelet"
+
+/** The root for all of your game code. */
 class LoveLinks extends Gamegui
 {
 	// myGlobalValue: number = 0;
 	// myGlobalArray: string[] = [];
 
-	/** See {@link BGA.Gamegui} for more information. */
+	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
 		console.log('lovelinks constructor');
 	}
 
-	/** See {@link  BGA.Gamegui#setup} for more information. */
-	override setup(gamedatas: BGA.Gamedatas): void
+	/** @gameSpecific See {@link Gamegui.setup} for more information. */
+	override setup(gamedatas: Gamedatas): void
 	{
 		console.log( "Starting game setup" );
 		
 		// Setting up player boards
-		var player_id: BGA.ID;
-		for(player_id in gamedatas.players)
+		for( var player_id in gamedatas.players )
 		{
 			var player = gamedatas.players[player_id];
 			// TODO: Setting up players boards if needed
 		}
-		
+
 		// TODO: Set up your game interface here, according to "gamedatas"
+		document.getElementById('game_play_area')!.insertAdjacentHTML('beforeend', `
+			<div class="lovelinks-link">
+				<div class="lovelinks-heart"></div>
+				<div class="lovelinks-heart" style="left: 100px"></div>
+				<div class="lovelinks-gemstone"></div>
+			</div>
+		`);
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -55,34 +57,32 @@ class LoveLinks extends Gamegui
 	///////////////////////////////////////////////////
 	//// Game & client states
 	
-	/** See {@link BGA.Gamegui#onEnteringState} for more information. */
-	override onEnteringState(...[stateName, state]: BGA.GameStateTuple<['name', 'state']>): void
+	/** @gameSpecific See {@link Gamegui.onEnteringState} for more information. */
+	override onEnteringState(stateName: GameStateName, args: CurrentStateArgs): void
 	{
-		console.log( 'Entering state: ' + stateName );
+		console.log( 'Entering state: '+stateName );
 		
 		switch( stateName )
 		{
 		case 'dummmy':
-			// enable/disable any user interaction...
 			break;
 		}
 	}
 
-	/** See {@link BGA.Gamegui#onLeavingState} for more information. */
-	override onLeavingState(stateName: BGA.ActiveGameState["name"]): void
+	/** @gameSpecific See {@link Gamegui.onLeavingState} for more information. */
+	override onLeavingState(stateName: GameStateName): void
 	{
-		console.log( 'Leaving state: ' + stateName );
+		console.log( 'Leaving state: '+stateName );
 		
 		switch( stateName )
 		{
 		case 'dummmy':
-			// enable/disable any user interaction...
 			break;
 		}
 	}
 
-	/** See {@link BGA.Gamegui#onUpdateActionButtons} for more information. */
-	override onUpdateActionButtons(...[stateName, args]: BGA.GameStateTuple<['name', 'args']>): void
+	/** @gameSpecific See {@link Gamegui.onUpdateActionButtons} for more information. */
+	override onUpdateActionButtons(stateName: GameStateName, args: AnyGameStateArgs | null): void
 	{
 		console.log( 'onUpdateActionButtons: ' + stateName, args );
 
@@ -92,14 +92,19 @@ class LoveLinks extends Gamegui
 		switch( stateName )
 		{
 		case 'dummmy':
-			// Add buttons to action bar...
-			// this.addActionButton( 'button_id', _('Button label'), this.onButtonClicked );
+			// Add buttons if needed
 			break;
 		}
 	}
 
 	///////////////////////////////////////////////////
 	//// Utility methods
+	
+	/*
+		Here, you can defines some utility methods that you can use everywhere in your typescript
+		script.
+	*/
+
 
 	///////////////////////////////////////////////////
 	//// Player's action
@@ -112,104 +117,73 @@ class LoveLinks extends Gamegui
 		- make a call to the game server
 	*/
 	
-	/* Example:
-
-	onButtonClicked( evt: Event )
+	/*
+	Example:
+	onMyMethodToCall1( evt: Event )
 	{
-		console.log( 'onButtonClicked' );
+		console.log( 'onMyMethodToCall1' );
 
 		// Preventing default browser reaction
 		evt.preventDefault();
 
-		// Builtin example...
-		if(this.checkAction( 'myAction' ))
-		{
-			this.ajaxcall(
-				`/${this.game_name!}/${this.game_name!}/myAction.html`,
-				{
-					lock: true, 
-					myArgument1: arg1,
-					myArgument2: arg2,
-				},
-				this,
-				function( server_response: unknown ) {
-					// Callback only on success (no error)
-					// (for player actions, this is almost always empty)
-				}, function(error: boolean, errorMessage?: string, errorCode?: number) {
-					// What to do after the server call in anyway (success or failure)
-					// (usually catch unexpected server errors)
-				},
-			);
-		}
+		//	With base Gamegui class...
 
-		// Builtin example with new BGA wrapper...
-		this.bgaPerformAction( 'myAction', { myArgument1: arg1, myArgument2: arg2 } );
+		// Check that this action is possible (see "possibleactions" in states.inc.php)
+		if(!this.checkAction( 'myAction' ))
+			return;
 
-		//	With CommonMixin from 'cookbook/common'...
-		this.ajaxAction(
-			'myAction',
-			{ myArgument1: arg1, myArgument2: arg2 },
-			function(error: boolean, errorMessage?: string, errorCode?: number) {
-				// What to do after the server call in anyway (success or failure)
-				// (usually catch unexpected server errors)
-			}
-		);
+		this.ajaxcall( "/yourgamename/yourgamename/myAction.html", { 
+			lock: true, 
+			myArgument1: arg1,
+			myArgument2: arg2,
+		}, this, function( result ) {
+			// What to do after the server call if it succeeded
+			// (most of the time: nothing)
+		}, function( is_error) {
+
+			// What to do after the server call in anyway (success or failure)
+			// (most of the time: nothing)
+		} );
+
+
+		//	With GameguiCookbook::Common...
+		this.ajaxAction( 'myAction', { myArgument1: arg1, myArgument2: arg2 }, (is_error) => {} );
 	}
-
 	*/
-	
 
 	///////////////////////////////////////////////////
 	//// Reaction to cometD notifications
 
-	/** See {@link BGA.Gamegui#setupNotifications} for more information. */
-	override setupNotifications = () =>
+	/** @gameSpecific See {@link Gamegui.setupNotifications} for more information. */
+	override setupNotifications()
 	{
 		console.log( 'notifications subscriptions setup' );
 		
 		// TODO: here, associate your game notifications with local methods
 		
-		// Builtin example...
-		// dojo.subscribe( 'cardPlayed_1', this, "ntf_any" );
-		// dojo.subscribe( 'actionTaken', this, "ntf_actionTaken" );
-		// dojo.subscribe( 'cardPlayed_0', this, "ntf_cardPlayed" );
-		// dojo.subscribe( 'cardPlayed_1', this, "ntf_cardPlayed" );
+		// With base Gamegui class...
+		// dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
 
-		//	With CommonMixin from 'cookbook/common'...
-		// this.subscribeNotif( "cardPlayed_1", this.ntf_any );
-		// this.subscribeNotif( "actionTaken", this.ntf_actionTaken );
-		// this.subscribeNotif( "cardPlayed_0", this.ntf_cardPlayed );
-		// this.subscribeNotif( "cardPlayed_1", this.ntf_cardPlayed );
+		// With GameguiCookbook::Common class...
+		// this.subscribeNotif( 'cardPlayed', this.notif_cardPlayed ); // Adds type safety to the subscription
 	}
 
-	/* Example:
-
-	ntf_any( notif: BGA.Notif )
+	/*
+	Example:
+	
+	// The argument here should be one of there things:
+	// - `Notif`: A notification with all possible arguments defined by the NotifTypes interface. See {@link Notif}.
+	// - `NotifFrom<'cardPlayed'>`: A notification matching any other notification with the same arguments as 'cardPlayed' (A type can be used here instead). See {@link NotifFrom}.
+	// - `NotifAs<'cardPlayed'>`: A notification that is explicitly a 'cardPlayed' Notif. See {@link NotifAs}.
+	notif_cardPlayed( notif: NotifFrom<'cardPlayed'> )
 	{
-		console.log( 'ntf_any', notif );
-		notif.args!['arg_0'];
+		console.log( 'notif_cardPlayed', notif );
+		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
-
-	ntf_actionTaken( notif: BGA.Notif<'actionTaken'> ) {
-		console.log( 'ntf_actionTaken', notif );
-	}
-
-	ntf_cardPlayed( notif: BGA.Notif<'cardPlayed_0' | 'cardPlayed_1'> )
-	{
-		console.log( 'ntf_cardPlayed', notif );
-		switch( notif.type ) {
-			case 'cardPlayed_0':
-				notif.args.arg_0;
-				break;
-			case 'cardPlayed_1':
-				notif.args.arg_1;
-				break;
-		}
-	}
-
 	*/
 }
 
 
-// The global 'bgagame.lovelinks' class is instantiated when the page is loaded and used as the Gamegui.
-window.bgagame = { lovelinks: LoveLinks };
+// The global 'bgagame.lovelinks' class is instantiated when the page is loaded. The following code sets this variable to your game class.
+dojo.setObject( "bgagame.lovelinks", LoveLinks );
+// Same as: (window.bgagame ??= {}).lovelinks = LoveLinks;

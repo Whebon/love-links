@@ -11,13 +11,11 @@
 	"files": [
 		"lovelinks.ts",
 		"lovelinks.d.ts",
-		// Ideally, all other files needed should be included through imports/ref tags in the above files.
-		// If you have other files that are not imported, you can include them here.
-		// Manually add any node_modules *.ts here. All other imports should be included automatically.
+		// Add Cookbook files here: ../../node_modules/bga-ts-template/typescript/cookbook/<module>.ts
 		// "../../node_modules/bga-ts-template/typescript/cookbook/common.ts",
 	],
 	"include": [
-		"build/**/*.ts",
+		"build/**/*.ts", // Extra auto generated type files based on shared files
 	],
 	"compilerOptions": {
 		/* NEVER CHANGE THESE */
@@ -27,26 +25,24 @@
 		/* Recommended, should not need to change. */
 		"moduleResolution": "node10",
 		"lib": [ "dom", "esnext" ],
-		"types": [ "bga-ts-template" ], // Includes all non-module types which are on HTML script tags.
-
+		"typeRoots": [
+			"../../node_modules/bga-ts-template/typescript/types", // NEVER CHANGE. This ensures modules have the correct paths.
+			"../../node_modules/@types", // Recommended (default when typeRoots not defined)
+		],
 		"paths": {
-			// Required: Allows modules to resolve correctly.
-			"*": [ "/*", "../../node_modules/bga-ts-template/typescript/types/*" ],
-			// Optional: Include cookbook modules when auto-completing modules. This are only included if imported in your code.
+			// When cookbook files are added, this lets you import them without the full path.
 			"cookbook/*": [ "../../node_modules/bga-ts-template/typescript/cookbook/*" ]
 		},
-		
+		"noImplicitOverride": true, // Recommended! This will prevent you from accidentally overriding any of the framework's functions.
+
 		/* Preference. This defaults to the most strict ts rules. */
 		"strict": true,
-		"noImplicitOverride": true, // Recommended! This will prevent you from accidentally overriding any of the framework's functions.
 		"exactOptionalPropertyTypes": true,
 		"noImplicitReturns": true,
 		"noPropertyAccessFromIndexSignature": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
-
 		"removeComments": true, // Comments are always removed from JS in production, so you don't need to remove them when compiling.
 		"sourceMap": false,
-		"allowJs": true,
 	},
 }

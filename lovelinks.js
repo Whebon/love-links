@@ -13,6 +13,30 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+define("components/Link", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Link = void 0;
+    var Link = (function () {
+        function Link(page) {
+            this.page = page;
+        }
+        return Link;
+    }());
+    exports.Link = Link;
+});
+define("components/Bracelet", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Bracelet = void 0;
+    var Bracelet = (function () {
+        function Bracelet(page) {
+            this.page = page;
+        }
+        return Bracelet;
+    }());
+    exports.Bracelet = Bracelet;
+});
 define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "ebg/counter"], function (require, exports, Gamegui) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -20,27 +44,19 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "ebg/coun
         __extends(LoveLinks, _super);
         function LoveLinks() {
             var _this = _super.call(this) || this;
-            _this.setupNotifications = function () {
-                console.log('notifications subscriptions setup');
-            };
             console.log('lovelinks constructor');
             return _this;
         }
         LoveLinks.prototype.setup = function (gamedatas) {
             console.log("Starting game setup");
-            var player_id;
-            for (player_id in gamedatas.players) {
+            for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
             }
+            document.getElementById('game_play_area').insertAdjacentHTML('beforeend', "\n\t\t\t<div class=\"lovelinks-link\">\n\t\t\t\t<div class=\"lovelinks-heart\"></div>\n\t\t\t\t<div class=\"lovelinks-heart\" style=\"left: 100px\"></div>\n\t\t\t\t<div class=\"lovelinks-gemstone\"></div>\n\t\t\t</div>\n\t\t");
             this.setupNotifications();
             console.log("Ending game setup");
         };
-        LoveLinks.prototype.onEnteringState = function () {
-            var _a = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                _a[_i] = arguments[_i];
-            }
-            var stateName = _a[0], state = _a[1];
+        LoveLinks.prototype.onEnteringState = function (stateName, args) {
             console.log('Entering state: ' + stateName);
             switch (stateName) {
                 case 'dummmy':
@@ -54,12 +70,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "ebg/coun
                     break;
             }
         };
-        LoveLinks.prototype.onUpdateActionButtons = function () {
-            var _a = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                _a[_i] = arguments[_i];
-            }
-            var stateName = _a[0], args = _a[1];
+        LoveLinks.prototype.onUpdateActionButtons = function (stateName, args) {
             console.log('onUpdateActionButtons: ' + stateName, args);
             if (!this.isCurrentPlayerActive())
                 return;
@@ -68,7 +79,10 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "ebg/coun
                     break;
             }
         };
+        LoveLinks.prototype.setupNotifications = function () {
+            console.log('notifications subscriptions setup');
+        };
         return LoveLinks;
     }(Gamegui));
-    window.bgagame = { lovelinks: LoveLinks };
+    dojo.setObject("bgagame.lovelinks", LoveLinks);
 });
