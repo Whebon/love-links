@@ -25,20 +25,16 @@ export class Bracelet {
     public container: HTMLElement;
     private links: Link[];
 
-    private removeBracelet: (bracelet: Bracelet) => void;
-
     /**
      * Create a new bracelet of 1 link
      * @param page gamegui
      * @param parent parent html element of the bracelet
-     * @param removeBracelet callback function when the bracelet becomes empty
      */
-    constructor(page: Gamegui, parent: HTMLElement, removeBracelet: (bracelet: Bracelet) => void) {
+    constructor(page: Gamegui, parent: HTMLElement) {
         this.page = page;
         this.links = [];
         this.container = document.createElement("div");
 		this.container.classList.add("lovelinks-bracelet");
-        this.removeBracelet = removeBracelet;
         parent.appendChild(this.container);
     }
 
@@ -78,7 +74,8 @@ export class Bracelet {
             this.containerHeight = this.radius * 2 + Bracelet.LINK_HEIGHT + Bracelet.PADDING;
         }
         else {
-            this.containerWidth = (this.links.length + 1) * Bracelet.LINK_WIDTH;
+            // Math.max(2, ...) is there to ensure that the empty bracelet takes as much space as a 1-link bracelet
+            this.containerWidth = Math.max(2, (this.links.length + 1)) * Bracelet.LINK_WIDTH;
             this.containerHeight = Bracelet.LINK_HEIGHT;
         }
         dojo.setStyle(this.container, 'width', `${this.containerWidth}px`);
@@ -129,9 +126,6 @@ export class Bracelet {
                     link.divs.lock.remove();
                     link.divs.gemstone.remove();
                     link.divs = undefined;
-                }
-                if (this.links.length == 0) {
-                    this.removeBracelet(this);
                 }
                 this.updateDisplay();
                 return true;

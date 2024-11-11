@@ -34,7 +34,7 @@ define("components/Bracelet", ["require", "exports"], function (require, exports
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Bracelet = void 0;
     var Bracelet = (function () {
-        function Bracelet(page, parent, removeBracelet) {
+        function Bracelet(page, parent) {
             this.containerWidth = -1;
             this.containerHeight = -1;
             this.circumference = -1;
@@ -43,7 +43,6 @@ define("components/Bracelet", ["require", "exports"], function (require, exports
             this.links = [];
             this.container = document.createElement("div");
             this.container.classList.add("lovelinks-bracelet");
-            this.removeBracelet = removeBracelet;
             parent.appendChild(this.container);
         }
         Object.defineProperty(Bracelet.prototype, "link", {
@@ -71,7 +70,7 @@ define("components/Bracelet", ["require", "exports"], function (require, exports
                 this.containerHeight = this.radius * 2 + Bracelet.LINK_HEIGHT + Bracelet.PADDING;
             }
             else {
-                this.containerWidth = (this.links.length + 1) * Bracelet.LINK_WIDTH;
+                this.containerWidth = Math.max(2, (this.links.length + 1)) * Bracelet.LINK_WIDTH;
                 this.containerHeight = Bracelet.LINK_HEIGHT;
             }
             dojo.setStyle(this.container, 'width', "".concat(this.containerWidth, "px"));
@@ -104,9 +103,6 @@ define("components/Bracelet", ["require", "exports"], function (require, exports
                         link.divs.lock.remove();
                         link.divs.gemstone.remove();
                         link.divs = undefined;
-                    }
-                    if (this.links.length == 0) {
-                        this.removeBracelet(this);
                     }
                     this.updateDisplay();
                     return true;
@@ -219,16 +215,9 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet"],
             this.container = wrap.querySelector(".lovelinks-bracelet-area");
         }
         BraceletArea.prototype.createBracelet = function () {
-            var bracelet = new Bracelet_1.Bracelet(this.page, this.container, this.removeBracelet.bind(this));
+            var bracelet = new Bracelet_1.Bracelet(this.page, this.container);
             this.bracelets.push(bracelet);
             return bracelet;
-        };
-        BraceletArea.prototype.removeBracelet = function (bracelet) {
-            bracelet.container.remove();
-            var index = this.bracelets.indexOf(bracelet);
-            if (index > -1) {
-                this.bracelets.splice(index, 1);
-            }
         };
         return BraceletArea;
     }());

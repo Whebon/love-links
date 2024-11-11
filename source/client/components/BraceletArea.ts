@@ -25,16 +25,8 @@ export class BraceletArea {
     }
 
     public createBracelet(): Bracelet {
-        const bracelet = new Bracelet(this.page, this.container, this.removeBracelet.bind(this));
+        const bracelet = new Bracelet(this.page, this.container);
         this.bracelets.push(bracelet);
         return bracelet;
-    }
-
-    public removeBracelet(bracelet: Bracelet) {
-        bracelet.container.remove();
-        const index = this.bracelets.indexOf(bracelet);
-        if (index > -1) {
-            this.bracelets.splice(index, 1);
-        }
     }
 }
