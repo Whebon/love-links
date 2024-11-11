@@ -13,12 +13,32 @@ import Gamegui = require('ebg/core/gamegui');
 import "ebg/counter";
 
 import { Link } from "./components/Link"
-import { Bracelet } from "./components/Bracelet"
+import { BraceletArea } from "./components/BraceletArea"
+import { TPL } from "./components/TPL"
 
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
 {
-	public bracelets: Bracelet[] = [];
+	/**
+	 * Unfinished bracelets
+	 */
+	public bracelets!: BraceletArea;
+
+	/**
+	 * Bracelet stock per player
+	 */
+	public stocks: Record<number, BraceletArea> = {};
+
+	/**
+	 * Stock of the current player
+	 */
+	public get myStock(): BraceletArea {
+		const stock = this.stocks[this.player_id];
+		if (!stock) {
+			throw new Error("The stock of the current player was not properly initialized");
+		}
+		return stock;
+	}
 
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
@@ -30,30 +50,29 @@ class LoveLinks extends Gamegui
 	override setup(gamedatas: Gamedatas): void
 	{
 		console.log( "Starting game setup" );
-		
-		// Setting up player boards
-		for( var player_id in gamedatas.players )
-		{
-			var player = gamedatas.players[player_id];
-			// TODO: Setting up players boards if needed
-		}
-
-		// TODO: Set up your game interface here, according to "gamedatas"
-		// document.getElementById('game_play_area')!.insertAdjacentHTML('beforeend', `
-		// 	<div class="lovelinks-link">
-		// 		<div class="lovelinks-heart"></div>
-		// 		<div class="lovelinks-heart" style="left: 100px"></div>
-		// 		<div class="lovelinks-gemstone"></div>
-		// 	</div>
-		// `);
+		TPL.init(this);
 		const gamePlayArea = document.getElementById("game_play_area")!;
 
-		const bracelet = new Bracelet(this, gamePlayArea, 100, 100);
-		bracelet.appendLink(2, 4, 0);
-		bracelet.appendLink(8, 5, 0);
-		bracelet.appendLink(5, 7, 0);
-		bracelet.appendLink(7, 3, 0);
+		this.bracelets = new BraceletArea(this, gamePlayArea, _("Bracelets"));
+		for (const player_id in gamedatas.players) {
+			const player = gamedatas.players[player_id]!;
+			this.stocks[player_id] = new BraceletArea(this, gamePlayArea, TPL.stockTitle(player_id));
 
+			// debug: create some bracelets
+			for (let i = 0; i < 5; i++) {
+				const bracelet = this.stocks[player_id].createBracelet();
+				bracelet.appendLink(new Link(0, 0, 0));
+			}
+
+		}
+
+		// debug: create some bracelets
+		for (let i = 0; i < 3; i++) {
+			const bracelet = this.bracelets.createBracelet();
+			bracelet.appendLink(new Link(0, 0, 0));
+			bracelet.appendLink(new Link(0, 0, 0));
+			bracelet.appendLink(new Link(0, 0, 0));
+		}
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -111,6 +130,12 @@ class LoveLinks extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
+
+	abc() {
+		const bracelet1 = this.bracelets.bracelets[0]!;
+		const bracelet2 = this.myStock.bracelets[1]!;
+		bracelet1.prependLink(bracelet2.link);
+	}
 
 
 	///////////////////////////////////////////////////

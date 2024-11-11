@@ -15,154 +15,251 @@ interface LinkCoordiates {
 }
 
 export class Bracelet {
-    private static LINK_WIDTH: number = 100;
-    private static LINK_HEIGHT: number = 100;
+    private static PADDING: number = 10;
+    private static LINK_WIDTH: number = 60;
+    private static LINK_HEIGHT: number = 60;
+    private static GEMSTONE_WIDTH: number = 25;
+    private static GEMSTONE_HEIGHT: number = 25;
 
+    private page: Gamegui;
+    public container: HTMLElement;
     private links: Link[];
-    private container: HTMLElement;
-    private width: number;
-    private height: number
 
-    private keys: Map<number, HTMLElement> = new Map<number, HTMLElement>();
-    private locks: Map<number, HTMLElement> = new Map<number, HTMLElement>(); 
-    private gemstones: Map<number, HTMLElement> = new Map<number, HTMLElement>();
+    private removeBracelet: (bracelet: Bracelet) => void;
 
     /**
      * Create a new bracelet of 1 link
      * @param page gamegui
      * @param parent parent html element of the bracelet
-     * @param width width of the container in pixels
-     * @param height height of the container in pixels
+     * @param removeBracelet callback function when the bracelet becomes empty
      */
-    constructor(page: Gamegui, parent: HTMLElement, width: number, height: number) {
+    constructor(page: Gamegui, parent: HTMLElement, removeBracelet: (bracelet: Bracelet) => void) {
+        this.page = page;
         this.links = [];
         this.container = document.createElement("div");
-		this.container.className = "lovelinks-bracelet";
+		this.container.classList.add("lovelinks-bracelet");
+        this.removeBracelet = removeBracelet;
         parent.appendChild(this.container);
-        this.width = width;
-        this.height = height;
-        dojo.setStyle(this.container, 'width', `${width}px`);
-        dojo.setStyle(this.container, 'height', `${height}px`);
     }
 
     /**
-     * Create a new Link object for this bracelet
+     * Return the first link in this bracelet
      */
-    private createLink(key: number, lock: number, gemstone: number) {
-        const link = new Link(key, lock, gemstone);
+    public get link(): Link {
+        if (!this.links[0]) {
+            throw new Error("Cannot get the first link from an empty bracelet");
+        }
+        return this.links[0];
+    }
+
+    /**
+     * Number of locks that fit in the bracelet
+     */
+    public get degree(): number {
+        return Math.max(5, this.links.length + 2);
+    }
+
+    /**
+     * Display properties calculated by `calculateDisplayProperties`
+     */
+    private containerWidth: number = -1;
+    private containerHeight: number = -1;
+    private circumference: number = -1;
+    private radius: number = -1;
+
+    /**
+     * Calculate and set display properties based on radius and circumference
+     */
+    public calculateDisplayProperties() {
+        if (this.isCircular()) {
+            this.circumference = this.degree * Bracelet.LINK_WIDTH;
+            this.radius = this.circumference / (2 * Math.PI);
+            this.containerWidth = this.radius * 2 + Bracelet.LINK_WIDTH + Bracelet.PADDING;
+            this.containerHeight = this.radius * 2 + Bracelet.LINK_HEIGHT + Bracelet.PADDING;
+        }
+        else {
+            this.containerWidth = (this.links.length + 1) * Bracelet.LINK_WIDTH;
+            this.containerHeight = Bracelet.LINK_HEIGHT;
+        }
+        dojo.setStyle(this.container, 'width', `${this.containerWidth}px`);
+        dojo.setStyle(this.container, 'height', `${this.containerHeight}px`);
+    }
+
+    /**
+     * Register a new Link object on this bracelet
+     */
+    private registerLink(link: Link) {
         this.container.insertAdjacentHTML('afterbegin', `
-            <div class="lovelinks-heart lovelinks-key"></div>
-            <div class="lovelinks-heart lovelinks-lock"></div>
-            <div class="lovelinks-gemstone"></div>
+            <div style="width: ${Bracelet.LINK_WIDTH}px; height: ${Bracelet.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-key" id="lovelinks-key-${link.id}">
+                <div class="lovelinks-number">${link.key}</div>
+            </div>
+            <div style="width: ${Bracelet.LINK_WIDTH}px; height: ${Bracelet.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-lock" id="lovelinks-lock-${link.id}">
+                <div class="lovelinks-number">${link.lock}</div>
+            </div>
+            <div style="width: ${Bracelet.GEMSTONE_WIDTH}px; height: ${Bracelet.GEMSTONE_HEIGHT}px;" class="lovelinks-gemstone" id="lovelinks-gemstone-${link.id}">
+            </div>
         `);
-        this.keys.set(link.id, this.container.querySelector(".lovelinks-key")!);
-        this.locks.set(link.id, this.container.querySelector(".lovelinks-lock")!);
-        this.gemstones.set(link.id, this.container.querySelector(".lovelinks-gemstone")!);
-        return link;
+        const prevDivs = link.divs;
+        const newDivs = {
+            key: this.container.querySelector(".lovelinks-key")! as HTMLElement,
+            lock: this.container.querySelector(".lovelinks-lock")! as HTMLElement,
+            gemstone: this.container.querySelector(".lovelinks-gemstone")! as HTMLElement,
+            bracelet: this
+        }
+        if (prevDivs) {
+            this.page.placeOnObject(newDivs.key, prevDivs.key);
+            this.page.placeOnObject(newDivs.lock, prevDivs.lock);
+            this.page.placeOnObject(newDivs.gemstone, prevDivs.gemstone);
+            (prevDivs.bracelet as Bracelet).unregisterLink(link);
+        }
+        link.divs = newDivs;
+        this.updateDisplay();
+    }
+
+    /**
+     * Remove a link from this bracelet. If the bracelet is empty, destroy it.
+     * @returns true if a link was removed this way
+    */
+    private unregisterLink(link: Link) {
+        for (let i = 0; i < this.links.length; i++) {
+            if (link == this.links[i]) {
+                this.links.splice(i, 1);
+                if (link.divs) {
+                    link.divs.key.remove();
+                    link.divs.lock.remove();
+                    link.divs.gemstone.remove();
+                    link.divs = undefined;
+                }
+                if (this.links.length == 0) {
+                    this.removeBracelet(this);
+                }
+                this.updateDisplay();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Should this bracelet be circular?
+     */
+    private isCircular() {
+        return (this.links.length >= 4);
     }
 
     /**
      * Get the left and top coordinates of the ith link in the bracelet
      */
     private getCoordinates(i: number): LinkCoordiates {
-        const coordinates = {
+        const lineCoords = {
             key: {
-                top: 0,
-                left: i*Bracelet.LINK_WIDTH,
-                rotate: 0
-            },
-            lock: {
                 top: 0,
                 left: (i+1)*Bracelet.LINK_WIDTH,
                 rotate: 0
             },
+            lock: {
+                top: 0,
+                left: (i+2)*Bracelet.LINK_WIDTH,
+                rotate: 0
+            },
             gemstone: {
                 top: Bracelet.LINK_HEIGHT/4,
-                left: (i+1/2)*Bracelet.LINK_WIDTH,
+                left: (i+3/2)*Bracelet.LINK_WIDTH,
                 rotate: 0
             }
         }
-        if (this.links.length < 2) {
-            return {
-                key: this.toStraightCoordinates(coordinates.key),
-                lock: this.toStraightCoordinates(coordinates.lock),
-                gemstone: this.toStraightCoordinates(coordinates.gemstone),
-            }
-        }
-        else{
-            const n = this.links.length + 2;
-            return {
-                key: this.toCircularCoordinates(coordinates.key, n*Bracelet.LINK_WIDTH),
-                lock: this.toCircularCoordinates(coordinates.lock, n*Bracelet.LINK_WIDTH),
-                gemstone: this.toCircularCoordinates(coordinates.gemstone, n*Bracelet.LINK_WIDTH),
-            }
-        }
-    }
-
-    
-    /**
-     * Maps a point on a straight line to a point on a straight line within the bracelet container
-     */
-    private toStraightCoordinates(coords: Coordinates) {
-        return coords;
-    }
-
-    /**
-     * Maps a point on a straight line to a point on a circle
-     */
-    private toCircularCoordinates(coords: Coordinates, length: number): Coordinates {
-        const radius = length / (2 * Math.PI) - coords.top;
-        const angle = (coords.left / length) * 2 * Math.PI;
-        const width = 2*radius + Bracelet.LINK_WIDTH;
-        const height = 2*radius + Bracelet.LINK_WIDTH;
+        const toCoordinates = this.isCircular() ? this.toCircularCoordinates.bind(this) : this.toStraightCoordinates.bind(this);
         return {
-            left: radius*Math.sin(angle) + width/2,
-            top: radius*Math.cos(angle) + height/2,
+            key: toCoordinates(lineCoords.key),
+            lock: toCoordinates(lineCoords.lock),
+            gemstone: toCoordinates(lineCoords.gemstone),
+        }
+    }
+
+    /**
+     * Maps a point on a line to a point on a line within the box
+     * @param coords straight coordinates of the top. `left` should be in the interval `[0, circumference]`
+     * @param circumference total circumference of the circle
+     */
+    private toStraightCoordinates(coords: Coordinates): Coordinates {
+        return {
+            left: coords.left + - Bracelet.LINK_WIDTH/2 + Bracelet.PADDING,
+            top: coords.top + Bracelet.LINK_HEIGHT/2 + Bracelet.PADDING,
+            rotate: 0
+        }
+    }
+
+    /**
+     * Maps a point on a line to a point on a circle
+     * @param coords straight coordinates of the top. `left` should be in the interval `[0, circumference]`
+     * @param circumference total circumference of the circle
+     */
+    private toCircularCoordinates(coords: Coordinates): Coordinates {
+        const radius = this.radius - coords.top;
+        const angle = (coords.left / this.circumference) * 2 * Math.PI;
+        return {
+            left: radius*Math.sin(angle) + this.containerWidth/2 + Bracelet.PADDING,
+            top: -radius*Math.cos(angle) + this.containerHeight/2 + Bracelet.PADDING,
             rotate: angle
         }
     }
 
-
     /**
      * Add a new link in front of the bracelet
      */
-    public prependLink(key: number, lock: number, gemstone: number) {
-        const link = this.createLink(key, lock, gemstone);
+    public prependLink(link: Link) {
         this.links.splice(0, 0, link);
-        this.updateDisplay();
+        this.registerLink(link);
     }
 
     /**
      * Add a new link at the end of the bracelet
      */
-    public appendLink(key: number, lock: number, gemstone: number) {
-        const link = this.createLink(key, lock, gemstone);
+    public appendLink(link: Link) {
         this.links.push(link);
-        this.updateDisplay();
+        this.registerLink(link);
+    }
+
+    /**
+     * Workaround to reflow trigger reflow for css transitions
+     */
+    private reflowLink(link: Link) {
+        if (!link.divs) {
+            throw new Error(`Link ${link.id} is not registered`);
+        }
+        link.divs.key.offsetHeight;
+        link.divs.lock.offsetHeight;
+        link.divs.gemstone.offsetHeight;
     }
 
     /**
      * Update the position of the links in the bracelet
      */
     public updateDisplay() {
+        this.calculateDisplayProperties();
         for (let i = 0; i < this.links.length; i++) {
             const link = this.links[i]!;
-            const key = this.keys.get(link.id)!;
-            const lock = this.locks.get(link.id)!;
-            const gemstone = this.gemstones.get(link.id)!;
             const coords = this.getCoordinates(i);
-            dojo.setStyle(key, 'left', `${coords.key.left}px`);
-            dojo.setStyle(key, 'top', `${coords.key.top}px`);
-            dojo.setStyle(key, 'transform', `translate(-50%, -50%) rotate(${Math.PI-coords.key.rotate}rad)`);
+            if (!link.divs) {
+                throw new Error(`Link ${link.id} is not registered`);
+            }
+            this.reflowLink(link);
 
-            dojo.setStyle(lock, 'left', `${coords.lock.left}px`);
-            dojo.setStyle(lock, 'top', `${coords.lock.top}px`);
-            dojo.setStyle(lock, 'transform', `translate(-50%, -50%) rotate(${Math.PI-coords.lock.rotate}rad)`);
+            //key position
+            dojo.setStyle(link.divs.key, 'left', `${coords.key.left - Bracelet.LINK_WIDTH/2}px`);
+            dojo.setStyle(link.divs.key, 'top', `${coords.key.top - Bracelet.LINK_HEIGHT/2}px`);
+            dojo.setStyle(link.divs.key,  'transform', `rotate(${coords.key.rotate}rad)`);
 
-            dojo.setStyle(gemstone, 'left', `${coords.gemstone.left}px`);
-            dojo.setStyle(gemstone, 'top', `${coords.gemstone.top}px`);
-            dojo.setStyle(gemstone, 'transform', `translate(-50%, -50%) rotate(${Math.PI-coords.gemstone.rotate}rad)`);
-            console.log(coords);
+            //lock position
+            dojo.setStyle(link.divs.lock, 'opacity', i < this.links.length - 1 ? '0.5' : '1');
+            dojo.setStyle(link.divs.lock, 'left', `${coords.lock.left - Bracelet.LINK_WIDTH/2}px`);
+            dojo.setStyle(link.divs.lock, 'top', `${coords.lock.top - Bracelet.LINK_HEIGHT/2}px`);
+            dojo.setStyle(link.divs.lock, 'transform', `rotate(${coords.lock.rotate}rad)`);
+
+            //gemstone position
+            dojo.setStyle(link.divs.gemstone, 'left', `${coords.gemstone.left - Bracelet.GEMSTONE_WIDTH/2}px`);
+            dojo.setStyle(link.divs.gemstone, 'top', `${coords.gemstone.top  - Bracelet.GEMSTONE_HEIGHT/2}px`);
+            dojo.setStyle(link.divs.gemstone, 'transform', `rotate(${coords.gemstone.rotate}rad)`);
         }
     }
 }
