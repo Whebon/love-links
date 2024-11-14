@@ -35,6 +35,9 @@ export class Bracelet {
     private links: Link[];
     private onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void;
 
+    public isComplete: boolean;
+    public isBlinking: boolean;
+
     /**
      * Create a new bracelet of 1 link
      * @param page gamegui
@@ -46,6 +49,8 @@ export class Bracelet {
 		this.container.classList.add("lovelinks-bracelet");
         this.player_id = player_id;
         this.onClickBracelet = onClickBracelet;
+        this.isComplete = false;
+        this.isBlinking = false;
         parent.appendChild(this.container);
     }
 
@@ -73,6 +78,9 @@ export class Bracelet {
      * Number of locks that fit in the bracelet
      */
     public get degree(): number {
+        if (this.isComplete) {
+            return this.links.length;
+        }
         return Math.max(5, this.links.length + 2);
     }
 
@@ -211,7 +219,10 @@ export class Bracelet {
      */
     private toCircularCoordinates(coords: Coordinates): Coordinates {
         const radius = this.radius - coords.top;
-        const angle = (coords.left / this.circumference) * 2 * Math.PI;
+        let angle = (coords.left / this.circumference) * 2 * Math.PI;
+        if (this.isComplete) {
+            angle -= 2*Math.PI / (this.links.length);
+        }
         return {
             left: radius*Math.sin(angle) + this.containerWidth/2 + this.PADDING,
             top: -radius*Math.cos(angle) + this.containerHeight/2 + this.PADDING,
@@ -233,6 +244,23 @@ export class Bracelet {
     public appendLink(link: Link) {
         this.links.push(link);
         this.registerLink(link);
+    }
+
+    /**
+     * If `true`, close the bracelet loop.
+     * If `false`, open the bracelet loop.
+     */
+    public setComplete(state: boolean) {
+        this.isComplete = state;
+        this.updateDisplay();
+    }
+
+    /**
+     * If `true`, blinking the end points of the bracelets
+     */
+    public setBlinking(state: boolean){
+        this.isBlinking = state;
+        this.updateDisplay();
     }
 
     /**
@@ -261,13 +289,21 @@ export class Bracelet {
             this.reflowLink(link);
 
             //key position
+            if (!this.isBlinking) {
+                link.divs.key.classList.remove("lovelinks-blinking");
+            }
             dojo.setStyle(link.divs.key, 'left', `${coords.key.left - this.LINK_WIDTH/2}px`);
             dojo.setStyle(link.divs.key, 'top', `${coords.key.top - this.LINK_HEIGHT/2}px`);
             //dojo.setStyle(link.divs.key,  'rotate', `${coords.key.rotate}rad`);
             this.setRotate(link.divs.key, coords.key.rotate);
-            if (i == 0 && (StaticLoveLinks.page as any).isClickable(this, 'key')) {
-                link.divs.key.classList.add("lovelinks-clickable");
-                link.divs.key.addEventListener('click', this.onClickKeyBound);
+            if (!this.isComplete && i == 0) {
+                if (this.isBlinking) {
+                    link.divs.key.classList.add("lovelinks-blinking");
+                }
+                if ((StaticLoveLinks.page as any).isClickable(this, 'key')) {
+                    link.divs.key.classList.add("lovelinks-clickable");
+                    link.divs.key.addEventListener('click', this.onClickKeyBound);
+                }
             }
             else {
                 link.divs.key.classList.remove("lovelinks-clickable");
@@ -275,14 +311,22 @@ export class Bracelet {
             }
 
             //lock position
-            dojo.setStyle(link.divs.lock, 'opacity', i < this.links.length - 1 ? '0.5' : '1');
+            if (!this.isBlinking) {
+                link.divs.lock.classList.remove("lovelinks-blinking");
+            }
+            dojo.setStyle(link.divs.lock, 'opacity', this.isComplete || i < this.links.length - 1 ? '0.5' : '1');
             dojo.setStyle(link.divs.lock, 'left', `${coords.lock.left - this.LINK_WIDTH/2}px`);
             dojo.setStyle(link.divs.lock, 'top', `${coords.lock.top - this.LINK_HEIGHT/2}px`);
             //dojo.setStyle(link.divs.lock,  'rotate', `${coords.lock.rotate}rad`);
             this.setRotate(link.divs.lock, coords.lock.rotate);
-            if (i == this.links.length - 1 && (StaticLoveLinks.page as any).isClickable(this, 'lock')) {
-                link.divs.lock.classList.add("lovelinks-clickable");
-                link.divs.lock.addEventListener('click', this.onClickLockBound);
+            if (!this.isComplete && i == this.links.length - 1) {
+                if (this.isBlinking) {
+                    link.divs.lock.classList.add("lovelinks-blinking");
+                }
+                if ((StaticLoveLinks.page as any).isClickable(this, 'lock')) {
+                    link.divs.lock.classList.add("lovelinks-clickable");
+                    link.divs.lock.addEventListener('click', this.onClickLockBound);
+                }
             }
             else {
                 link.divs.lock.classList.remove("lovelinks-clickable");
@@ -311,8 +355,7 @@ export class Bracelet {
             angle += 2*Math.PI
         }
         while (angle - prevAngle > Math.PI) {
-            console.log("-");
-            angle -= 2*Math.PI
+            angle -= 2*Math.PI  
         }
         dojo.setStyle(element,  'rotate', `${angle}rad`);
     }

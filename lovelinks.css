@@ -19,6 +19,10 @@
     opacity: 1;
   }
 }
+.lovelinks-blinking {
+  animation: blinker 0.5s infinite;
+}
+
 .lovelinks-clickable {
   cursor: pointer;
 }
@@ -48,7 +52,7 @@
   background-image: url("img/hearts.png");
   background-size: 300% 200%;
   transform-origin: center;
-  transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out, opacity 1s ease-out;
+  transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out, opacity 1s ease-out, width 1s ease-out, height 1s ease-out;
   position: absolute;
 }
 .lovelinks-heart .lovelinks-number {
@@ -80,7 +84,7 @@
   background-image: url(img/gemstones.png);
   background-size: 400% 100%;
   transform-origin: center;
-  transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out;
+  transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out, width 1s ease-out, height 1s ease-out;
   z-index: 3;
   position: absolute;
 }

@@ -26,17 +26,24 @@
 		"transitions": { "": 2 }
 	},
 
-	// Note: ID=2: your first state
 	"2": {
-		"name": "dummmy",
-		"description": "${actplayer} must play a card or pass",
-		"descriptionmyturn": "${you} must play a card or pass",
+		"name": "playerTurn",
+		"description": "${actplayer} must take actions",
+		"descriptionmyturn": "${you} must take actions",
 		"type": "activeplayer",
 		"possibleactions": {
-			"playCard": [{ "name": "card_id", "type": "AT_int" }],
-			"pass": []
+			"actSubmitCommands": [{ "name": "commands", "type": "AT_json" }]
 		},
-		"transitions": { "playCard": 2, "pass": 2 }
+		"transitions": { "trEndTurn": 3 }
+	},
+
+	"3": {
+		"name": "endTurn",
+		"description": "",
+		"type": "game",
+		"action": "stEndTurn",
+		"updateGameProgression": true,
+		"transitions": { "trNextTurn": 2, "trEndGame": 99 }
 	},
 
 /*

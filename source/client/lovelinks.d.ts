@@ -33,6 +33,12 @@ declare global {
 	interface PlayerActions {
 		// [action: string]: Record<keyof any, any>; // Uncomment to remove type safety on player action names and arguments
 	}
+
+	/** @gameSpecific Add game specific client game states */
+	interface ClientGameStates {
+		'client_placeLink': {}
+		'client_completeBracelet': {}
+	}
 }
 
 export {}; // Force this file to be a module.

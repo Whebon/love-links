@@ -55,6 +55,11 @@ class Game extends \Table
             // ...
         ];
     }
+    
+    public function actSubmitCommands($commands) {
+        //die($commands); //TODO
+        $this->gamestate->nextState("trEndTurn");
+    }
 
     /**
      * Player action, example content.
@@ -146,7 +151,7 @@ class Game extends \Table
      *
      * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
      */
-    public function stNextPlayer(): void {
+    public function stEndTurn(): void {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
@@ -157,7 +162,7 @@ class Game extends \Table
 
         // Go to another gamestate
         // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("nextPlayer");
+        $this->gamestate->nextState("trNextTurn");
     }
 
     /**

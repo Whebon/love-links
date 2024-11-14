@@ -13,6 +13,7 @@ import Gamegui = require('ebg/core/gamegui');
 import "ebg/counter";
 
 import { StaticLoveLinks } from "./components/StaticLoveLinks"
+import { CommandManager, Command, ExtendCommand, CompleteCommand } from "./components/CommandManager"
 import { Side } from "./components/Side"
 import { Link } from "./components/Link"
 import { BraceletArea } from "./components/BraceletArea"
@@ -36,6 +37,11 @@ class LoveLinks extends Gamegui
 	 * Stock bracelet that is currently selected
 	 */
 	public selected: Bracelet | undefined;
+
+	/**
+	 * Action performed in this turn
+	 */
+	public commandManager: CommandManager = new CommandManager();
 
 	/**
 	 * Stock of the current player
@@ -100,10 +106,13 @@ class LoveLinks extends Gamegui
 	{
 		console.log( 'Entering state: '+stateName );
 		
-		switch( stateName )
-		{
-		case 'dummmy':
-			break;
+		switch(stateName) {
+			case 'playerTurn':
+				this.nextAction();
+				break;
+			case 'client_completeBracelet':
+				this.commandManager.bracelet.setBlinking(true);
+				break;
 		}
 	}
 
@@ -112,10 +121,11 @@ class LoveLinks extends Gamegui
 	{
 		console.log( 'Leaving state: '+stateName );
 		
-		switch( stateName )
-		{
-		case 'dummmy':
-			break;
+		switch(stateName) {
+			case 'client_completeBracelet':
+				this.commandManager.bracelet.setBlinking(false);
+				break;
+
 		}
 	}
 
@@ -127,16 +137,32 @@ class LoveLinks extends Gamegui
 		if(!this.isCurrentPlayerActive())
 			return;
 
-		switch( stateName )
-		{
-		case 'dummmy':
-			// Add buttons if needed
-			break;
+		switch(stateName) {
+			case 'client_placeLink':
+				if (this.commandManager.hasCommands()) {
+					this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
+				}
+				break;
+			case 'client_completeBracelet':
+				this.addActionButton("complete-button", _("Complete"), "onCompleteBracelet");
+				this.addActionButton("skip-button", _("Skip"), "nextAction", undefined, false, 'gray');
+				break;
 		}
 	}
 
+	
 	///////////////////////////////////////////////////
 	//// Utility methods
+	
+	/*
+		Here, you can defines some utility methods that you can use everywhere in your typescript
+		script.
+	*/
+
+
+
+	///////////////////////////////////////////////////
+	//// Click Events
 	
 	/*
 		Here, you can defines some utility methods that you can use everywhere in your typescript
@@ -150,7 +176,14 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickOtherStock(bracelet: Bracelet, link: Link, side: Side) {
-		console.log("Other Stock");
+		switch(this.gamedatas.gamestate.name) {
+			case 'client_placeLink':
+				if (!this.selected) {
+					this.showMessage(_("Please select a link from your stock"), 'error');
+					return;
+				}
+				break;
+		}
 	}
 
 	/**
@@ -160,15 +193,22 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickMyStock(bracelet: Bracelet, link: Link, side: Side) {
-		this.bracelets.deselectAll();
-		this.myStock.deselectAll();
-		if (this.selected == bracelet) {
-			this.selected = undefined;
-			return;
+		switch(this.gamedatas.gamestate.name) {
+			case 'client_placeLink':
+				this.bracelets.deselectAll();
+				this.myStock.deselectAll();
+				if (this.selected == bracelet) {
+					this.selected = undefined;
+					return;
+				}
+				bracelet.select('both');
+				this.selected = bracelet;
+				this.bracelets.highlightPossibleLinks(link);
+				break;
+			case 'client_completeBracelet':
+				this.showMessage(_("Please choose whether or not to complete the bracelet"), 'error');
+				break;
 		}
-		bracelet.select('both');
-		this.selected = bracelet;
-		this.bracelets.highlightPossibleLinks(link);
 	}
 
 	/**
@@ -178,91 +218,33 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickBracelet(bracelet: Bracelet, link: Link, side: Side) {
-		if (!this.selected) {
-			this.showMessage(_("Please select a link from your stock"), 'info');
-			return;
+		switch(this.gamedatas.gamestate.name) {
+			case 'client_placeLink':
+				if (!this.selected) {
+					this.showMessage(_("Please select a link from your stock"), 'error');
+					return;
+				}
+				else if (side == 'key' && Link.isValidConnection(link, this.selected.lock_link)) {
+					this.bracelets.deselectAll();
+					this.myStock.deselectAll();
+					this.commandManager.execute(new ExtendCommand(bracelet, this.selected, side));
+					this.selected = undefined;
+				}
+				else if (side == 'lock' && Link.isValidConnection(this.selected.key_link, link)) {
+					this.bracelets.deselectAll();
+					this.myStock.deselectAll();
+					this.commandManager.execute(new ExtendCommand(bracelet, this.selected, side));
+					this.selected = undefined;
+				}
+				break;
+			case 'client_completeBracelet':
+				if (bracelet != this.commandManager.bracelet) {
+					this.showMessage(_("You can only complete the bracelet you just added a link to"), 'error');
+					return;
+				}
+				this.onCompleteBracelet();
+				break;
 		}
-		if (side == 'key' && Link.isValidConnection(link, this.selected.lock_link)) {
-			this.bracelets.deselectAll();
-			this.myStock.deselectAll();
-			bracelet.prependLink(this.selected.lock_link);
-		}
-		if (side == 'lock' && Link.isValidConnection(this.selected.key_link, link)) {
-			this.bracelets.deselectAll();
-			this.myStock.deselectAll();
-			bracelet.appendLink(this.selected.key_link);
-		}
-	}
-
-	// /**
-	//  * Toggles the bracelet side and returns true if the given bracelet side is now selected
-	//  */
-	// toggle(bracelet: Bracelet, side: Side) {
-	// 	for (let i = 0; i < this.selection.length; i++) {
-	// 		const element = this.selection[i]!;
-	// 		if (bracelet == element.bracelet && side == element.side) {
-	// 			this.selection.splice(i, 1);
-	// 			bracelet.deselect(side);
-	// 			return false;
-	// 		}
-	// 	}
-	// 	this.selection.push({
-	// 		bracelet: bracelet,
-	// 		side: side
-	// 	})
-	// 	bracelet.select(side);
-	// 	return true;
-	// }
-
-	// /**
-	//  * Deselect the most recently selected bracelet side
-	//  */
-	// deselectLast() {
-	// 	const element = this.selection.pop()!;
-	// 	if (element) {
-	// 		element.bracelet.deselect(element.side);
-	// 	}
-	// }
-
-	// /**
-	//  * Deselect all but the most recently selected bracelet side
-	//  */
-	// deselectAllButLast() {
-	// 	for (let i = 0; i < this.selection.length - 1; i++) {
-	// 		const element = this.selection[i]!;
-	// 		element.bracelet.deselect(element.side);
-			
-	// 	}
-	// 	this.selection.splice(0, this.selection.length - 1);
-	// }
-
-	// /**
-	//  * Deselect all bracelet sides
-	//  */
-	// deselectAll() {
-	// 	for (let i = 0; i < this.selection.length; i++) {
-	// 		const element = this.selection[i]!;
-	// 		element.bracelet.deselect(element.side);
-	// 	}
-	// 	this.selection = [];
-	// }
-
-
-	// isValidSelection(): boolean {
-	// 	var player_key = undefined;
-	// 	var player_lock = undefined;
-	// 	var bracelet_key = undefined;
-	// 	var bracelet_lock = undefined;
-	// 	for (let i = 0; i < this.selection.length - 1; i++) {
-	// 		const element = this.selection[i]!;
-	// 		if (element.bracelet.player_id > 0 && element.side == 'key') {
-	// 			player_key = element;
-	// 		}
-	// 	}
-	// }
-
-	isValidConnection(key: number, lock: number) {
-		return true;
 	}
 
 	abc() {
@@ -275,7 +257,17 @@ class LoveLinks extends Gamegui
 	//// isClickable
 
 	isClickable(bracelet: Bracelet, side: Side): boolean {
-		return true;
+		return (bracelet.player_id == this.player_id || bracelet.player_id == 0);
+
+		// switch(this.gamedatas.gamestate.name) {
+		// 	case 'client_completeBracelet':
+		// 		return (bracelet == this.commandManager.bracelet);
+		// 	case 'client_placeLink':
+		// 		console.log(bracelet.player_id);
+		// 		return (bracelet.player_id == this.player_id || bracelet.player_id == 0);
+		// }
+		// return false;
+
 		// switch(bracelet.type) {
 		// 	case 'opponent_stock':bracelets
 		// 		return false;
@@ -300,39 +292,9 @@ class LoveLinks extends Gamegui
 		// }
 	}
 
-
-
 	///////////////////////////////////////////////////
-	//// Event Handlers
+	//// Client States
 
-	onClick(bracelet: Bracelet, side: Side): void {
-		bracelet.toggle(side);
-		// const isSelected = this.toggle(bracelet, side);
-		// if (bracelet.player_id == 0) {
-		// 	if (side == 'key') {
-		// 		this.selection_public_key = bracelet;
-		// 	}
-		// 	else {
-		// 		this.selection_public_lock = bracelet;
-		// 	}
-		// }
-		// else {
-		// 	if (side == 'key') {
-		// 		this.selection_stock_key = bracelet;
-		// 	}
-		// 	else {
-		// 		this.selection_stock_lock = bracelet;
-		// 	}
-		// }
-		// if (!this.isValidSelection()) {
-		// 	this.selection_public_key = undefined;
-		// 	this.selection_public_lock = undefined;
-		// 	this.selection_stock_key = undefined;
-		// 	this.selection_stock_lock = undefined;
-		// 	return this.onClick(bracelet, side);
-		// }
-
-	}
 
 	///////////////////////////////////////////////////
 	//// Player's action
@@ -344,8 +306,26 @@ class LoveLinks extends Gamegui
 		- check the action is possible at this game state.
 		- make a call to the game server
 	*/
+
+	public onUndo(){
+		this.commandManager.undo();
+		this.removeActionButtons();
+		this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+	}
+
+	public onCompleteBracelet() {
+		this.commandManager.execute(new CompleteCommand(this.commandManager, this.commandManager.bracelet));
+		this.nextAction();
+	}
+
+	public nextAction() {
+		console.log("nextAction");
+		this.setClientState('client_placeLink', {
+			descriptionmyturn: _("${you} must place a link")
+		})
+	}
 	
-	/*
+	/* console.log("-");
 	Example:
 	onMyMethodToCall1( evt: Event )
 	{

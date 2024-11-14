@@ -24,10 +24,6 @@ define("components/StaticLoveLinks", ["require", "exports"], function (require, 
     }());
     exports.StaticLoveLinks = StaticLoveLinks;
 });
-define("components/Side", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("components/Link", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -57,6 +53,10 @@ define("components/Link", ["require", "exports"], function (require, exports) {
     }());
     exports.Link = Link;
 });
+define("components/Side", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks"], function (require, exports, StaticLoveLinks_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -75,6 +75,8 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             this.container.classList.add("lovelinks-bracelet");
             this.player_id = player_id;
             this.onClickBracelet = onClickBracelet;
+            this.isComplete = false;
+            this.isBlinking = false;
             parent.appendChild(this.container);
         }
         Object.defineProperty(Bracelet.prototype, "GEMSTONE_WIDTH", {
@@ -123,6 +125,9 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
         });
         Object.defineProperty(Bracelet.prototype, "degree", {
             get: function () {
+                if (this.isComplete) {
+                    return this.links.length;
+                }
                 return Math.max(5, this.links.length + 2);
             },
             enumerable: false,
@@ -214,6 +219,9 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
         Bracelet.prototype.toCircularCoordinates = function (coords) {
             var radius = this.radius - coords.top;
             var angle = (coords.left / this.circumference) * 2 * Math.PI;
+            if (this.isComplete) {
+                angle -= 2 * Math.PI / (this.links.length);
+            }
             return {
                 left: radius * Math.sin(angle) + this.containerWidth / 2 + this.PADDING,
                 top: -radius * Math.cos(angle) + this.containerHeight / 2 + this.PADDING,
@@ -227,6 +235,14 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
         Bracelet.prototype.appendLink = function (link) {
             this.links.push(link);
             this.registerLink(link);
+        };
+        Bracelet.prototype.setComplete = function (state) {
+            this.isComplete = state;
+            this.updateDisplay();
+        };
+        Bracelet.prototype.setBlinking = function (state) {
+            this.isBlinking = state;
+            this.updateDisplay();
         };
         Bracelet.prototype.reflowLink = function (link) {
             if (!link.divs) {
@@ -245,24 +261,40 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                     throw new Error("Link ".concat(link.id, " is not registered"));
                 }
                 this.reflowLink(link);
+                if (!this.isBlinking) {
+                    link.divs.key.classList.remove("lovelinks-blinking");
+                }
                 dojo.setStyle(link.divs.key, 'left', "".concat(coords.key.left - this.LINK_WIDTH / 2, "px"));
                 dojo.setStyle(link.divs.key, 'top', "".concat(coords.key.top - this.LINK_HEIGHT / 2, "px"));
                 this.setRotate(link.divs.key, coords.key.rotate);
-                if (i == 0 && StaticLoveLinks_1.StaticLoveLinks.page.isClickable(this, 'key')) {
-                    link.divs.key.classList.add("lovelinks-clickable");
-                    link.divs.key.addEventListener('click', this.onClickKeyBound);
+                if (!this.isComplete && i == 0) {
+                    if (this.isBlinking) {
+                        link.divs.key.classList.add("lovelinks-blinking");
+                    }
+                    if (StaticLoveLinks_1.StaticLoveLinks.page.isClickable(this, 'key')) {
+                        link.divs.key.classList.add("lovelinks-clickable");
+                        link.divs.key.addEventListener('click', this.onClickKeyBound);
+                    }
                 }
                 else {
                     link.divs.key.classList.remove("lovelinks-clickable");
                     link.divs.key.removeEventListener('click', this.onClickKeyBound);
                 }
-                dojo.setStyle(link.divs.lock, 'opacity', i < this.links.length - 1 ? '0.5' : '1');
+                if (!this.isBlinking) {
+                    link.divs.lock.classList.remove("lovelinks-blinking");
+                }
+                dojo.setStyle(link.divs.lock, 'opacity', this.isComplete || i < this.links.length - 1 ? '0.5' : '1');
                 dojo.setStyle(link.divs.lock, 'left', "".concat(coords.lock.left - this.LINK_WIDTH / 2, "px"));
                 dojo.setStyle(link.divs.lock, 'top', "".concat(coords.lock.top - this.LINK_HEIGHT / 2, "px"));
                 this.setRotate(link.divs.lock, coords.lock.rotate);
-                if (i == this.links.length - 1 && StaticLoveLinks_1.StaticLoveLinks.page.isClickable(this, 'lock')) {
-                    link.divs.lock.classList.add("lovelinks-clickable");
-                    link.divs.lock.addEventListener('click', this.onClickLockBound);
+                if (!this.isComplete && i == this.links.length - 1) {
+                    if (this.isBlinking) {
+                        link.divs.lock.classList.add("lovelinks-blinking");
+                    }
+                    if (StaticLoveLinks_1.StaticLoveLinks.page.isClickable(this, 'lock')) {
+                        link.divs.lock.classList.add("lovelinks-clickable");
+                        link.divs.lock.addEventListener('click', this.onClickLockBound);
+                    }
                 }
                 else {
                     link.divs.lock.classList.remove("lovelinks-clickable");
@@ -283,7 +315,6 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 angle += 2 * Math.PI;
             }
             while (angle - prevAngle > Math.PI) {
-                console.log("-");
                 angle -= 2 * Math.PI;
             }
             dojo.setStyle(element, 'rotate', "".concat(angle, "rad"));
@@ -349,7 +380,102 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
     }());
     exports.Bracelet = Bracelet;
 });
-define("components/BraceletArea", ["require", "exports", "components/Bracelet", "components/Link"], function (require, exports, Bracelet_1, Link_1) {
+define("components/CommandManager", ["require", "exports", "components/StaticLoveLinks", "components/Link"], function (require, exports, StaticLoveLinks_2, Link_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.CompleteCommand = exports.ExtendCommand = exports.CommandManager = void 0;
+    var CommandManager = (function () {
+        function CommandManager() {
+            this.commands = [];
+        }
+        Object.defineProperty(CommandManager.prototype, "bracelet", {
+            get: function () {
+                if (this.commands.length == 0) {
+                    throw new Error("No command has been execute this turn");
+                }
+                var command = this.commands[this.commands.length - 1];
+                return command.bracelet;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        CommandManager.prototype.hasCommands = function () {
+            return this.commands.length > 0;
+        };
+        CommandManager.prototype.execute = function (command) {
+            this.commands.push(command);
+            command.execute();
+        };
+        CommandManager.prototype.undo = function () {
+            var _a;
+            (_a = this.commands.pop()) === null || _a === void 0 ? void 0 : _a.undo();
+        };
+        CommandManager.prototype.undoAll = function () {
+            while (true) {
+                var command = this.commands.pop();
+                if (!command) {
+                    break;
+                }
+                command.undo();
+            }
+        };
+        return CommandManager;
+    }());
+    exports.CommandManager = CommandManager;
+    var ExtendCommand = (function () {
+        function ExtendCommand(bracelet, playerBracelet, side) {
+            this.playerBracelet = playerBracelet;
+            this.bracelet = bracelet;
+            this.side = side;
+        }
+        ExtendCommand.prototype.execute = function () {
+            switch (this.side) {
+                case 'key':
+                    this.bracelet.prependLink(this.playerBracelet.key_link);
+                    break;
+                case 'lock':
+                    this.bracelet.appendLink(this.playerBracelet.lock_link);
+                    break;
+            }
+            if (Link_1.Link.isValidConnection(this.bracelet.key_link, this.bracelet.lock_link)) {
+                StaticLoveLinks_2.StaticLoveLinks.page.setClientState('client_completeBracelet', {
+                    descriptionmyturn: _("${you} may complete this bracelet")
+                });
+            }
+            else {
+                StaticLoveLinks_2.StaticLoveLinks.page.nextAction();
+            }
+        };
+        ExtendCommand.prototype.undo = function () {
+            switch (this.side) {
+                case 'key':
+                    this.playerBracelet.prependLink(this.bracelet.key_link);
+                    break;
+                case 'lock':
+                    this.playerBracelet.appendLink(this.bracelet.lock_link);
+                    break;
+            }
+        };
+        return ExtendCommand;
+    }());
+    exports.ExtendCommand = ExtendCommand;
+    var CompleteCommand = (function () {
+        function CompleteCommand(commandManager, bracelet) {
+            this.commandManager = commandManager;
+            this.bracelet = bracelet;
+        }
+        CompleteCommand.prototype.execute = function () {
+            this.bracelet.setComplete(true);
+        };
+        CompleteCommand.prototype.undo = function () {
+            this.bracelet.setComplete(false);
+            this.commandManager.undo();
+        };
+        return CompleteCommand;
+    }());
+    exports.CompleteCommand = CompleteCommand;
+});
+define("components/BraceletArea", ["require", "exports", "components/Bracelet", "components/Link"], function (require, exports, Bracelet_1, Link_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.BraceletArea = void 0;
@@ -375,11 +501,13 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
             var _a, _b;
             for (var i = 0; i < this.bracelets.length; i++) {
                 var bracelet = this.bracelets[i];
-                if (Link_1.Link.isValidConnection(bracelet.key_link, link)) {
-                    (_a = bracelet.key_link.divs) === null || _a === void 0 ? void 0 : _a.key.classList.add("lovelinks-highlighted");
-                }
-                if (Link_1.Link.isValidConnection(bracelet.lock_link, link)) {
-                    (_b = bracelet.lock_link.divs) === null || _b === void 0 ? void 0 : _b.lock.classList.add("lovelinks-highlighted");
+                if (!bracelet.isComplete) {
+                    if (Link_2.Link.isValidConnection(bracelet.key_link, link)) {
+                        (_a = bracelet.key_link.divs) === null || _a === void 0 ? void 0 : _a.key.classList.add("lovelinks-highlighted");
+                    }
+                    if (Link_2.Link.isValidConnection(bracelet.lock_link, link)) {
+                        (_b = bracelet.lock_link.divs) === null || _b === void 0 ? void 0 : _b.lock.classList.add("lovelinks-highlighted");
+                    }
                 }
             }
         };
@@ -417,7 +545,7 @@ define("components/TPL", ["require", "exports"], function (require, exports) {
     }());
     exports.TPL = TPL;
 });
-define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/Link", "components/BraceletArea", "components/TPL", "ebg/counter"], function (require, exports, Gamegui, StaticLoveLinks_2, Link_2, BraceletArea_1, TPL_1) {
+define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "ebg/counter"], function (require, exports, Gamegui, StaticLoveLinks_3, CommandManager_1, Link_3, BraceletArea_1, TPL_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var LoveLinks = (function (_super) {
@@ -425,7 +553,8 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         function LoveLinks() {
             var _this = _super.call(this) || this;
             _this.stocks = {};
-            StaticLoveLinks_2.StaticLoveLinks.page = _this;
+            _this.commandManager = new CommandManager_1.CommandManager();
+            StaticLoveLinks_3.StaticLoveLinks.page = _this;
             console.log('lovelinks constructor');
             return _this;
         }
@@ -452,16 +581,16 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 this.stocks[player_id] = new BraceletArea_1.BraceletArea(player_board, +player_id, undefined, callback);
                 for (var i = 0; i < 5; i++) {
                     var bracelet = this.stocks[player_id].createBracelet();
-                    bracelet.appendLink(new Link_2.Link(0, 0, 0));
+                    bracelet.appendLink(new Link_3.Link(0, 0, 0));
                 }
             }
             for (var i = 0; i < 5; i++) {
                 var bracelet = this.bracelets.createBracelet();
-                bracelet.appendLink(new Link_2.Link(0, 0, 0));
-                bracelet.appendLink(new Link_2.Link(0, 0, 0));
-                bracelet.appendLink(new Link_2.Link(0, 0, 0));
-                bracelet.appendLink(new Link_2.Link(0, 0, 0));
-                bracelet.appendLink(new Link_2.Link(0, 0, 0));
+                bracelet.appendLink(new Link_3.Link(0, 0, 0));
+                bracelet.appendLink(new Link_3.Link(0, 0, 0));
+                bracelet.appendLink(new Link_3.Link(0, 0, 0));
+                bracelet.appendLink(new Link_3.Link(0, 0, 0));
+                bracelet.appendLink(new Link_3.Link(0, 0, 0));
             }
             this.setupNotifications();
             console.log("Ending game setup");
@@ -469,14 +598,19 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         LoveLinks.prototype.onEnteringState = function (stateName, args) {
             console.log('Entering state: ' + stateName);
             switch (stateName) {
-                case 'dummmy':
+                case 'playerTurn':
+                    this.nextAction();
+                    break;
+                case 'client_completeBracelet':
+                    this.commandManager.bracelet.setBlinking(true);
                     break;
             }
         };
         LoveLinks.prototype.onLeavingState = function (stateName) {
             console.log('Leaving state: ' + stateName);
             switch (stateName) {
-                case 'dummmy':
+                case 'client_completeBracelet':
+                    this.commandManager.bracelet.setBlinking(false);
                     break;
             }
         };
@@ -485,42 +619,73 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             if (!this.isCurrentPlayerActive())
                 return;
             switch (stateName) {
-                case 'dummmy':
+                case 'client_placeLink':
+                    if (this.commandManager.hasCommands()) {
+                        this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
+                    }
+                    break;
+                case 'client_completeBracelet':
+                    this.addActionButton("complete-button", _("Complete"), "onCompleteBracelet");
+                    this.addActionButton("skip-button", _("Skip"), "nextAction", undefined, false, 'gray');
                     break;
             }
         };
         LoveLinks.prototype.onClickOtherStock = function (bracelet, link, side) {
-            console.log("Other Stock");
+            switch (this.gamedatas.gamestate.name) {
+                case 'client_placeLink':
+                    if (!this.selected) {
+                        this.showMessage(_("Please select a link from your stock"), 'error');
+                        return;
+                    }
+                    break;
+            }
         };
         LoveLinks.prototype.onClickMyStock = function (bracelet, link, side) {
-            this.bracelets.deselectAll();
-            this.myStock.deselectAll();
-            if (this.selected == bracelet) {
-                this.selected = undefined;
-                return;
+            switch (this.gamedatas.gamestate.name) {
+                case 'client_placeLink':
+                    this.bracelets.deselectAll();
+                    this.myStock.deselectAll();
+                    if (this.selected == bracelet) {
+                        this.selected = undefined;
+                        return;
+                    }
+                    bracelet.select('both');
+                    this.selected = bracelet;
+                    this.bracelets.highlightPossibleLinks(link);
+                    break;
+                case 'client_completeBracelet':
+                    this.showMessage(_("Please choose whether or not to complete the bracelet"), 'error');
+                    break;
             }
-            bracelet.select('both');
-            this.selected = bracelet;
-            this.bracelets.highlightPossibleLinks(link);
         };
         LoveLinks.prototype.onClickBracelet = function (bracelet, link, side) {
-            if (!this.selected) {
-                this.showMessage(_("Please select a link from your stock"), 'info');
-                return;
+            switch (this.gamedatas.gamestate.name) {
+                case 'client_placeLink':
+                    if (!this.selected) {
+                        this.showMessage(_("Please select a link from your stock"), 'error');
+                        return;
+                    }
+                    else if (side == 'key' && Link_3.Link.isValidConnection(link, this.selected.lock_link)) {
+                        this.bracelets.deselectAll();
+                        this.myStock.deselectAll();
+                        this.commandManager.execute(new CommandManager_1.ExtendCommand(bracelet, this.selected, side));
+                        this.selected = undefined;
+                    }
+                    else if (side == 'lock' && Link_3.Link.isValidConnection(this.selected.key_link, link)) {
+                        this.bracelets.deselectAll();
+                        this.myStock.deselectAll();
+                        this.commandManager.execute(new CommandManager_1.ExtendCommand(bracelet, this.selected, side));
+                        this.selected = undefined;
+                    }
+                    break;
+                case 'client_completeBracelet':
+                    if (bracelet != this.commandManager.bracelet) {
+                        this.showMessage(_("You can only complete the bracelet you just added a link to"), 'error');
+                        return;
+                    }
+                    this.onCompleteBracelet();
+                    break;
             }
-            if (side == 'key' && Link_2.Link.isValidConnection(link, this.selected.lock_link)) {
-                this.bracelets.deselectAll();
-                this.myStock.deselectAll();
-                bracelet.prependLink(this.selected.lock_link);
-            }
-            if (side == 'lock' && Link_2.Link.isValidConnection(this.selected.key_link, link)) {
-                this.bracelets.deselectAll();
-                this.myStock.deselectAll();
-                bracelet.appendLink(this.selected.key_link);
-            }
-        };
-        LoveLinks.prototype.isValidConnection = function (key, lock) {
-            return true;
         };
         LoveLinks.prototype.abc = function () {
             var bracelet1 = this.bracelets.bracelets[0];
@@ -528,10 +693,22 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             bracelet1.prependLink(bracelet2.key_link);
         };
         LoveLinks.prototype.isClickable = function (bracelet, side) {
-            return true;
+            return (bracelet.player_id == this.player_id || bracelet.player_id == 0);
         };
-        LoveLinks.prototype.onClick = function (bracelet, side) {
-            bracelet.toggle(side);
+        LoveLinks.prototype.onUndo = function () {
+            this.commandManager.undo();
+            this.removeActionButtons();
+            this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+        };
+        LoveLinks.prototype.onCompleteBracelet = function () {
+            this.commandManager.execute(new CommandManager_1.CompleteCommand(this.commandManager, this.commandManager.bracelet));
+            this.nextAction();
+        };
+        LoveLinks.prototype.nextAction = function () {
+            console.log("nextAction");
+            this.setClientState('client_placeLink', {
+                descriptionmyturn: _("${you} must place a link")
+            });
         };
         LoveLinks.prototype.setupNotifications = function () {
             console.log('notifications subscriptions setup');

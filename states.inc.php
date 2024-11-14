@@ -18,7 +18,7 @@ declare(strict_types=1);
  */
 if (false) {
 	/** @var lovelinks $game */
-	
+	$game->stEndTurn();
 }
 
 $machinestates = array(
@@ -32,14 +32,24 @@ $machinestates = array(
 		),
 	),
 	2 => array(
-		'name' => 'dummmy',
-		'description' => clienttranslate('${actplayer} must play a card or pass'),
-		'descriptionmyturn' => clienttranslate('${you} must play a card or pass'),
+		'name' => 'playerTurn',
+		'description' => clienttranslate('${actplayer} must take actions'),
+		'descriptionmyturn' => clienttranslate('${you} must take actions'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['playCard', 'pass'],
+		'possibleactions' => ['actSubmitCommands'],
 		'transitions' => array(
-			'playCard' => 2,
-			'pass' => 2,
+			'trEndTurn' => 3,
+		),
+	),
+	3 => array(
+		'name' => 'endTurn',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stEndTurn',
+		'updateGameProgression' => true,
+		'transitions' => array(
+			'trNextTurn' => 2,
+			'trEndGame' => 99,
 		),
 	),
 	99 => array(

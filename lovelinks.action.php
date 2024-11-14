@@ -27,22 +27,14 @@ class action_lovelinks extends APP_GameAction
 		}
 	}
 
-	public function playCard()
+	public function actSubmitCommands()
 	{
 		self::setAjaxMode();
 
-		/** @var int $card_id */
-		$card_id = self::getArg('card_id', AT_int, true);
+		/** @var string $commands */
+		$commands = self::getArg('commands', AT_json, true);
 
-		$this->game->playCard( $card_id );
-		self::ajaxResponse();
-	}
-
-	public function pass()
-	{
-		self::setAjaxMode();
-
-		$this->game->pass(  );
+		$this->game->actSubmitCommands( $commands );
 		self::ajaxResponse();
 	}
 }
