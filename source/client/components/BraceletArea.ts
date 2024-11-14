@@ -1,31 +1,70 @@
 import Gamegui = require('ebg/core/gamegui');
 
+import { StaticLoveLinks } from './StaticLoveLinks';
 import { Bracelet } from "./Bracelet"
+import { Link } from './Link';
+import { Side } from './Side';
 
 /**
  * Manages a collection of bracelets within an enclosed area
  */
 export class BraceletArea {
-    private page: Gamegui;
     private container: HTMLElement;
+    private player_id: number;
 
     public bracelets: Bracelet[];
+    private onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void;
     
-    constructor(page: Gamegui, parent: HTMLElement, title: string) {
-        this.page = page;
+    /**
+     * @param parent HTML parent of the area
+     * @param player_id owner of the area
+     * @param title (optional) if provided, wrap the BraceletArea with a whiteblock and this title
+     */
+    constructor(parent: HTMLElement, player_id: number, title: string | undefined, onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void) {
         this.bracelets = [];
-        const wrap = document.createElement('div');
-        wrap.classList.add("whiteblock");
-        parent.appendChild(wrap);
-        wrap.innerHTML = `
-            <h3 class="lovelinks-title">${title}</h3>
-            <div class="lovelinks-bracelet-area"></div>
-        `;
-        this.container = wrap.querySelector(".lovelinks-bracelet-area")!;
+        if (title) {
+            const wrap = document.createElement('div');
+            wrap.classList.add("whiteblock");
+            parent.appendChild(wrap);
+            wrap.innerHTML = `
+                <h3 class="lovelinks-title">${title}</h3>
+                <div class="lovelinks-bracelet-area"></div>
+            `;
+            this.container = wrap.querySelector(".lovelinks-bracelet-area")!;
+        }
+        else {
+            this.container = document.createElement('div');
+            this.container.classList.add("lovelinks-bracelet-area");
+            parent.appendChild(this.container);
+        }
+        this.player_id = player_id;
+        this.onClickBracelet = onClickBracelet;
+    }
+
+    /**
+     * highlight all links that connect to the link
+     */
+    public highlightPossibleLinks(link: Link) {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            const bracelet = this.bracelets[i]!;
+            if (Link.isValidConnection(bracelet.key_link, link)) {
+                bracelet.key_link.divs?.key.classList.add("lovelinks-highlighted");
+            }
+            if (Link.isValidConnection(bracelet.lock_link, link)) {
+                bracelet.lock_link.divs?.lock.classList.add("lovelinks-highlighted");
+            }
+        }
+    }
+
+    public deselectAll() {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            const bracelet = this.bracelets[i];
+            bracelet!.deselectAll();
+        }
     }
 
     public createBracelet(): Bracelet {
-        const bracelet = new Bracelet(this.page, this.container);
+        const bracelet = new Bracelet(this.container, this.player_id, this.onClickBracelet);
         this.bracelets.push(bracelet);
         return bracelet;
     }

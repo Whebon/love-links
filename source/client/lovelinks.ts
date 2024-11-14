@@ -12,9 +12,12 @@
 import Gamegui = require('ebg/core/gamegui');
 import "ebg/counter";
 
+import { StaticLoveLinks } from "./components/StaticLoveLinks"
+import { Side } from "./components/Side"
 import { Link } from "./components/Link"
 import { BraceletArea } from "./components/BraceletArea"
 import { TPL } from "./components/TPL"
+import { Bracelet } from './components/Bracelet';
 
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
@@ -30,6 +33,11 @@ class LoveLinks extends Gamegui
 	public stocks: Record<number, BraceletArea> = {};
 
 	/**
+	 * Stock bracelet that is currently selected
+	 */
+	public selected: Bracelet | undefined;
+
+	/**
 	 * Stock of the current player
 	 */
 	public get myStock(): BraceletArea {
@@ -43,6 +51,7 @@ class LoveLinks extends Gamegui
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
+		StaticLoveLinks.page = this;
 		console.log('lovelinks constructor');
 	}
 
@@ -53,22 +62,25 @@ class LoveLinks extends Gamegui
 		TPL.init(this);
 		const gamePlayArea = document.getElementById("game_play_area")!;
 
-		this.bracelets = new BraceletArea(this, gamePlayArea, _("Bracelets"));
+		this.bracelets = new BraceletArea(gamePlayArea, 0, _("Bracelets"), this.onClickBracelet.bind(this));
 		for (const player_id in gamedatas.players) {
 			const player = gamedatas.players[player_id]!;
-			this.stocks[player_id] = new BraceletArea(this, gamePlayArea, TPL.stockTitle(player_id));
+			const player_board = document.getElementById("player_board_"+player_id)!;
+			const callback = +player_id == this.player_id ? this.onClickMyStock.bind(this) : this.onClickOtherStock.bind(this);
+			this.stocks[player_id] = new BraceletArea(player_board, +player_id, undefined, callback); //TPL.stockTitle(player_id)
 
 			// debug: create some bracelets
 			for (let i = 0; i < 5; i++) {
 				const bracelet = this.stocks[player_id].createBracelet();
 				bracelet.appendLink(new Link(0, 0, 0));
 			}
-
 		}
 
 		// debug: create some bracelets
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 5; i++) {
 			const bracelet = this.bracelets.createBracelet();
+			bracelet.appendLink(new Link(0, 0, 0));
+			bracelet.appendLink(new Link(0, 0, 0));
 			bracelet.appendLink(new Link(0, 0, 0));
 			bracelet.appendLink(new Link(0, 0, 0));
 			bracelet.appendLink(new Link(0, 0, 0));
@@ -131,12 +143,196 @@ class LoveLinks extends Gamegui
 		script.
 	*/
 
+	/**
+	 * Player clicks on a bracelet in another stock
+	 * @param bracelet bracelet
+	 * @param link link
+	 * @param side side
+	 */
+	public onClickOtherStock(bracelet: Bracelet, link: Link, side: Side) {
+		console.log("Other Stock");
+	}
+
+	/**
+	 * Player clicks on a bracelet in a stock
+	 * @param bracelet bracelet
+	 * @param link link
+	 * @param side side
+	 */
+	public onClickMyStock(bracelet: Bracelet, link: Link, side: Side) {
+		this.bracelets.deselectAll();
+		this.myStock.deselectAll();
+		if (this.selected == bracelet) {
+			this.selected = undefined;
+			return;
+		}
+		bracelet.select('both');
+		this.selected = bracelet;
+		this.bracelets.highlightPossibleLinks(link);
+	}
+
+	/**
+	 * Player clicks on a public bracelet
+	 * @param bracelet bracelet
+	 * @param link link
+	 * @param side side
+	 */
+	public onClickBracelet(bracelet: Bracelet, link: Link, side: Side) {
+		if (!this.selected) {
+			this.showMessage(_("Please select a link from your stock"), 'info');
+			return;
+		}
+		if (side == 'key' && Link.isValidConnection(link, this.selected.lock_link)) {
+			this.bracelets.deselectAll();
+			this.myStock.deselectAll();
+			bracelet.prependLink(this.selected.lock_link);
+		}
+		if (side == 'lock' && Link.isValidConnection(this.selected.key_link, link)) {
+			this.bracelets.deselectAll();
+			this.myStock.deselectAll();
+			bracelet.appendLink(this.selected.key_link);
+		}
+	}
+
+	// /**
+	//  * Toggles the bracelet side and returns true if the given bracelet side is now selected
+	//  */
+	// toggle(bracelet: Bracelet, side: Side) {
+	// 	for (let i = 0; i < this.selection.length; i++) {
+	// 		const element = this.selection[i]!;
+	// 		if (bracelet == element.bracelet && side == element.side) {
+	// 			this.selection.splice(i, 1);
+	// 			bracelet.deselect(side);
+	// 			return false;
+	// 		}
+	// 	}
+	// 	this.selection.push({
+	// 		bracelet: bracelet,
+	// 		side: side
+	// 	})
+	// 	bracelet.select(side);
+	// 	return true;
+	// }
+
+	// /**
+	//  * Deselect the most recently selected bracelet side
+	//  */
+	// deselectLast() {
+	// 	const element = this.selection.pop()!;
+	// 	if (element) {
+	// 		element.bracelet.deselect(element.side);
+	// 	}
+	// }
+
+	// /**
+	//  * Deselect all but the most recently selected bracelet side
+	//  */
+	// deselectAllButLast() {
+	// 	for (let i = 0; i < this.selection.length - 1; i++) {
+	// 		const element = this.selection[i]!;
+	// 		element.bracelet.deselect(element.side);
+			
+	// 	}
+	// 	this.selection.splice(0, this.selection.length - 1);
+	// }
+
+	// /**
+	//  * Deselect all bracelet sides
+	//  */
+	// deselectAll() {
+	// 	for (let i = 0; i < this.selection.length; i++) {
+	// 		const element = this.selection[i]!;
+	// 		element.bracelet.deselect(element.side);
+	// 	}
+	// 	this.selection = [];
+	// }
+
+
+	// isValidSelection(): boolean {
+	// 	var player_key = undefined;
+	// 	var player_lock = undefined;
+	// 	var bracelet_key = undefined;
+	// 	var bracelet_lock = undefined;
+	// 	for (let i = 0; i < this.selection.length - 1; i++) {
+	// 		const element = this.selection[i]!;
+	// 		if (element.bracelet.player_id > 0 && element.side == 'key') {
+	// 			player_key = element;
+	// 		}
+	// 	}
+	// }
+
+	isValidConnection(key: number, lock: number) {
+		return true;
+	}
+
 	abc() {
 		const bracelet1 = this.bracelets.bracelets[0]!;
 		const bracelet2 = this.myStock.bracelets[1]!;
-		bracelet1.prependLink(bracelet2.link);
+		bracelet1.prependLink(bracelet2.key_link);
 	}
 
+	///////////////////////////////////////////////////
+	//// isClickable
+
+	isClickable(bracelet: Bracelet, side: Side): boolean {
+		return true;
+		// switch(bracelet.type) {
+		// 	case 'opponent_stock':bracelets
+		// 		return false;
+		// 	case 'public':
+		// 		if (this.selection.bracelet.key === undefined) {
+		// 			return true;
+		// 		}
+		// 		if (this.selection_public.part != part) {
+		// 			if (part === 'key' && this.checkLink(link, this.selection_public.link)) {
+						
+		// 			}
+		// 			else if (part === 'lock' && this.checkLink(this.selection_public.link, link)) {
+
+		// 			}
+		// 		}
+		// 		return false;
+		// 	case 'stock':
+		// 		if (this.selection_stock === undefined) {
+		// 			return true;
+		// 		}
+		// 		return false;
+		// }
+	}
+
+
+
+	///////////////////////////////////////////////////
+	//// Event Handlers
+
+	onClick(bracelet: Bracelet, side: Side): void {
+		bracelet.toggle(side);
+		// const isSelected = this.toggle(bracelet, side);
+		// if (bracelet.player_id == 0) {
+		// 	if (side == 'key') {
+		// 		this.selection_public_key = bracelet;
+		// 	}
+		// 	else {
+		// 		this.selection_public_lock = bracelet;
+		// 	}
+		// }
+		// else {
+		// 	if (side == 'key') {
+		// 		this.selection_stock_key = bracelet;
+		// 	}
+		// 	else {
+		// 		this.selection_stock_lock = bracelet;
+		// 	}
+		// }
+		// if (!this.isValidSelection()) {
+		// 	this.selection_public_key = undefined;
+		// 	this.selection_public_lock = undefined;
+		// 	this.selection_stock_key = undefined;
+		// 	this.selection_stock_lock = undefined;
+		// 	return this.onClick(bracelet, side);
+		// }
+
+	}
 
 	///////////////////////////////////////////////////
 	//// Player's action

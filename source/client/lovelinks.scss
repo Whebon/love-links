@@ -8,6 +8,30 @@
  * -----
  */
 
+ @keyframes blinker {
+    from {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+.lovelinks-clickable {
+    cursor: pointer;
+}
+
+.lovelinks-highlighted {
+    outline: 3px solid green;
+}
+
+.lovelinks-selected {
+    outline: 3px solid red;
+}
+
 .lovelinks-bracelet-area {
     position: relative;
     display: flex;
@@ -18,18 +42,19 @@
 .lovelinks-bracelet {
     position: relative;
     transition: width 1s ease-out, height 1s ease-out;
-    padding: 10px;
+    margin: 10px;
 }
 
 .lovelinks-heart {
     background-image: url("img/hearts.png");
     background-size: 300% 200%;
     transform-origin: center;
-    transition: transform 1s ease-out, top 1s ease-out, left 1s ease-out, opacity 1s ease-out;
+    transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out, opacity 1s ease-out;
 	position: absolute;
 
     .lovelinks-number {
         position: absolute;
+        user-select: none;
         pointer-events: none;
         top: 45%;
         left: 50%;
@@ -39,7 +64,7 @@
     }
 
     &.lovelinks-lock {
-        z-index: 1;
+        z-index: 2;
         background-position-y: -100%;
         .lovelinks-number {
             color: white;
@@ -47,7 +72,7 @@
     }
     
     &.lovelinks-key {
-        z-index: 0;
+        z-index: 1;
         background-position-y: 0%;
         .lovelinks-number {
             color: black;
@@ -60,7 +85,7 @@
     background-image: url(img/gemstones.png);
     background-size: 400% 100%;
     transform-origin: center;
-    transition: transform 1s ease-out, top 1s ease-out, left 1s ease-out;
-    z-index: 2;
+    transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out;
+    z-index: 3;
     position: absolute;
 }
