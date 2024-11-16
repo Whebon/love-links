@@ -45,7 +45,9 @@ define("components/Link", ["require", "exports"], function (require, exports) {
             return link;
         };
         Link.isValidConnection = function (key_link, lock_link) {
-            return true;
+            var key = key_link.key;
+            var lock = lock_link.lock;
+            return key + lock >= 1;
         };
         Link.UNIQUE_ID = 1;
         Link.links = new Map();
@@ -419,6 +421,20 @@ define("components/CommandManager", ["require", "exports", "components/StaticLov
                 command.undo();
             }
         };
+        CommandManager.prototype.numberOfPlacements = function () {
+            var placements = 0;
+            for (var _i = 0, _a = this.commands; _i < _a.length; _i++) {
+                var command = _a[_i];
+                if (command instanceof ExtendCommand) {
+                    placements += 1;
+                }
+            }
+            return placements;
+        };
+        CommandManager.prototype.asJson = function () {
+            return JSON.stringify(this.commands.map(function (command) { return command.asJson(); }));
+        };
+        ;
         return CommandManager;
     }());
     exports.CommandManager = CommandManager;
@@ -456,6 +472,11 @@ define("components/CommandManager", ["require", "exports", "components/StaticLov
                     break;
             }
         };
+        ExtendCommand.prototype.asJson = function () {
+            return {
+                name: "extend"
+            };
+        };
         return ExtendCommand;
     }());
     exports.ExtendCommand = ExtendCommand;
@@ -470,6 +491,11 @@ define("components/CommandManager", ["require", "exports", "components/StaticLov
         CompleteCommand.prototype.undo = function () {
             this.bracelet.setComplete(false);
             this.commandManager.undo();
+        };
+        CompleteCommand.prototype.asJson = function () {
+            return {
+                name: "complete"
+            };
         };
         return CompleteCommand;
     }());
@@ -505,7 +531,7 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
                     if (Link_2.Link.isValidConnection(bracelet.key_link, link)) {
                         (_a = bracelet.key_link.divs) === null || _a === void 0 ? void 0 : _a.key.classList.add("lovelinks-highlighted");
                     }
-                    if (Link_2.Link.isValidConnection(bracelet.lock_link, link)) {
+                    if (Link_2.Link.isValidConnection(link, bracelet.lock_link)) {
                         (_b = bracelet.lock_link.divs) === null || _b === void 0 ? void 0 : _b.lock.classList.add("lovelinks-highlighted");
                     }
                 }
@@ -581,16 +607,16 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 this.stocks[player_id] = new BraceletArea_1.BraceletArea(player_board, +player_id, undefined, callback);
                 for (var i = 0; i < 5; i++) {
                     var bracelet = this.stocks[player_id].createBracelet();
-                    bracelet.appendLink(new Link_3.Link(0, 0, 0));
+                    bracelet.appendLink(new Link_3.Link(i % 2, i % 3, 0));
                 }
             }
             for (var i = 0; i < 5; i++) {
                 var bracelet = this.bracelets.createBracelet();
-                bracelet.appendLink(new Link_3.Link(0, 0, 0));
-                bracelet.appendLink(new Link_3.Link(0, 0, 0));
-                bracelet.appendLink(new Link_3.Link(0, 0, 0));
-                bracelet.appendLink(new Link_3.Link(0, 0, 0));
-                bracelet.appendLink(new Link_3.Link(0, 0, 0));
+                bracelet.appendLink(new Link_3.Link(1, 0, 0));
+                bracelet.appendLink(new Link_3.Link(1, 0, 0));
+                bracelet.appendLink(new Link_3.Link(1, 0, 0));
+                bracelet.appendLink(new Link_3.Link(1, 0, 0));
+                bracelet.appendLink(new Link_3.Link(1, 0, 0));
             }
             this.setupNotifications();
             console.log("Ending game setup");
@@ -609,6 +635,11 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         LoveLinks.prototype.onLeavingState = function (stateName) {
             console.log('Leaving state: ' + stateName);
             switch (stateName) {
+                case 'client_placeLink':
+                    this.bracelets.deselectAll();
+                    this.myStock.deselectAll();
+                    this.selected = undefined;
+                    break;
                 case 'client_completeBracelet':
                     this.commandManager.bracelet.setBlinking(false);
                     break;
@@ -620,13 +651,17 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 return;
             switch (stateName) {
                 case 'client_placeLink':
-                    if (this.commandManager.hasCommands()) {
+                    if (this.commandManager.numberOfPlacements() > 0) {
                         this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
                     }
                     break;
                 case 'client_completeBracelet':
                     this.addActionButton("complete-button", _("Complete"), "onCompleteBracelet");
                     this.addActionButton("skip-button", _("Skip"), "nextAction", undefined, false, 'gray');
+                    break;
+                case 'client_confirm':
+                    this.addActionButton("confirm-button", _("Confirm"), "onSubmitCommands");
+                    this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
                     break;
             }
         };
@@ -641,6 +676,10 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.onClickMyStock = function (bracelet, link, side) {
+            if (!this.isCurrentPlayerActive()) {
+                this.showMessage(_("It is not your turn"), 'error');
+                return;
+            }
             switch (this.gamedatas.gamestate.name) {
                 case 'client_placeLink':
                     this.bracelets.deselectAll();
@@ -659,23 +698,40 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.onClickBracelet = function (bracelet, link, side) {
+            if (!this.isCurrentPlayerActive()) {
+                this.showMessage(_("It is not your turn"), 'error');
+                return;
+            }
             switch (this.gamedatas.gamestate.name) {
                 case 'client_placeLink':
                     if (!this.selected) {
                         this.showMessage(_("Please select a link from your stock"), 'error');
                         return;
                     }
-                    else if (side == 'key' && Link_3.Link.isValidConnection(link, this.selected.lock_link)) {
-                        this.bracelets.deselectAll();
-                        this.myStock.deselectAll();
-                        this.commandManager.execute(new CommandManager_1.ExtendCommand(bracelet, this.selected, side));
-                        this.selected = undefined;
-                    }
-                    else if (side == 'lock' && Link_3.Link.isValidConnection(this.selected.key_link, link)) {
-                        this.bracelets.deselectAll();
-                        this.myStock.deselectAll();
-                        this.commandManager.execute(new CommandManager_1.ExtendCommand(bracelet, this.selected, side));
-                        this.selected = undefined;
+                    switch (side) {
+                        case 'key':
+                            if (Link_3.Link.isValidConnection(link, this.selected.lock_link)) {
+                                this.bracelets.deselectAll();
+                                this.myStock.deselectAll();
+                                this.commandManager.execute(new CommandManager_1.ExtendCommand(bracelet, this.selected, side));
+                                this.selected = undefined;
+                            }
+                            else {
+                                this.showMessage(_("This link doesn't fit here"), 'error');
+                            }
+                            break;
+                        case 'lock':
+                            if (Link_3.Link.isValidConnection(this.selected.key_link, link)) {
+                                this.bracelets.deselectAll();
+                                this.myStock.deselectAll();
+                                this.commandManager.execute(new CommandManager_1.ExtendCommand(bracelet, this.selected, side));
+                                this.selected = undefined;
+                            }
+                            else {
+                                this.showMessage(_("This link doesn't fit here"), 'error');
+                                return;
+                            }
+                            break;
                     }
                     break;
                 case 'client_completeBracelet':
@@ -699,16 +755,39 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             this.commandManager.undo();
             this.removeActionButtons();
             this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+            this.nextAction();
         };
         LoveLinks.prototype.onCompleteBracelet = function () {
             this.commandManager.execute(new CommandManager_1.CompleteCommand(this.commandManager, this.commandManager.bracelet));
             this.nextAction();
         };
+        LoveLinks.prototype.onSubmitCommands = function () {
+            console.log(this.commandManager.asJson());
+            this.bgaPerformAction("actSubmitCommands", {
+                commands: this.commandManager.asJson()
+            });
+        };
         LoveLinks.prototype.nextAction = function () {
             console.log("nextAction");
-            this.setClientState('client_placeLink', {
-                descriptionmyturn: _("${you} must place a link")
-            });
+            var placements = this.commandManager.numberOfPlacements();
+            if (placements == 0) {
+                this.setClientState('client_placeLink', {
+                    descriptionmyturn: _("${you} must place a link")
+                });
+            }
+            else if (placements == 1) {
+                this.setClientState('client_placeLink', {
+                    descriptionmyturn: _("${you} must place another link")
+                });
+            }
+            else if (placements == 2) {
+                this.setClientState('client_confirm', {
+                    descriptionmyturn: _("${you} must confirm your placements")
+                });
+            }
+            else {
+                throw new Error("Unexpected number of placements this turn: ".concat(placements));
+            }
         };
         LoveLinks.prototype.setupNotifications = function () {
             console.log('notifications subscriptions setup');

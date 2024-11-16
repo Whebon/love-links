@@ -45,7 +45,9 @@ export class Link {
      * Returns true if `key_link` and `lock_link` can connect
      */
     public static isValidConnection(key_link: Link, lock_link: Link) {
-        return true;
+        const key = key_link.key;
+        const lock = lock_link.lock;
+        return key + lock >= 1;
     }
 
     //TODO: safely delete this

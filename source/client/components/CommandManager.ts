@@ -7,8 +7,13 @@ import { Side } from './Side';
 
 export interface Command {
     bracelet: Bracelet;
-    execute(): void
-    undo(): void
+
+    execute(): void;
+    undo(): void;
+
+    asJson(): {
+        name: string;
+    };
 }
 
 export class CommandManager {
@@ -46,6 +51,20 @@ export class CommandManager {
             command.undo();
         }
     }
+
+    public numberOfPlacements() {
+        let placements = 0;
+        for (const command of this.commands) {
+            if (command instanceof ExtendCommand) {
+                placements += 1;
+            }
+        }
+        return placements;
+    }
+
+    public asJson(): string {
+        return JSON.stringify(this.commands.map((command: Command) => command.asJson()));
+    };
 }
 
 export class ExtendCommand implements Command {
@@ -91,6 +110,13 @@ export class ExtendCommand implements Command {
                 break;
         }
     }
+
+    public asJson() {
+        //TODO: add command details
+        return {
+            name: "extend"
+        }
+    }
 }
 
 export class CompleteCommand implements Command {
@@ -113,5 +139,12 @@ export class CompleteCommand implements Command {
     public undo() {
         this.bracelet.setComplete(false);
         this.commandManager.undo();
+    }
+
+    public asJson() {
+        //TODO: add command details
+        return {
+            name: "complete"
+        }
     }
 }

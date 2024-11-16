@@ -51,7 +51,7 @@ export class BraceletArea {
                 if (Link.isValidConnection(bracelet.key_link, link)) {
                     bracelet.key_link.divs?.key.classList.add("lovelinks-highlighted");
                 }
-                if (Link.isValidConnection(bracelet.lock_link, link)) {
+                if (Link.isValidConnection(link, bracelet.lock_link)) {
                     bracelet.lock_link.divs?.lock.classList.add("lovelinks-highlighted");
                 }
             }

@@ -23,6 +23,7 @@ require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 class Game extends \Table
 {
     private static array $CARD_TYPES;
+    private LoveLinksDeck $deck;
 
     /**
      * Your global variables labels:
@@ -47,13 +48,35 @@ class Game extends \Table
 
         self::$CARD_TYPES = [
             1 => [
-                "card_name" => clienttranslate('Troll'), // ...
+                "key" => 2,
+                "lock" => 2,
+                "metal" => "bronze"
             ],
             2 => [
-                "card_name" => clienttranslate('Goblin'), // ...
+                "key" => 3,
+                "lock" => 2,
+                "metal" => "bronze"
             ],
-            // ...
+            3 => [
+                "key" => 4,
+                "lock" => 2,
+                "metal" => "bronze"
+            ],
+            99 => [
+                "key" => 99,
+                "lock" => 99,
+                "metal" => "silver"
+            ],
+            999 => [
+                "key" => 999,
+                "lock" => 999,
+                "metal" => "gold"
+            ]
         ];
+
+        $this->deck = new LoveLinksDeck($this);
+        $this->deck->init("card");
+        $this->deck->createDeck(self::$CARD_TYPES);
     }
     
     public function actSubmitCommands($commands) {

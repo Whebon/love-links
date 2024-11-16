@@ -8,6 +8,10 @@
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  */
+#player_boards {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
 @keyframes blinker {
   from {
     opacity: 1;

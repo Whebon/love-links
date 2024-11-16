@@ -78,18 +78,18 @@ class LoveLinks extends Gamegui
 			// debug: create some bracelets
 			for (let i = 0; i < 5; i++) {
 				const bracelet = this.stocks[player_id].createBracelet();
-				bracelet.appendLink(new Link(0, 0, 0));
+				bracelet.appendLink(new Link(i%2, i%3, 0));
 			}
 		}
 
 		// debug: create some bracelets
 		for (let i = 0; i < 5; i++) {
 			const bracelet = this.bracelets.createBracelet();
-			bracelet.appendLink(new Link(0, 0, 0));
-			bracelet.appendLink(new Link(0, 0, 0));
-			bracelet.appendLink(new Link(0, 0, 0));
-			bracelet.appendLink(new Link(0, 0, 0));
-			bracelet.appendLink(new Link(0, 0, 0));
+			bracelet.appendLink(new Link(1, 0, 0));
+			bracelet.appendLink(new Link(1, 0, 0));
+			bracelet.appendLink(new Link(1, 0, 0));
+			bracelet.appendLink(new Link(1, 0, 0));
+			bracelet.appendLink(new Link(1, 0, 0));
 		}
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
@@ -122,6 +122,11 @@ class LoveLinks extends Gamegui
 		console.log( 'Leaving state: '+stateName );
 		
 		switch(stateName) {
+			case 'client_placeLink':
+				this.bracelets.deselectAll();
+				this.myStock.deselectAll();
+				this.selected = undefined;
+				break;
 			case 'client_completeBracelet':
 				this.commandManager.bracelet.setBlinking(false);
 				break;
@@ -139,13 +144,17 @@ class LoveLinks extends Gamegui
 
 		switch(stateName) {
 			case 'client_placeLink':
-				if (this.commandManager.hasCommands()) {
+				if (this.commandManager.numberOfPlacements() > 0) {
 					this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
 				}
 				break;
 			case 'client_completeBracelet':
 				this.addActionButton("complete-button", _("Complete"), "onCompleteBracelet");
 				this.addActionButton("skip-button", _("Skip"), "nextAction", undefined, false, 'gray');
+				break;
+			case 'client_confirm':
+				this.addActionButton("confirm-button", _("Confirm"), "onSubmitCommands");
+				this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
 				break;
 		}
 	}
@@ -193,6 +202,11 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickMyStock(bracelet: Bracelet, link: Link, side: Side) {
+		if(!this.isCurrentPlayerActive()) {
+			this.showMessage(_("It is not your turn"), 'error');
+			return;
+		}
+
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_placeLink':
 				this.bracelets.deselectAll();
@@ -218,23 +232,41 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickBracelet(bracelet: Bracelet, link: Link, side: Side) {
+		if(!this.isCurrentPlayerActive()) {
+			this.showMessage(_("It is not your turn"), 'error');
+			return;
+		}
+		
 		switch(this.gamedatas.gamestate.name) {
 			case 'client_placeLink':
 				if (!this.selected) {
 					this.showMessage(_("Please select a link from your stock"), 'error');
 					return;
 				}
-				else if (side == 'key' && Link.isValidConnection(link, this.selected.lock_link)) {
-					this.bracelets.deselectAll();
-					this.myStock.deselectAll();
-					this.commandManager.execute(new ExtendCommand(bracelet, this.selected, side));
-					this.selected = undefined;
-				}
-				else if (side == 'lock' && Link.isValidConnection(this.selected.key_link, link)) {
-					this.bracelets.deselectAll();
-					this.myStock.deselectAll();
-					this.commandManager.execute(new ExtendCommand(bracelet, this.selected, side));
-					this.selected = undefined;
+				switch (side) {
+					case 'key':
+						if (Link.isValidConnection(link, this.selected.lock_link)) {
+							this.bracelets.deselectAll();
+							this.myStock.deselectAll();
+							this.commandManager.execute(new ExtendCommand(bracelet, this.selected, side));
+							this.selected = undefined;
+						}
+						else {
+							this.showMessage(_("This link doesn't fit here"), 'error');
+						}
+						break;
+					case 'lock':
+						if (Link.isValidConnection(this.selected.key_link, link)) {
+							this.bracelets.deselectAll();
+							this.myStock.deselectAll();
+							this.commandManager.execute(new ExtendCommand(bracelet, this.selected, side));
+							this.selected = undefined;
+						}
+						else {
+							this.showMessage(_("This link doesn't fit here"), 'error');
+							return;
+						}
+						break;
 				}
 				break;
 			case 'client_completeBracelet':
@@ -311,6 +343,7 @@ class LoveLinks extends Gamegui
 		this.commandManager.undo();
 		this.removeActionButtons();
 		this.onUpdateActionButtons(this.gamedatas.gamestate.name, this.gamedatas.gamestate.args);
+		this.nextAction();
 	}
 
 	public onCompleteBracelet() {
@@ -318,11 +351,35 @@ class LoveLinks extends Gamegui
 		this.nextAction();
 	}
 
+	public onSubmitCommands() {
+		console.log(this.commandManager.asJson());
+		this.bgaPerformAction("actSubmitCommands", {
+			commands: this.commandManager.asJson()
+		})
+	}
+
 	public nextAction() {
 		console.log("nextAction");
-		this.setClientState('client_placeLink', {
-			descriptionmyturn: _("${you} must place a link")
-		})
+		const placements = this.commandManager.numberOfPlacements();
+		if (placements == 0) {
+			this.setClientState('client_placeLink', {
+				descriptionmyturn: _("${you} must place a link")
+			})
+		}
+		else if (placements == 1) {
+			this.setClientState('client_placeLink', {
+				descriptionmyturn: _("${you} must place another link")
+			})
+		}
+		else if (placements == 2) {
+			this.setClientState('client_confirm', {
+				descriptionmyturn: _("${you} must confirm your placements")
+			})
+		}
+		else {
+			throw new Error(`Unexpected number of placements this turn: ${placements}`);
+		}
+
 	}
 	
 	/* console.log("-");

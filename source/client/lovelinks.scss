@@ -8,6 +8,10 @@
  * -----
  */
 
+#player_boards {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); //fit all 4 players in a single row
+}
+
  @keyframes blinker {
     from {
       opacity: 1;

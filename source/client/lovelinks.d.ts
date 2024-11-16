@@ -38,6 +38,7 @@ declare global {
 	interface ClientGameStates {
 		'client_placeLink': {}
 		'client_completeBracelet': {}
+		'client_confirm': {}
 	}
 }
 
