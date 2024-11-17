@@ -1,3 +1,5 @@
+import { StaticLoveLinks } from "./StaticLoveLinks";
+
 /**
  * Uniquely points to divs representing this link
  */
@@ -12,7 +14,7 @@ export interface LinkDivs {
  * Contains 2 hearts and 1 gemstone
  */
 export class Link {
-    private static UNIQUE_ID: number = 1;
+    private static UNIQUE_ID: number = 999;
     public static links: Map<number, Link> = new Map<number, Link>();
 
     public id: number;
@@ -21,13 +23,26 @@ export class Link {
     public gemstone: number;
     public divs: LinkDivs | undefined; //unique representation of this link on screen
 
-    constructor(key: number, lock: number, gemstone: number) {
-        this.id = Link.UNIQUE_ID;
+    constructor(key: number, lock: number, gemstone: number, id?: number) {
+        if(id) {
+            this.id = id;
+        }
+        else {
+            this.id = Link.UNIQUE_ID;
+            Link.UNIQUE_ID++;
+        }
         Link.links.set(this.id, this);
-        Link.UNIQUE_ID++;
         this.key = key
         this.lock = lock
         this.gemstone = gemstone
+    }
+
+    public static ofId(id: number, gemstone: number = 0) {
+        const link = StaticLoveLinks.page.gamedatas.card_types[id];
+        if (!link) {
+            throw new Error(`Link ${id} does not not exist`);
+        }
+        return new Link(link.key, link.lock, gemstone, id);
     }
 
     /**
@@ -47,7 +62,7 @@ export class Link {
     public static isValidConnection(key_link: Link, lock_link: Link) {
         const key = key_link.key;
         const lock = lock_link.lock;
-        return key + lock >= 1;
+        return lock % key == 0;
     }
 
     //TODO: safely delete this

@@ -24,19 +24,32 @@ define("components/StaticLoveLinks", ["require", "exports"], function (require, 
     }());
     exports.StaticLoveLinks = StaticLoveLinks;
 });
-define("components/Link", ["require", "exports"], function (require, exports) {
+define("components/Link", ["require", "exports", "components/StaticLoveLinks"], function (require, exports, StaticLoveLinks_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Link = void 0;
     var Link = (function () {
-        function Link(key, lock, gemstone) {
-            this.id = Link.UNIQUE_ID;
+        function Link(key, lock, gemstone, id) {
+            if (id) {
+                this.id = id;
+            }
+            else {
+                this.id = Link.UNIQUE_ID;
+                Link.UNIQUE_ID++;
+            }
             Link.links.set(this.id, this);
-            Link.UNIQUE_ID++;
             this.key = key;
             this.lock = lock;
             this.gemstone = gemstone;
         }
+        Link.ofId = function (id, gemstone) {
+            if (gemstone === void 0) { gemstone = 0; }
+            var link = StaticLoveLinks_1.StaticLoveLinks.page.gamedatas.card_types[id];
+            if (!link) {
+                throw new Error("Link ".concat(id, " does not not exist"));
+            }
+            return new Link(link.key, link.lock, gemstone, id);
+        };
         Link.get = function (link_id) {
             var link = this.links.get(link_id);
             if (!link) {
@@ -47,9 +60,9 @@ define("components/Link", ["require", "exports"], function (require, exports) {
         Link.isValidConnection = function (key_link, lock_link) {
             var key = key_link.key;
             var lock = lock_link.lock;
-            return key + lock >= 1;
+            return lock % key == 0;
         };
-        Link.UNIQUE_ID = 1;
+        Link.UNIQUE_ID = 999;
         Link.links = new Map();
         return Link;
     }());
@@ -59,7 +72,7 @@ define("components/Side", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks"], function (require, exports, StaticLoveLinks_1) {
+define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks"], function (require, exports, StaticLoveLinks_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Bracelet = void 0;
@@ -159,9 +172,9 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 bracelet: this
             };
             if (prevDivs) {
-                StaticLoveLinks_1.StaticLoveLinks.page.placeOnObject(newDivs.key, prevDivs.key);
-                StaticLoveLinks_1.StaticLoveLinks.page.placeOnObject(newDivs.lock, prevDivs.lock);
-                StaticLoveLinks_1.StaticLoveLinks.page.placeOnObject(newDivs.gemstone, prevDivs.gemstone);
+                StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.key, prevDivs.key);
+                StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.lock, prevDivs.lock);
+                StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.gemstone, prevDivs.gemstone);
                 prevDivs.bracelet.unregisterLink(link);
             }
             link.divs = newDivs;
@@ -273,7 +286,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                     if (this.isBlinking) {
                         link.divs.key.classList.add("lovelinks-blinking");
                     }
-                    if (StaticLoveLinks_1.StaticLoveLinks.page.isClickable(this, 'key')) {
+                    if (StaticLoveLinks_2.StaticLoveLinks.page.isClickable(this, 'key')) {
                         link.divs.key.classList.add("lovelinks-clickable");
                         link.divs.key.addEventListener('click', this.onClickKeyBound);
                     }
@@ -293,7 +306,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                     if (this.isBlinking) {
                         link.divs.lock.classList.add("lovelinks-blinking");
                     }
-                    if (StaticLoveLinks_1.StaticLoveLinks.page.isClickable(this, 'lock')) {
+                    if (StaticLoveLinks_2.StaticLoveLinks.page.isClickable(this, 'lock')) {
                         link.divs.lock.classList.add("lovelinks-clickable");
                         link.divs.lock.addEventListener('click', this.onClickLockBound);
                     }
@@ -382,7 +395,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
     }());
     exports.Bracelet = Bracelet;
 });
-define("components/CommandManager", ["require", "exports", "components/StaticLoveLinks", "components/Link"], function (require, exports, StaticLoveLinks_2, Link_1) {
+define("components/CommandManager", ["require", "exports", "components/StaticLoveLinks", "components/Link"], function (require, exports, StaticLoveLinks_3, Link_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CompleteCommand = exports.ExtendCommand = exports.CommandManager = void 0;
@@ -454,12 +467,12 @@ define("components/CommandManager", ["require", "exports", "components/StaticLov
                     break;
             }
             if (Link_1.Link.isValidConnection(this.bracelet.key_link, this.bracelet.lock_link)) {
-                StaticLoveLinks_2.StaticLoveLinks.page.setClientState('client_completeBracelet', {
+                StaticLoveLinks_3.StaticLoveLinks.page.setClientState('client_completeBracelet', {
                     descriptionmyturn: _("${you} may complete this bracelet")
                 });
             }
             else {
-                StaticLoveLinks_2.StaticLoveLinks.page.nextAction();
+                StaticLoveLinks_3.StaticLoveLinks.page.nextAction();
             }
         };
         ExtendCommand.prototype.undo = function () {
@@ -571,7 +584,7 @@ define("components/TPL", ["require", "exports"], function (require, exports) {
     }());
     exports.TPL = TPL;
 });
-define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "ebg/counter"], function (require, exports, Gamegui, StaticLoveLinks_3, CommandManager_1, Link_3, BraceletArea_1, TPL_1) {
+define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "ebg/counter"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var LoveLinks = (function (_super) {
@@ -580,7 +593,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             var _this = _super.call(this) || this;
             _this.stocks = {};
             _this.commandManager = new CommandManager_1.CommandManager();
-            StaticLoveLinks_3.StaticLoveLinks.page = _this;
+            StaticLoveLinks_4.StaticLoveLinks.page = _this;
             console.log('lovelinks constructor');
             return _this;
         }
@@ -597,6 +610,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         });
         LoveLinks.prototype.setup = function (gamedatas) {
             console.log("Starting game setup");
+            console.log(gamedatas);
             TPL_1.TPL.init(this);
             var gamePlayArea = document.getElementById("game_play_area");
             this.bracelets = new BraceletArea_1.BraceletArea(gamePlayArea, 0, _("Bracelets"), this.onClickBracelet.bind(this));
@@ -606,17 +620,17 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 var callback = +player_id == this.player_id ? this.onClickMyStock.bind(this) : this.onClickOtherStock.bind(this);
                 this.stocks[player_id] = new BraceletArea_1.BraceletArea(player_board, +player_id, undefined, callback);
                 for (var i = 0; i < 5; i++) {
-                    var bracelet = this.stocks[player_id].createBracelet();
-                    bracelet.appendLink(new Link_3.Link(i % 2, i % 3, 0));
+                    var slot = this.stocks[player_id].createBracelet();
+                    slot.appendLink(new Link_3.Link(i % 2, i % 3, 0));
                 }
             }
             for (var i = 0; i < 5; i++) {
                 var bracelet = this.bracelets.createBracelet();
-                bracelet.appendLink(new Link_3.Link(1, 0, 0));
-                bracelet.appendLink(new Link_3.Link(1, 0, 0));
-                bracelet.appendLink(new Link_3.Link(1, 0, 0));
-                bracelet.appendLink(new Link_3.Link(1, 0, 0));
-                bracelet.appendLink(new Link_3.Link(1, 0, 0));
+                bracelet.appendLink(Link_3.Link.ofId(i * 10 + 1));
+                bracelet.appendLink(Link_3.Link.ofId(i * 10 + 2));
+                bracelet.appendLink(Link_3.Link.ofId(i * 10 + 3));
+                bracelet.appendLink(Link_3.Link.ofId(i * 10 + 4));
+                bracelet.appendLink(Link_3.Link.ofId(i * 10 + 5));
             }
             this.setupNotifications();
             console.log("Ending game setup");
@@ -795,4 +809,8 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         return LoveLinks;
     }(Gamegui));
     dojo.setObject("bgagame.lovelinks", LoveLinks);
+});
+define("components/DbCard", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });

@@ -65,6 +65,7 @@ class LoveLinks extends Gamegui
 	override setup(gamedatas: Gamedatas): void
 	{
 		console.log( "Starting game setup" );
+		console.log(gamedatas);
 		TPL.init(this);
 		const gamePlayArea = document.getElementById("game_play_area")!;
 
@@ -75,21 +76,21 @@ class LoveLinks extends Gamegui
 			const callback = +player_id == this.player_id ? this.onClickMyStock.bind(this) : this.onClickOtherStock.bind(this);
 			this.stocks[player_id] = new BraceletArea(player_board, +player_id, undefined, callback); //TPL.stockTitle(player_id)
 
-			// debug: create some bracelets
+			// debug: create some links in the stock
 			for (let i = 0; i < 5; i++) {
-				const bracelet = this.stocks[player_id].createBracelet();
-				bracelet.appendLink(new Link(i%2, i%3, 0));
+				const slot = this.stocks[player_id].createBracelet();
+				slot.appendLink(new Link(i%2, i%3, 0));
 			}
 		}
 
 		// debug: create some bracelets
 		for (let i = 0; i < 5; i++) {
 			const bracelet = this.bracelets.createBracelet();
-			bracelet.appendLink(new Link(1, 0, 0));
-			bracelet.appendLink(new Link(1, 0, 0));
-			bracelet.appendLink(new Link(1, 0, 0));
-			bracelet.appendLink(new Link(1, 0, 0));
-			bracelet.appendLink(new Link(1, 0, 0));
+			bracelet.appendLink(Link.ofId(i*10+1));
+			bracelet.appendLink(Link.ofId(i*10+2));
+			bracelet.appendLink(Link.ofId(i*10+3));
+			bracelet.appendLink(Link.ofId(i*10+4));
+			bracelet.appendLink(Link.ofId(i*10+5));
 		}
 
 		// Setup game notifications to handle (see "setupNotifications" method below)

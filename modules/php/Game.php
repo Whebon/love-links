@@ -18,7 +18,19 @@ declare(strict_types=1);
 
 namespace Bga\Games\LoveLinks;
 
+use BgaSystemException;
+
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
+
+if (!defined('STOCK')) {
+    #locations
+    define('STOCK', 'stock');
+    define('BRACELETS', 'bracelets');
+    define('BRONZE', 'bronze');
+    define('SILVER', 'silver');
+    define('GOLD', 'gold');
+    define('MASTER', 48);
+}
 
 class Game extends \Table
 {
@@ -40,8 +52,7 @@ class Game extends \Table
         parent::__construct();
 
         $this->initGameStateLabels([
-            "my_first_global_variable" => 10,
-            "my_second_global_variable" => 11,
+            "round" => 10,
             "my_first_game_variant" => 100,
             "my_second_game_variant" => 101,
         ]);        
@@ -49,39 +60,502 @@ class Game extends \Table
         self::$CARD_TYPES = [
             1 => [
                 "key" => 2,
-                "lock" => 2,
-                "metal" => "bronze"
+                "lock" => 3,
+                "metal" => BRONZE
             ],
             2 => [
-                "key" => 3,
-                "lock" => 2,
-                "metal" => "bronze"
+                "key" => 2,
+                "lock" => 3,
+                "metal" => BRONZE
             ],
             3 => [
+                "key" => 2,
+                "lock" => 4,
+                "metal" => BRONZE
+            ],
+            4 => [
+                "key" => 2,
+                "lock" => 4,
+                "metal" => BRONZE
+            ],
+            5 => [
+                "key" => 2,
+                "lock" => 5,
+                "metal" => BRONZE
+            ],
+            6 => [
+                "key" => 2,
+                "lock" => 5,
+                "metal" => BRONZE
+            ],
+            7 => [
+                "key" => 2,
+                "lock" => 6,
+                "metal" => BRONZE
+            ],
+            8 => [
+                "key" => 2,
+                "lock" => 6,
+                "metal" => BRONZE
+            ],
+            9 => [
+                "key" => 2,
+                "lock" => 7,
+                "metal" => BRONZE
+            ],
+            10 => [
+                "key" => 2,
+                "lock" => 7,
+                "metal" => BRONZE
+            ],
+            11 => [
+                "key" => 2,
+                "lock" => 8,
+                "metal" => BRONZE
+            ],
+            12 => [
+                "key" => 2,
+                "lock" => 8,
+                "metal" => BRONZE
+            ],
+            13 => [
+                "key" => 3,
+                "lock" => 2,
+                "metal" => BRONZE
+            ],
+            14 => [
+                "key" => 3,
+                "lock" => 4,
+                "metal" => BRONZE
+            ],
+            15 => [
+                "key" => 3,
+                "lock" => 4,
+                "metal" => BRONZE
+            ],
+            16 => [
+                "key" => 3,
+                "lock" => 5,
+                "metal" => BRONZE
+            ],
+            17 => [
+                "key" => 3,
+                "lock" => 5,
+                "metal" => BRONZE
+            ],
+            18 => [
+                "key" => 3,
+                "lock" => 6,
+                "metal" => BRONZE
+            ],
+            19 => [
+                "key" => 3,
+                "lock" => 6,
+                "metal" => BRONZE
+            ],
+            20 => [
+                "key" => 3,
+                "lock" => 7,
+                "metal" => BRONZE
+            ],
+            21 => [
+                "key" => 3,
+                "lock" => 7,
+                "metal" => BRONZE
+            ],
+            22 => [
                 "key" => 4,
                 "lock" => 2,
-                "metal" => "bronze"
+                "metal" => BRONZE
             ],
-            99 => [
-                "key" => 99,
-                "lock" => 99,
-                "metal" => "silver"
+            23 => [
+                "key" => 4,
+                "lock" => 5,
+                "metal" => BRONZE
             ],
-            999 => [
-                "key" => 999,
-                "lock" => 999,
-                "metal" => "gold"
-            ]
+            24 => [
+                "key" => 4,
+                "lock" => 5,
+                "metal" => BRONZE
+            ],
+            25 => [
+                "key" => 4,
+                "lock" => 6,
+                "metal" => BRONZE
+            ],
+            26 => [
+                "key" => 4,
+                "lock" => 6,
+                "metal" => BRONZE
+            ],
+            27 => [
+                "key" => 5,
+                "lock" => 2,
+                "metal" => BRONZE
+            ],
+            28 => [
+                "key" => 5,
+                "lock" => 3,
+                "metal" => BRONZE
+            ],
+            29 => [
+                "key" => 5,
+                "lock" => 4,
+                "metal" => BRONZE
+            ],
+            30 => [
+                "key" => 5,
+                "lock" => 4,
+                "metal" => BRONZE
+            ],
+            31 => [
+                "key" => 6,
+                "lock" => 4,
+                "metal" => BRONZE
+            ],
+            32 => [
+                "key" => 7,
+                "lock" => 2,
+                "metal" => BRONZE
+            ],
+            33 => [
+                "key" => 7,
+                "lock" => MASTER,
+                "metal" => BRONZE
+            ],
+            34 => [
+                "key" => 7,
+                "lock" => MASTER,
+                "metal" => BRONZE
+            ],
+            35 => [
+                "key" => 8,
+                "lock" => 2,
+                "metal" => BRONZE
+            ],
+            36 => [
+                "key" => 2,
+                "lock" => 9,
+                "metal" => SILVER
+            ],
+            37 => [
+                "key" => 2,
+                "lock" => 9,
+                "metal" => SILVER
+            ],
+            38 => [
+                "key" => 2,
+                "lock" => 10,
+                "metal" => SILVER
+            ],
+            39 => [
+                "key" => 2,
+                "lock" => 10,
+                "metal" => SILVER
+            ],
+            40 => [
+                "key" => 3,
+                "lock" => 8,
+                "metal" => SILVER
+            ],
+            41 => [
+                "key" => 3,
+                "lock" => 8,
+                "metal" => SILVER
+            ],
+            42 => [
+                "key" => 3,
+                "lock" => 9,
+                "metal" => SILVER
+            ],
+            43 => [
+                "key" => 3,
+                "lock" => 9,
+                "metal" => SILVER
+            ],
+            44 => [
+                "key" => 3,
+                "lock" => 10,
+                "metal" => SILVER
+            ],
+            45 => [
+                "key" => 3,
+                "lock" => 10,
+                "metal" => SILVER
+            ],
+            46 => [
+                "key" => 4,
+                "lock" => 7,
+                "metal" => SILVER
+            ],
+            47 => [
+                "key" => 4,
+                "lock" => 7,
+                "metal" => SILVER
+            ],
+            48 => [
+                "key" => 4,
+                "lock" => 8,
+                "metal" => SILVER
+            ],
+            49 => [
+                "key" => 4,
+                "lock" => 8,
+                "metal" => SILVER
+            ],
+            50 => [
+                "key" => 4,
+                "lock" => 9,
+                "metal" => SILVER
+            ],
+            51 => [
+                "key" => 4,
+                "lock" => 9,
+                "metal" => SILVER
+            ],
+            52 => [
+                "key" => 5,
+                "lock" => 6,
+                "metal" => SILVER
+            ],
+            53 => [
+                "key" => 5,
+                "lock" => 6,
+                "metal" => SILVER
+            ],
+            54 => [
+                "key" => 5,
+                "lock" => 8,
+                "metal" => SILVER
+            ],
+            55 => [
+                "key" => 5,
+                "lock" => 8,
+                "metal" => SILVER
+            ],
+            56 => [
+                "key" => 6,
+                "lock" => 7,
+                "metal" => SILVER
+            ],
+            57 => [
+                "key" => 7,
+                "lock" => 4,
+                "metal" => SILVER
+            ],
+            58 => [
+                "key" => 7,
+                "lock" => 6,
+                "metal" => SILVER
+            ],
+            59 => [
+                "key" => 8,
+                "lock" => 4,
+                "metal" => SILVER
+            ],
+            60 => [
+                "key" => 9,
+                "lock" => 4,
+                "metal" => SILVER
+            ],
+            61 => [
+                "key" => 9,
+                "lock" => MASTER,
+                "metal" => SILVER
+            ],
+            62 => [
+                "key" => 9,
+                "lock" => MASTER,
+                "metal" => SILVER
+            ],
+            63 => [
+                "key" => 10,
+                "lock" => 3,
+                "metal" => SILVER
+            ],
+            64 => [
+                "key" => 10,
+                "lock" => MASTER,
+                "metal" => SILVER
+            ],
+            65 => [
+                "key" => 10,
+                "lock" => MASTER,
+                "metal" => SILVER
+            ],
+            66 => [
+                "key" => 4,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            67 => [
+                "key" => 4,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            68 => [
+                "key" => 5,
+                "lock" => 9,
+                "metal" => GOLD
+            ],
+            69 => [
+                "key" => 5,
+                "lock" => 9,
+                "metal" => GOLD
+            ],
+            70 => [
+                "key" => 5,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            71 => [
+                "key" => 5,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            72 => [
+                "key" => 6,
+                "lock" => 8,
+                "metal" => GOLD
+            ],
+            73 => [
+                "key" => 6,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            74 => [
+                "key" => 6,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            75 => [
+                "key" => 7,
+                "lock" => 8,
+                "metal" => GOLD
+            ],
+            76 => [
+                "key" => 7,
+                "lock" => 8,
+                "metal" => GOLD
+            ],
+            77 => [
+                "key" => 7,
+                "lock" => 9,
+                "metal" => GOLD
+            ],
+            78 => [
+                "key" => 7,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            79 => [
+                "key" => 7,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            80 => [
+                "key" => 8,
+                "lock" => 6,
+                "metal" => GOLD
+            ],
+            81 => [
+                "key" => 8,
+                "lock" => 9,
+                "metal" => GOLD
+            ],
+            82 => [
+                "key" => 8,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            83 => [
+                "key" => 8,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            84 => [
+                "key" => 9,
+                "lock" => 6,
+                "metal" => GOLD
+            ],
+            85 => [
+                "key" => 9,
+                "lock" => 8,
+                "metal" => GOLD
+            ],
+            86 => [
+                "key" => 9,
+                "lock" => 8,
+                "metal" => GOLD
+            ],
+            87 => [
+                "key" => 9,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            88 => [
+                "key" => 9,
+                "lock" => 10,
+                "metal" => GOLD
+            ],
+            89 => [
+                "key" => 10,
+                "lock" => 4,
+                "metal" => GOLD
+            ],
+            90 => [
+                "key" => 10,
+                "lock" => 7,
+                "metal" => GOLD
+            ],
+            91 => [
+                "key" => 10,
+                "lock" => 8,
+                "metal" => GOLD
+            ],
+            92 => [
+                "key" => 10,
+                "lock" => 9,
+                "metal" => GOLD
+            ],
         ];
 
         $this->deck = new LoveLinksDeck($this);
         $this->deck->init("card");
-        $this->deck->createDeck(self::$CARD_TYPES);
     }
+
+    /////////////////////////////////////////////////
+    ///////  ~actions
     
     public function actSubmitCommands($commands) {
         //die($commands); //TODO
         $this->gamestate->nextState("trEndTurn");
+    }
+
+    /**
+     * @param int $link_id. must be a link from the active player's stock
+     * @param int $bracelet_id. corresponds to a location arg
+     * @param string $side. "key" | "lock" | "both"
+     */
+    public function actPlaceLink(int $link_id, int $bracelet_id, string $side): void {
+        $player_id = $this->getActivePlayerId();
+        $this->deck->getCardsFromLocation(array($link_id), STOCK, $player_id);
+        $bracelet = $this->deck->getCardsInLocation(BRACELETS, $player_id);
+        if (count($bracelet) == 0) {
+            throw new BgaSystemException("Unable to extend empty bracelet ".$bracelet_id);
+        }
+
+        if ($side == "key" || $side == "both") {
+            $key_link = reset($bracelet)["id"];
+            $lock_link = $link_id;
+            $this->
+            $this->getKey($key_link);
+        }
+        if ($side == "lock" || $side == "both") {
+            $lock_link = $link_id;
+            $lock_link = end($bracelet)["id"];
+        }
+
     }
 
     /**
@@ -169,6 +643,27 @@ class Game extends \Table
         return 0;
     }
 
+    /////////////////////////////////////////////////
+    ///////  ~states
+
+    public function stStartRound(): void {
+        $player_id = (int)$this->getActivePlayerId();
+        $round = $this->getGameStateValue("round");
+        if ($round == 3) {
+            $this->gamestate->nextState("trEndGame");
+            return;
+        }
+
+        $this->createBraceletFromReserve(1);
+        $this->createBraceletFromReserve(3);
+        $this->createBraceletFromReserve(5);
+        $this->createBraceletFromReserve(7);
+        $this->createBraceletFromReserve(9);
+
+        $this->setGameStateValue("round", $round + 1);
+    }
+
+
     /**
      * Game state action, example content.
      *
@@ -183,10 +678,48 @@ class Game extends \Table
         
         $this->activeNextPlayer();
 
-        // Go to another gamestate
-        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("trNextTurn");
+        //TODO: detect if we should move to the next round (stocks are empty).
+        $allStockEmpty = false;
+        if ($allStockEmpty) {
+            $this->gamestate->nextState("trStartRound");
+        }
+        else {
+            $this->gamestate->nextState("trPlayerTurn");
+        }
     }
+
+    
+    /////////////////////////////////////////////////
+    ///////  ~utility
+
+    /**
+     * A player creates a new bracelet
+     * @param int $link_id
+     */
+    public function createBraceletFromActivePlayer(int $link_id) {
+        $player_id = $this->getActivePlayerId();
+        $this->deck->getNewBraceletId();
+        $this->deck->moveCard($link_id, BRACELETS, $link_id);
+        $this->deck->assignCards(array($link_id), $player_id);
+        $this->notifyAllPlayers('newBracelet', clienttranslate('${player_name} starts a new bracelet with ${link_name}'), array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "link_name" => $this->getLinkName($link_id)
+        ));
+    }
+
+    /**
+     * Create a new bracelet
+     * @param int $link_id
+     */
+    public function createBraceletFromReserve(int $link_id) {
+        $this->deck->getNewBraceletId();
+        $this->deck->moveCard($link_id, BRACELETS, $link_id);
+        $this->notifyAllPlayers('newBracelet', clienttranslate('Starting a new bracelet with ${link_name}'), array(
+            "link_name" => $this->getLinkName($link_id)
+        ));
+    }
+    
 
     /**
      * Migrate database.
@@ -239,9 +772,49 @@ class Game extends \Table
             "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
         );
 
+        $result["card_types"] = self::$CARD_TYPES;
+        $result["bronze_remaining"] = $this->deck->getCardsInLocation(BRONZE);
+        $result["silver_remaining"] = $this->deck->getCardsInLocation(SILVER);
+        $result["gold_remaining"] = $this->deck->getCardsInLocation(GOLD);
+
+        $this->deck->assignCards([2, 8, 9], 1234); //#TODO: remove this!
+
+        $results["bracelet"] = $this->deck->getCardsInLocation("bracelet");
+
+
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;
+    }
+
+    //////////////////////////////////////////////
+    /////////// Link functions
+
+    /**
+     * Returns true if `key_link` and `lock_link` can connect
+     * @param int $key_link_id link id of the link on the KEY side
+     * @param int $lock_link_id link id of the link on the LOCK side
+     */
+    public function isValidConnection(int $key_link_id, int $lock_link_id)  {
+        $key = self::$CARD_TYPES[$key_link_id]["key"];
+        $lock = self::$CARD_TYPES[$lock_link_id]["lock"];
+        return $lock % $key === 0;
+    }
+
+    public function getLinkName(int $link_id) {
+        $link = clienttranslate("link");
+        $key = $this->getKey($link_id) == MASTER ? "M" : $this->getKey($link_id);
+        $lock = $this->getLock($link_id) == MASTER ? "M" : $this->getLock($link_id);
+        return $link." ".$key."-".$lock;
+    }
+
+
+    public function getKey(int $link_id) {
+        return self::$CARD_TYPES[$link_id]["key"];
+    }
+
+    public function getLock(int $link_id) {
+        return self::$CARD_TYPES[$link_id]["lock"];
     }
 
     /**
@@ -293,7 +866,7 @@ class Game extends \Table
         // Init global values with their initial values.
 
         // Dummy content.
-        $this->setGameStateInitialValue("my_first_global_variable", 0);
+        $this->setGameStateInitialValue("round", 1);
 
         // Init game statistics.
         //
@@ -303,7 +876,8 @@ class Game extends \Table
         // $this->initStat("table", "table_teststat1", 0);
         // $this->initStat("player", "player_teststat1", 0);
 
-        // TODO: Setup the initial game situation here.
+        // Create the links
+        $this->deck->createDeck(self::$CARD_TYPES);
 
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();

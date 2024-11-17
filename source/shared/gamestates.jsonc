@@ -27,6 +27,15 @@
 	},
 
 	"2": {
+		"name": "startRound",
+		"description": "",
+		"type": "game",
+		"action": "stStartRound",
+		"updateGameProgression": true,
+		"transitions": { "trPlayerTurn": 3, "trEndGame": 99 }
+	},
+
+	"3": {
 		"name": "playerTurn",
 		"description": "${actplayer} must take actions",
 		"descriptionmyturn": "${you} must take actions",
@@ -34,16 +43,16 @@
 		"possibleactions": {
 			"actSubmitCommands": [{ "name": "commands", "type": "AT_json" }]
 		},
-		"transitions": { "trEndTurn": 3 }
+		"transitions": { "trEndTurn": 4 }
 	},
 
-	"3": {
+	"4": {
 		"name": "endTurn",
 		"description": "",
 		"type": "game",
 		"action": "stEndTurn",
 		"updateGameProgression": true,
-		"transitions": { "trNextTurn": 2, "trEndGame": 99 }
+		"transitions": { "trPlayerTurn": 3, "trStartRound": 2 }
 	},
 
 /*

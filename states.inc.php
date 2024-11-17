@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 if (false) {
 	/** @var lovelinks $game */
+	$game->stStartRound();
 	$game->stEndTurn();
 }
 
@@ -32,24 +33,35 @@ $machinestates = array(
 		),
 	),
 	2 => array(
+		'name' => 'startRound',
+		'description' => '',
+		'type' => 'game',
+		'action' => 'stStartRound',
+		'updateGameProgression' => true,
+		'transitions' => array(
+			'trPlayerTurn' => 3,
+			'trEndGame' => 99,
+		),
+	),
+	3 => array(
 		'name' => 'playerTurn',
 		'description' => clienttranslate('${actplayer} must take actions'),
 		'descriptionmyturn' => clienttranslate('${you} must take actions'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actSubmitCommands'],
 		'transitions' => array(
-			'trEndTurn' => 3,
+			'trEndTurn' => 4,
 		),
 	),
-	3 => array(
+	4 => array(
 		'name' => 'endTurn',
 		'description' => '',
 		'type' => 'game',
 		'action' => 'stEndTurn',
 		'updateGameProgression' => true,
 		'transitions' => array(
-			'trNextTurn' => 2,
-			'trEndGame' => 99,
+			'trPlayerTurn' => 3,
+			'trStartRound' => 2,
 		),
 	),
 	99 => array(
