@@ -19,16 +19,20 @@ declare(strict_types=1);
 namespace Bga\Games\LoveLinks;
 
 use BgaSystemException;
+use BgaUserException;
+use BgaVisibleSystemException;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 if (!defined('STOCK')) {
     #locations
     define('STOCK', 'stock');
-    define('BRACELETS', 'bracelets');
+    define('BRACELET', 'bracelet');
+    define('COMPLETED', 'completed');
     define('BRONZE', 'bronze');
     define('SILVER', 'silver');
     define('GOLD', 'gold');
+    define('TEMP', 'temp');
     define('MASTER', 48);
 }
 
@@ -36,6 +40,7 @@ class Game extends \Table
 {
     private static array $CARD_TYPES;
     private LoveLinksDeck $deck;
+    private ?string $dummyState = null;
 
     /**
      * Your global variables labels:
@@ -53,6 +58,7 @@ class Game extends \Table
 
         $this->initGameStateLabels([
             "round" => 10,
+            "placements" => 11,
             "my_first_game_variant" => 100,
             "my_second_game_variant" => 101,
         ]);        
@@ -527,8 +533,32 @@ class Game extends \Table
     /////////////////////////////////////////////////
     ///////  ~actions
     
-    public function actSubmitCommands($commands) {
-        //die($commands); //TODO
+    public function actMultipleActions($actions) {
+        $VALID_ACTIONS = [
+             "playerTurn" => ["actPlaceLink", "actNewBracelet"],
+             "newBracelet" => ["actNewBracelet"],
+             "endTurn" => []
+        ];
+        $this->dummyState = "playerTurn";
+        foreach ($actions as $named_action) {
+            $name = $named_action['name'];
+            $args = $named_action['args'];
+            if (in_array($name, $VALID_ACTIONS[$this->dummyState])) {
+                if (method_exists($this, $name)) {
+                    call_user_func_array([$this, $name], $args);
+                } else {
+                    throw new BgaSystemException("Action '".$name."'does not exist");
+                }
+            }
+            else {
+                $dummyState = $this->dummyState;
+                throw new BgaSystemException("Action '$name' is not valid in dummyState '$dummyState'");
+            }
+        }
+        if ($this->dummyState != "endTurn") {
+            $dummyState = "endTurn";
+            throw new BgaSystemException("Sequence of actions did not lead to dummyState '$dummyState'");
+        }
         $this->gamestate->nextState("trEndTurn");
     }
 
@@ -538,24 +568,72 @@ class Game extends \Table
      * @param string $side. "key" | "lock" | "both"
      */
     public function actPlaceLink(int $link_id, int $bracelet_id, string $side): void {
+        //get links from the expected locations
         $player_id = $this->getActivePlayerId();
-        $this->deck->getCardsFromLocation(array($link_id), STOCK, $player_id);
-        $bracelet = $this->deck->getCardsInLocation(BRACELETS, $player_id);
+        $this->deck->getCardsFromLocation(array($link_id), STOCK.$player_id);
+        $bracelet = $this->deck->getCardsInLocation(BRACELET.$bracelet_id, null, 'location_arg');
         if (count($bracelet) == 0) {
-            throw new BgaSystemException("Unable to extend empty bracelet ".$bracelet_id);
+            throw new BgaSystemException("Unable to extend an empty bracelet ($bracelet_id)");
         }
 
+        //verify placement rules
         if ($side == "key" || $side == "both") {
-            $key_link = reset($bracelet)["id"];
-            $lock_link = $link_id;
-            $this->
-            $this->getKey($key_link);
+            $key_link_id = reset($bracelet)["id"];
+            $lock_link_id = $link_id;
+            if (!$this->isValidConnection($key_link_id, $lock_link_id)) {
+                throw new BgaUserException(_("The placed link does not connect to the key side of the bracelet"));
+            }
         }
         if ($side == "lock" || $side == "both") {
-            $lock_link = $link_id;
-            $lock_link = end($bracelet)["id"];
+            $key_link_id = $link_id;
+            $lock_link_id = end($bracelet)["id"];
+            if (!$this->isValidConnection($key_link_id, $lock_link_id)) {
+                throw new BgaUserException(_("The placed link does not connect to the lock side of the bracelet"));
+            }
         }
 
+        //extend the bracelet
+        $location_arg = $side == "key" ? reset($bracelet)["location_arg"] - 1 : end($bracelet)["location_arg"] + 1;
+        $this->deck->moveCard($link_id, BRACELET.$bracelet_id, $location_arg);
+
+        //increase the number of placements this turn
+        $placements = $this->getGameStateValue("placements");
+        $this->setGameStateValue("placements", $placements + 1);
+
+        //if the player cannot make a move, they need to start a new bracelet as a free action
+        $placements = $this->getGameStateValue("placements");
+        if ($placements == 2) {
+            $this->dummyState = "endTurn";
+            $this->gamestate->nextState("trEndTurn");
+        }
+
+        //if the player completed a bracelet, they need to start a new bracelet as a free action
+        if ($side == "both") {
+            throw new BgaUserException("TODO: complete bracelet, something with trNewBracelet"); //TODO
+        }
+        
+        
+        //continue or end turn 
+        if ($placements == 2) {
+            $this->dummyState = "endTurn";
+            throw new BgaVisibleSystemException("TODO: ONLY if the undo setting is turned off, change states");
+            $this->gamestate->nextState("trEndTurn");
+        }
+    }
+
+    /**
+     * @param int $link_id. this will also be the id for the new bracelet
+    */
+    public function actNewBracelet(int $link_id) {
+        $this->createBraceletFromActivePlayer($link_id);
+
+        //2 cases:
+        // * if the player cannot make a move, they are allowed to start a new bracelet
+        // * if the player completed a bracelet, they need to start a new bracelet as a free action
+
+        $this->dummyState = "playerTurn";
+        throw new BgaVisibleSystemException("TODO: ONLY if the undo setting is turned off, change states");
+        $this->gamestate->nextState("trPlayerTurn");
     }
 
     /**
@@ -647,20 +725,23 @@ class Game extends \Table
     ///////  ~states
 
     public function stStartRound(): void {
-        $player_id = (int)$this->getActivePlayerId();
+        //update the round counter
         $round = $this->getGameStateValue("round");
         if ($round == 3) {
             $this->gamestate->nextState("trEndGame");
             return;
         }
+        $round += 1;
+        $this->setGameStateValue("round", $round);
 
-        $this->createBraceletFromReserve(1);
-        $this->createBraceletFromReserve(3);
-        $this->createBraceletFromReserve(5);
-        $this->createBraceletFromReserve(7);
-        $this->createBraceletFromReserve(9);
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $player_id => $player) {
+            $this->refillStock($player_id, $round);
+        }
 
-        $this->setGameStateValue("round", $round + 1);
+        $this->refillBracelets($round);
+        
+        $this->gamestate->nextState("trPlayerTurn");
     }
 
 
@@ -670,6 +751,9 @@ class Game extends \Table
      * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
      */
     public function stEndTurn(): void {
+        // Reset the placements game state variable
+        $this->setGameStateValue("placements", 0);
+
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
@@ -698,12 +782,13 @@ class Game extends \Table
      */
     public function createBraceletFromActivePlayer(int $link_id) {
         $player_id = $this->getActivePlayerId();
-        $this->deck->getNewBraceletId();
-        $this->deck->moveCard($link_id, BRACELETS, $link_id);
+        //$bracelet_id = $this->deck->getNewBraceletId(); //TODO: safely remove this
+        $this->deck->moveCard($link_id, BRACELET.$link_id);
         $this->deck->assignCards(array($link_id), $player_id);
         $this->notifyAllPlayers('newBracelet', clienttranslate('${player_name} starts a new bracelet with ${link_name}'), array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
+            "link_id" => $link_id,
             "link_name" => $this->getLinkName($link_id)
         ));
     }
@@ -712,14 +797,84 @@ class Game extends \Table
      * Create a new bracelet
      * @param int $link_id
      */
-    public function createBraceletFromReserve(int $link_id) {
-        $this->deck->getNewBraceletId();
-        $this->deck->moveCard($link_id, BRACELETS, $link_id);
+    public function createBraceletFromSupply(int $link_id) {
+        //$bracelet_id = $this->deck->getNewBraceletId(); //TODO: safely remove this
+        $this->deck->moveCard($link_id, BRACELET.$link_id);
         $this->notifyAllPlayers('newBracelet', clienttranslate('Starting a new bracelet with ${link_name}'), array(
-            "link_name" => $this->getLinkName($link_id)
+            "link_name" => $this->getLinkName($link_id),
+            "link_id" => $link_id
         ));
     }
     
+
+    /**
+     * Try to refill the stock of the player_id by drawing links from the supply
+     */
+    public function refillStock($player_id, $round = null) {
+        if (!$round) {
+            $round = $this->getGameStateValue("round");
+        }
+        switch($round) {
+            case 1:
+                $stock_size = 5;
+                $metal = BRONZE;
+                break;
+            case 2:
+                $stock_size = 4;
+                $metal = SILVER;
+                break;
+            case 3:
+                $stock_size = 4;
+                $metal = GOLD;
+                break;
+            default:
+                throw new BgaSystemException("Round ".$round." does not support refilling the stock");
+                break;
+        }
+        $nbr = $stock_size - count($this->deck->getCardsInLocation(STOCK.$player_id));
+        if ($nbr > 0) {
+            $links = $this->deck->pickCardsForLocation($nbr, $metal, STOCK.$player_id);
+            $this->notifyAllPlayers('refillStock', clienttranslate('${player_name} draws ${nbr} links from the supply'), array(
+                "player_id" => $player_id,
+                "player_name" => $this->getPlayerNameById($player_id),
+                "nbr" => count($links),
+                "links" => $links
+            ));
+        }
+    }
+
+    /**
+     * At the start of the round, increase the number of bracelets to 5 by drawing links from the supply
+     */
+    public function refillBracelets($round) {
+        if (!$round) {
+            $round = $this->getGameStateValue("round");
+        }
+        switch($round) {
+            case 1:
+                $nbr = 5;
+                $metal = BRONZE;
+                break;
+            case 2:
+                $nbr = 5;
+                $metal = SILVER;
+                break;
+            case 3:
+                $nbr = 5;
+                $metal = GOLD;
+                break;
+            default:
+                throw new BgaSystemException("Round ".$round." does not support refilling the bracelets");
+                break;
+        }
+        $links = $this->deck->pickCardsForLocation($nbr, $metal, TEMP);
+        if (count($links) != $nbr) {
+            throw new BgaSystemException("Expected the $metal supply to have $nbr links");
+        }
+        foreach ($links as $link) {
+            $this->createBraceletFromSupply((int)$link["id"]);
+        }
+    }
 
     /**
      * Migrate database.
@@ -772,15 +927,21 @@ class Game extends \Table
             "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
         );
 
+        $result["round"] = $this->getGameStateValue("round");
+        $result["placements"] = $this->getGameStateValue("placements");
+
         $result["card_types"] = self::$CARD_TYPES;
         $result["bronze_remaining"] = $this->deck->getCardsInLocation(BRONZE);
         $result["silver_remaining"] = $this->deck->getCardsInLocation(SILVER);
         $result["gold_remaining"] = $this->deck->getCardsInLocation(GOLD);
 
-        $this->deck->assignCards([2, 8, 9], 1234); //#TODO: remove this!
+        $result["bracelets"] = $this->deck->getBracelets(BRACELET);
+        $result["completed"] = $this->deck->getBracelets(COMPLETED);
 
-        $results["bracelet"] = $this->deck->getCardsInLocation("bracelet");
-
+        $result["stocks"] = array();
+        foreach ($result["players"] as $player_id => $player) {
+            $result["stocks"][$player_id] = $this->deck->getCardsInLocation(STOCK.$player_id);
+        }
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
@@ -792,10 +953,10 @@ class Game extends \Table
 
     /**
      * Returns true if `key_link` and `lock_link` can connect
-     * @param int $key_link_id link id of the link on the KEY side
-     * @param int $lock_link_id link id of the link on the LOCK side
+     * @param mixed $key_link_id link id of the link on the KEY side
+     * @param mixed $lock_link_id link id of the link on the LOCK side
      */
-    public function isValidConnection(int $key_link_id, int $lock_link_id)  {
+    public function isValidConnection(mixed $key_link_id, mixed $lock_link_id)  {
         $key = self::$CARD_TYPES[$key_link_id]["key"];
         $lock = self::$CARD_TYPES[$lock_link_id]["lock"];
         return $lock % $key === 0;
@@ -866,7 +1027,8 @@ class Game extends \Table
         // Init global values with their initial values.
 
         // Dummy content.
-        $this->setGameStateInitialValue("round", 1);
+        $this->setGameStateInitialValue("round", 0);
+        $this->setGameStateInitialValue("placements", 0);
 
         // Init game statistics.
         //

@@ -48,8 +48,9 @@ $machinestates = array(
 		'description' => clienttranslate('${actplayer} must take actions'),
 		'descriptionmyturn' => clienttranslate('${you} must take actions'),
 		'type' => 'activeplayer',
-		'possibleactions' => ['actSubmitCommands'],
+		'possibleactions' => ['actMultipleActions', 'actPlaceLink'],
 		'transitions' => array(
+			'trNewBracelet' => 33,
 			'trEndTurn' => 4,
 		),
 	),
@@ -62,6 +63,17 @@ $machinestates = array(
 		'transitions' => array(
 			'trPlayerTurn' => 3,
 			'trStartRound' => 2,
+		),
+	),
+	33 => array(
+		'name' => 'newBracelet',
+		'description' => clienttranslate('${actplayer} must start a new bracelet'),
+		'descriptionmyturn' => clienttranslate('${you} must start a new bracelet'),
+		'type' => 'activeplayer',
+		'possibleactions' => ['actNewBracelet'],
+		'transitions' => array(
+			'trPlayerTurn' => 3,
+			'trEndTurn' => 4,
 		),
 	),
 	99 => array(

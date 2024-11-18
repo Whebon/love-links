@@ -1,1 +1,1 @@
-{}
+{	"100": {		"name": "Allow undo",		"values": {		  "1": {			"name": "On",			"description": "Players are allowed to undo their entire turn"		  },		  "2": {			"name": "Off",			"description": "Each move within a turn is final and cannot be undone"		  }		},		"default": 1	  }}

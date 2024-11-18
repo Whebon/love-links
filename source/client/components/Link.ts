@@ -1,3 +1,4 @@
+import { DbCard } from "./DbCard";
 import { StaticLoveLinks } from "./StaticLoveLinks";
 
 /**
@@ -37,10 +38,17 @@ export class Link {
         this.gemstone = gemstone
     }
 
-    public static ofId(id: number, gemstone: number = 0) {
+    public static ofDbCard(dbCard: DbCard) {
+        return Link.ofId(+dbCard.id, +dbCard.type_arg);
+    }
+
+    public static ofId(id: number, gemstone?: number) {
         const link = StaticLoveLinks.page.gamedatas.card_types[id];
         if (!link) {
             throw new Error(`Link ${id} does not not exist`);
+        }
+        if (!gemstone) {
+            gemstone = 0;
         }
         return new Link(link.key, link.lock, gemstone, id);
     }

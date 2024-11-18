@@ -19,6 +19,7 @@ import { Link } from "./components/Link"
 import { BraceletArea } from "./components/BraceletArea"
 import { TPL } from "./components/TPL"
 import { Bracelet } from './components/Bracelet';
+import { DbCard } from './components/DbCard';
 
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
@@ -76,22 +77,32 @@ class LoveLinks extends Gamegui
 			const callback = +player_id == this.player_id ? this.onClickMyStock.bind(this) : this.onClickOtherStock.bind(this);
 			this.stocks[player_id] = new BraceletArea(player_board, +player_id, undefined, callback); //TPL.stockTitle(player_id)
 
-			// debug: create some links in the stock
-			for (let i = 0; i < 5; i++) {
-				const slot = this.stocks[player_id].createBracelet();
-				slot.appendLink(new Link(i%2, i%3, 0));
+			// Create empty link slots for each player
+			const number_of_slots = gamedatas.round == 1 ? 5 : 4;
+			for (let i = 1; i <= number_of_slots; i++) {
+				this.stocks[player_id].createBracelet(i);
+			}
+
+			// Fill the link slots
+			let slot_id = 1;
+			for (const i in gamedatas.stocks[player_id]) {
+				const link = gamedatas.stocks[player_id][+i]!;
+				const slot = this.stocks[player_id].get(slot_id);
+				slot.appendLink(Link.ofDbCard(link));
+				slot_id += 1;
 			}
 		}
 
-		// debug: create some bracelets
-		for (let i = 0; i < 5; i++) {
-			const bracelet = this.bracelets.createBracelet();
-			bracelet.appendLink(Link.ofId(i*10+1));
-			bracelet.appendLink(Link.ofId(i*10+2));
-			bracelet.appendLink(Link.ofId(i*10+3));
-			bracelet.appendLink(Link.ofId(i*10+4));
-			bracelet.appendLink(Link.ofId(i*10+5));
+		// Create the bracelets
+		for (const bracelet_id in gamedatas.bracelets) {
+			const links = gamedatas.bracelets[bracelet_id]!;
+			const bracelet = this.bracelets.createBracelet(+bracelet_id);
+			for (const link_id in links) {
+				const link = links[link_id]!;
+				bracelet.appendLink(Link.ofDbCard(link));
+			}
 		}
+		
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -168,7 +179,6 @@ class LoveLinks extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
-
 
 
 	///////////////////////////////////////////////////
@@ -353,10 +363,12 @@ class LoveLinks extends Gamegui
 	}
 
 	public onSubmitCommands() {
-		console.log(this.commandManager.asJson());
-		this.bgaPerformAction("actSubmitCommands", {
-			commands: this.commandManager.asJson()
-		})
+		console.log(this.commandManager.toActs());
+		this.bgaPerformAction('actMultipleActions', {
+			actions:JSON.stringify(this.commandManager.toActs())
+		}).then(() => {
+			this.commandManager.clearAll();
+		});
 	}
 
 	public nextAction() {
@@ -425,13 +437,16 @@ class LoveLinks extends Gamegui
 	{
 		console.log( 'notifications subscriptions setup' );
 		
-		// TODO: here, associate your game notifications with local methods
-		
-		// With base Gamegui class...
-		// dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
+		//[notif_type, duration, has_private_arguments]
+		const notifs: ([keyof NotifTypes, number])[] = [
+			['newBracelet', 1000],
+			['refillStock', 1000],
+		];
 
-		// With GameguiCookbook::Common class...
-		// this.subscribeNotif( 'cardPlayed', this.notif_cardPlayed ); // Adds type safety to the subscription
+		notifs.forEach((notif) => {
+			dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
+			this.notifqueue.setSynchronous(notif[0], notif[1]);
+		});
 	}
 
 	/*
@@ -447,6 +462,30 @@ class LoveLinks extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_newBracelet(notif: NotifFrom<'newBracelet'>) {
+		console.log('notif_newBracelet', notif);
+		const bracelet = this.bracelets.createBracelet(notif.args.link_id);
+		bracelet.appendLink(Link.ofId(notif.args.link_id, notif.args.player_id));
+	}
+
+	notif_refillStock(notif: NotifFrom<'refillStock'>) {
+		console.log('notif_refillStock', notif);
+		const stock = this.stocks[notif.args.player_id];
+		if (!stock) {
+			throw new Error("Player "+notif.args.player_id+" does not have a Stock component");
+		}
+		let slot_id = 1;
+		var slot;
+		for (const i in notif.args.links) {
+			while (!slot || slot.size() > 0) {
+				slot = stock.get(slot_id);
+				slot_id++;
+			}
+			const link = notif.args.links[+i]!;
+			slot.appendLink(Link.ofDbCard(link));
+		}
+	}
 }
 
 

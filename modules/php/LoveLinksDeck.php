@@ -2,6 +2,8 @@
 
 namespace Bga\Games\LoveLinks;
 
+use BgaSystemException;
+
 require_once(APP_GAMEMODULE_PATH.'module/common/deck.game.php');
 
 class LoveLinksDeck extends \Deck {
@@ -32,27 +34,28 @@ class LoveLinksDeck extends \Deck {
         }
     }
 
-    /**
-     * Get a new unique bracelet id
-     */
-    function getNewBraceletId() {
-        if ($this->new_bracelet_id != null) {
-            //from cache
-            $this->new_bracelet_id += 1;
-        }
-        else {
-            //get the lowest unique bracelet id higher than all existing bracelets
-            $this->new_bracelet_id = 1;
-            $links = $this->getCardsInLocation(BRACELETS);
-            foreach ($links as $link_id => $link) {
-                $bracelet_id = $link["location_arg"];
-                if ($this->new_bracelet_id <= $bracelet_id) {
-                    $this->new_bracelet_id = $bracelet_id + 1;
-                }
-            }
-        }
-        return $this->new_bracelet_id;
-    }
+    //TODO: safely delete this
+    // /**
+    //  * Get a new unique bracelet id
+    //  */
+    // function getNewBraceletId() {
+    //     if ($this->new_bracelet_id != null) {
+    //         //from cache
+    //         $this->new_bracelet_id += 1;
+    //     }
+    //     else {
+    //         //get the lowest unique bracelet id higher than all existing bracelets
+    //         $this->new_bracelet_id = 1;
+    //         $links = array_merge($this->getCardsInLocation(COMPLETED), $this->getCardsInLocation(BRACELET));
+    //         foreach ($links as $link_id => $link) {
+    //             $bracelet_id = $link["location_arg"];
+    //             if ($this->new_bracelet_id <= $bracelet_id) {
+    //                 $this->new_bracelet_id = $bracelet_id + 1;
+    //             }
+    //         }
+    //     }
+    //     return $this->new_bracelet_id;
+    // }
 
     /**
      * Assign the given card ids to a player by modifying the 'type_arg'
@@ -63,5 +66,36 @@ class LoveLinksDeck extends \Deck {
         $sql = "UPDATE ".$this->table." SET card_type_arg='".addslashes($player_id)."' ";
         $sql .= "WHERE card_id IN ('".implode( "','", $card_ids )."') ";
         self::DbQuery( $sql );
+    }
+
+    /**
+     * Get cards in a bracelet location grouped by bracelet
+     */
+    function getBracelets(string $location): array {
+        if ($location != BRACELET && $location != COMPLETED) {
+            throw new BgaSystemException("getBracelets is only defined for bracelet locations, not '".$location."'");
+        }
+        $all_links = $this->getCardsInLocationPrefix(BRACELET);
+        $bracelets = array();
+        foreach ($all_links as $link) {
+            $bracelet_id = substr($link["location"], strlen(BRACELET));
+            if (!array_key_exists($bracelet_id, $bracelets)) {
+                $bracelets[$bracelet_id] = array();
+            }
+            $bracelets[$bracelet_id][$link["id"]] = $link;
+        }
+        return $bracelets;
+    }
+
+    function getCardsInLocationPrefix($location_prefix) {
+        $result = array();
+        $sql = "SELECT card_id id, card_type type, card_type_arg type_arg, card_location location, card_location_arg location_arg ";
+        $sql .= "FROM ".$this->table;
+        $sql .= " WHERE card_location LIKE '".addslashes($location_prefix)."%' ";
+        $dbres = self::DbQuery( $sql );
+        while( $row = mysql_fetch_assoc( $dbres ) ){
+            $result[ $row['id'] ] = $row;
+        }
+        return $result;
     }
 }

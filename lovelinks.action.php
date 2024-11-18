@@ -27,14 +27,40 @@ class action_lovelinks extends APP_GameAction
 		}
 	}
 
-	public function actSubmitCommands()
+	public function actMultipleActions()
 	{
 		self::setAjaxMode();
 
-		/** @var string $commands */
-		$commands = self::getArg('commands', AT_json, true);
+		/** @var string $actions */
+		$actions = self::getArg('actions', AT_json, true);
 
-		$this->game->actSubmitCommands( $commands );
+		$this->game->actMultipleActions( $actions );
+		self::ajaxResponse();
+	}
+
+	public function actPlaceLink()
+	{
+		self::setAjaxMode();
+
+		/** @var int $link_id */
+		$link_id = self::getArg('link_id', AT_int, true);
+		/** @var int $bracelet_id */
+		$bracelet_id = self::getArg('bracelet_id', AT_int, true);
+		/** @var string $side */
+		$side = self::getArg('side', AT_enum, true, );
+
+		$this->game->actPlaceLink( $link_id, $bracelet_id, $side );
+		self::ajaxResponse();
+	}
+
+	public function actNewBracelet()
+	{
+		self::setAjaxMode();
+
+		/** @var int $link_id */
+		$link_id = self::getArg('link_id', AT_int, true);
+
+		$this->game->actNewBracelet( $link_id );
 		self::ajaxResponse();
 	}
 }

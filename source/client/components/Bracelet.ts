@@ -31,7 +31,8 @@ export class Bracelet {
     private PADDING: number = 0;
 
     public container: HTMLElement;
-    public player_id: number
+    public bracelet_id: number;
+    public player_id: number;
     private links: Link[];
     private onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void;
 
@@ -43,10 +44,11 @@ export class Bracelet {
      * @param page gamegui
      * @param parent parent html element of the bracelet
      */
-    constructor(parent: HTMLElement, player_id: number, onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void) {
+    constructor(parent: HTMLElement, bracelet_id: number, player_id: number, onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void) {
         this.links = [];
         this.container = document.createElement("div");
 		this.container.classList.add("lovelinks-bracelet");
+        this.bracelet_id = bracelet_id;
         this.player_id = player_id;
         this.onClickBracelet = onClickBracelet;
         this.isComplete = false;
@@ -167,7 +169,7 @@ export class Bracelet {
      * Should this bracelet be circular?
      */
     private isCircular() {
-        return (this.links.length >= 4);
+        return this.canBeCompleted();
     }
 
     /**
@@ -247,6 +249,13 @@ export class Bracelet {
     }
 
     /**
+     * @returns true if the player can complete this bracelet
+     */
+    public canBeCompleted(): boolean {
+        return (this.links.length >= 4);
+    }
+
+    /**
      * If `true`, close the bracelet loop.
      * If `false`, open the bracelet loop.
      */
@@ -261,6 +270,13 @@ export class Bracelet {
     public setBlinking(state: boolean){
         this.isBlinking = state;
         this.updateDisplay();
+    }
+
+    /**
+     * Number of links in this bracelet
+     */
+    public size(): number {
+        return this.links.length;
     }
 
     /**

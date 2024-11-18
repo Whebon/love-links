@@ -16,21 +16,33 @@ declare global {
 	/** @gameSpecific Add game specific notifications / arguments here. See {@link NotifTypes} for more information. */
 	interface NotifTypes {
 		// [name: string]: any; // Uncomment to remove type safety on notification names and arguments
+		'newBracelet': {
+			player_id?: number, //(optional) if not provided, do not attach a gemstone
+			link_id: number
+		},
+		'refillStock': {
+			player_id: number,
+			links: {[link_id: number]: DbCard}
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
 	interface Gamedatas {
 		// [key: string | number]: Record<keyof any, any>; // Uncomment to remove type safety on game state arguments
 		'card_types': {
-			[card_id: number]: {
+			[link_id: number]: {
 				key: number,
 				lock: number,
 				metal: string
 			}
 		}
-		'bronze_remaining': {[card_id: number]: DbCard},
-		'silver_remaining': {[card_id: number]: DbCard},
-		'gold_remaining': {[card_id: number]: DbCard}
+		'round': number
+		'stocks': {[player_id: number]: {[link_id: number]: DbCard}}
+		'bracelets': {[bracelet_id: number]: {[link_id: number]: DbCard}}
+		'completed': {[bracelet_id: number]: {[link_id: number]: DbCard}}
+		'bronze_remaining': {[link_id: number]: DbCard},
+		'silver_remaining': {[link_id: number]: DbCard},
+		'gold_remaining': {[link_id: number]: DbCard}
 	}
 
 	//

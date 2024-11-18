@@ -65,9 +65,27 @@ export class BraceletArea {
         }
     }
 
-    public createBracelet(): Bracelet {
-        const bracelet = new Bracelet(this.container, this.player_id, this.onClickBracelet);
+    /**
+     * @param bracelet_id (optional) server id associated with this bracelet
+     * @returns 
+     */
+    public createBracelet(bracelet_id: number): Bracelet {
+        const bracelet = new Bracelet(this.container, bracelet_id, this.player_id, this.onClickBracelet);
         this.bracelets.push(bracelet);
         return bracelet;
+    }
+
+    /**
+     * Get a bracelet by id
+     */
+    public get(bracelet_id: number): Bracelet {
+        for (const bracelet of this.bracelets) {
+            if (bracelet.bracelet_id == bracelet_id) {
+                return bracelet;
+            }
+            
+        }
+        console.log(this.container);
+        throw new Error("Bracelet "+bracelet_id+" does not exist in this BraceletArea");
     }
 }

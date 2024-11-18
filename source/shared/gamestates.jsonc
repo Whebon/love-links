@@ -41,9 +41,32 @@
 		"descriptionmyturn": "${you} must take actions",
 		"type": "activeplayer",
 		"possibleactions": {
-			"actSubmitCommands": [{ "name": "commands", "type": "AT_json" }]
+			"actMultipleActions": [
+				{ "name": "actions", "type": "AT_json" }
+			],
+			"actPlaceLink": [
+				{ "name": "link_id", "type": "AT_int" },
+				{ "name": "bracelet_id", "type": "AT_int" },
+				{ "name": "side", "type": "AT_enum", "argTypeDetails": ["key", "lock", "both"] }
+			],
+			"actNewBracelet": [
+				{ "name": "link_id", "type": "AT_int" }
+			]
 		},
-		"transitions": { "trEndTurn": 4 }
+		"transitions": { "trNewBracelet": 33, "trEndTurn": 4 }
+	},
+
+	"33": {
+		"name": "newBracelet",
+		"description": "${actplayer} must start a new bracelet",
+		"descriptionmyturn": "${you} must start a new bracelet",
+		"type": "activeplayer",
+		"possibleactions": {
+			"actNewBracelet": [
+				{ "name": "link_id", "type": "AT_int" }
+			]
+		},
+		"transitions": { "trPlayerTurn": 3, "trEndTurn": 4 }
 	},
 
 	"4": {
