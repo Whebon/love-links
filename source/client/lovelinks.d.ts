@@ -32,6 +32,7 @@ declare global {
 			link: DbCard,
 			side: Side | "both"
 		}
+		'startRound': {}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
@@ -68,6 +69,7 @@ declare global {
 
 	/** @gameSpecific Add game specific client game states */
 	interface ClientGameStates {
+		'newBracelet': {}
 		'client_placeLink': {}
 		'client_completeBracelet': {}
 		'client_confirm': {}

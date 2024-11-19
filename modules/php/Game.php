@@ -761,6 +761,7 @@ class Game extends \Table
         }
         $round += 1;
         $this->setGameStateValue("round", $round);
+        $this->notifyAllPlayers("startRound", '', array("round" => $round));
 
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $player_id => $player) {

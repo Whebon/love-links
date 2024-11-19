@@ -13,7 +13,7 @@ import Gamegui = require('ebg/core/gamegui');
 import "ebg/counter";
 
 import { StaticLoveLinks } from "./components/StaticLoveLinks"
-import { CommandManager, Command, ExtendCommand, CompleteCommand } from "./components/CommandManager"
+import { CommandManager, Command, ExtendCommand, CompleteCommand, NewBraceletCommand } from "./components/CommandManager"
 import { Side } from "./components/Side"
 import { Link } from "./components/Link"
 import { BraceletArea } from "./components/BraceletArea"
@@ -123,6 +123,29 @@ class LoveLinks extends Gamegui
 			case 'playerTurn':
 				this.nextAction();
 				break;
+			case 'newBracelet':
+				this.myStock.deselectAll();
+				break;
+			case 'client_placeLink':
+				this.myStock.deselectAll();
+				//check if any move is possible
+				for (const slot of this.myStock.bracelets) {
+					if (slot.size() > 0) {
+						console.log(slot);
+						const possible_moves = this.bracelets.highlightPossibleLinks(slot.lock_link);
+						if (possible_moves > 0) {
+							console.log(possible_moves+" possible moves");
+							console.log(slot.lock_link);
+							this.bracelets.deselectAll();
+							return;
+						}
+					}
+				}
+				//no moves are possible, move to newBracelet instead
+				this.setClientState('newBracelet', {
+					descriptionmyturn: _("${you} must select a link to start a new bracelet (because you cannot extend any bracelet)")
+				})
+				break;
 			case 'client_completeBracelet':
 				this.commandManager.bracelet.setBlinking(true);
 				break;
@@ -141,7 +164,7 @@ class LoveLinks extends Gamegui
 				this.selected = undefined;
 				break;
 			case 'client_completeBracelet':
-				this.commandManager.bracelet.setBlinking(false);
+				this.bracelets.setBlinking(false);
 				break;
 
 		}
@@ -156,20 +179,31 @@ class LoveLinks extends Gamegui
 			return;
 
 		switch(stateName) {
+			case 'newBracelet':
+				this.addActionButton("new-bracelet-button", _("New Bracelet"), "onNewBracelet");
+				if (this.commandManager.numberOfPlacements() > 0) {
+					this.addUndoButton();
+				}
+				break;
 			case 'client_placeLink':
 				if (this.commandManager.numberOfPlacements() > 0) {
-					this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
+					this.addUndoButton();
 				}
 				break;
 			case 'client_completeBracelet':
 				this.addActionButton("complete-button", _("Complete"), "onCompleteBracelet");
 				this.addActionButton("skip-button", _("Extend"), "nextAction"); //, undefined, false, 'gray'
+				this.addUndoButton();
 				break;
 			case 'client_confirm':
 				this.addActionButton("confirm-button", _("Confirm"), "onSubmitCommands");
-				this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
+				this.addUndoButton();
 				break;
 		}
+	}
+
+	public addUndoButton() {
+		this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
 	}
 
 	
@@ -180,6 +214,21 @@ class LoveLinks extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
+
+	/**
+	 * Show a pulse animation for the specified link id
+	 */
+	public pulseLink(link_id: number) {
+		for (let elem_id of [`#lovelinks-key-${link_id}`, `#lovelinks-lock-${link_id}`, `#lovelinks-gemstone-${link_id}`]) {
+			const elem = document.querySelector(elem_id);
+			if (!elem) {
+				console.warn(`Pulse animation failed: '${elem_id}' not found`);
+			}
+			else {
+				elem.classList.add("lovelinks-pulse");
+			}
+		}
+	}
 
 
 	///////////////////////////////////////////////////
@@ -198,6 +247,7 @@ class LoveLinks extends Gamegui
 	 */
 	public onClickOtherStock(bracelet: Bracelet, link: Link, side: Side) {
 		switch(this.gamedatas.gamestate.name) {
+			case 'newBracelet':
 			case 'client_placeLink':
 				if (!this.selected) {
 					this.showMessage(_("Please select a link from your stock"), 'error');
@@ -209,30 +259,39 @@ class LoveLinks extends Gamegui
 
 	/**
 	 * Player clicks on a bracelet in a stock
-	 * @param bracelet bracelet
+	 * @param playerBracelet a slot in the stock
 	 * @param link link
 	 * @param side side
 	 */
-	public onClickMyStock(bracelet: Bracelet, link: Link, side: Side) {
+	public onClickMyStock(playerBracelet: Bracelet, link: Link, side: Side) {
 		if(!this.isCurrentPlayerActive()) {
 			this.showMessage(_("It is not your turn"), 'error');
 			return;
 		}
 
 		switch(this.gamedatas.gamestate.name) {
-			case 'client_placeLink':
-				this.bracelets.deselectAll();
+			case 'newBracelet':
 				this.myStock.deselectAll();
-				if (this.selected == bracelet) {
+				if (this.selected == playerBracelet) {
 					this.selected = undefined;
 					return;
 				}
-				bracelet.select('both');
-				this.selected = bracelet;
+				playerBracelet.select('both');
+				this.selected = playerBracelet;
+				break;
+			case 'client_placeLink':
+				this.bracelets.deselectAll();
+				this.myStock.deselectAll();
+				if (this.selected == playerBracelet) {
+					this.selected = undefined;
+					return;
+				}
+				playerBracelet.select('both');
+				this.selected = playerBracelet;
 				this.bracelets.highlightPossibleLinks(link);
 				break;
 			case 'client_completeBracelet':
-				this.showMessage(_("Please choose whether or not to complete the bracelet"), 'error');
+				this.showMessage(_("Please choose to complete or extend this bracelet"), 'error');
 				break;
 		}
 	}
@@ -351,6 +410,16 @@ class LoveLinks extends Gamegui
 		- make a call to the game server
 	*/
 
+	public onNewBracelet() {
+		if (!this.selected) {
+			this.showMessage(_("Please select a link from your stock"), 'error');
+			return;
+		}
+		this.myStock.deselectAll();
+		this.commandManager.execute(new NewBraceletCommand(this.commandManager, this.selected, this.bracelets));
+		this.nextAction();
+	}
+
 	public onUndo(){
 		this.commandManager.undo();
 		this.removeActionButtons();
@@ -374,31 +443,37 @@ class LoveLinks extends Gamegui
 
 	public nextAction() {
 		console.log("nextAction");
-		//When a stock is empty, end the player's turn
-		if (this.myStock.countNonEmptyBracelets() == 0) {
+		const placements = this.commandManager.numberOfPlacements();
+		if (this.commandManager.lastCommandIsACompletion()) {
+			this.setClientState('newBracelet', {
+				descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
+			})
+		}
+		else if (placements == 2) {
+			//Confirm your 2 placements
 			this.setClientState('client_confirm', {
 				descriptionmyturn: _("${you} must confirm your placements")
 			})
 			return;
 		}
-
-		//Start the next action
-		const placements = this.commandManager.numberOfPlacements();
-		if (placements == 0) {
-			this.setClientState('client_placeLink', {
-				descriptionmyturn: _("${you} must place a link")
+		else if (this.myStock.countNonEmptyBracelets() == 0) {
+			//When a stock is empty, prematurely end the player's turn
+			this.setClientState('client_confirm', {
+				descriptionmyturn: _("${you} must confirm your placements")
 			})
 			return;
-		}
+		} 
 		else if (placements == 1) {
+			//Place your 2nd link
 			this.setClientState('client_placeLink', {
 				descriptionmyturn: _("${you} must place another link")
 			})
 			return;
 		}
-		else if (placements == 2) {
-			this.setClientState('client_confirm', {
-				descriptionmyturn: _("${you} must confirm your placements")
+		else if (placements == 0) {
+			//Place your 1st link
+			this.setClientState('client_placeLink', {
+				descriptionmyturn: _("${you} must place a link")
 			})
 			return;
 		}
@@ -489,7 +564,8 @@ class LoveLinks extends Gamegui
 		const notifs: ([keyof NotifTypes, number])[] = [
 			['newBracelet', 1000],
 			['refillStock', 1000],
-			['placeLink', 1000]
+			['placeLink', 1000],
+			['startRound', 1]
 		];
 
 		notifs.forEach((notif) => {
@@ -523,19 +599,10 @@ class LoveLinks extends Gamegui
 				throw new Error(`Link #${notif.args.link.id} as not found in ${name}'s Stock`);
 			}
 			//the link is already in place, play a pulse animation instead
-			const id = notif.args.link.id;
-			for (let elem_id of [`#lovelinks-key-${id}`, `#lovelinks-lock-${id}`, `#lovelinks-gemstone-${id}`]) {
-				const elem = document.querySelector(elem_id);
-				if (!elem) {
-					console.warn(`Pulse animation failed: '${elem_id}' not found`);
-				}
-				else {
-					elem.classList.add("lovelinks-pulse")
-				}
-			}
+			this.pulseLink(+notif.args.link.id);
 			return;
 		}
-		link = slot!.key_link; //get the link from the slot
+		//link = slot!.key_link; //get the link from the slot //TODO: safely remove this, this should be handled by Link.ofDbCard now
 		const bracelet = this.bracelets.get(notif.args.bracelet_id);
 		switch(notif.args.side) {
 			case 'key':
@@ -553,8 +620,17 @@ class LoveLinks extends Gamegui
 
 	notif_newBracelet(notif: NotifFrom<'newBracelet'>) {
 		console.log('notif_newBracelet', notif);
-		const bracelet = this.bracelets.createBracelet(notif.args.link_id);
-		bracelet.appendLink(Link.ofId(notif.args.link_id, notif.args.player_id));
+		if (this.bracelets.containsLink(Link.ofId(notif.args.link_id))) {
+			//the link is already in place, play a pulse animation instead
+			console.log("pulse");
+			this.pulseLink(+notif.args.link_id);
+		}
+		else {
+			//actually create a new bracelet
+			console.log("new bracelet");
+			const bracelet = this.bracelets.createBracelet(notif.args.link_id);
+			bracelet.appendLink(Link.ofId(notif.args.link_id, notif.args.player_id));
+		}
 	}
 
 	notif_refillStock(notif: NotifFrom<'refillStock'>) {
@@ -572,9 +648,16 @@ class LoveLinks extends Gamegui
 			}
 			const link = notif.args.links[+i]!;
 			slot.appendLink(Link.ofDbCard(link));
-			console.log("draw link:");
-			console.log(link);
 		}
+	}
+
+	notif_startRound(notif: NotifFrom<'startRound'>) {
+		console.log('notif_startRound', notif);
+		throw new Error("TODO: reduce the number of slots at the start of the round");
+	// 	const number_of_slots = gamedatas.round == 1 ? 5 : 4;
+	// 	for (let i = 1; i <= number_of_slots; i++) {
+	// 		this.stocks[player_id].createBracelet(i);
+	// 	}
 	}
 }
 

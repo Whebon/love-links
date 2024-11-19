@@ -42,6 +42,31 @@ export class BraceletArea {
     }
 
     /**
+     * Set blinking for all bracelets in the area
+     */
+    public setBlinking(state: boolean) {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            const bracelet =this.bracelets[i]!;
+            bracelet.setBlinking(state);
+        }
+    }
+
+    /**
+     * Remove the given bracelet
+     */
+    public remove(bracelet: Bracelet) {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            if (bracelet.bracelet_id == this.bracelets[i]!.bracelet_id) {
+                bracelet.remove();
+                this.bracelets.splice(i, 1);
+                return;
+            }
+        }
+        console.log(this.bracelets);
+        throw new Error(`Bracelet ${bracelet.bracelet_id} not found`)
+    }
+
+    /**
      * @returns number of non empty bracelets in this area
      */
     public countNonEmptyBracelets(): number {
@@ -53,6 +78,19 @@ export class BraceletArea {
             }
         }
         return count;
+    }
+
+    /**
+     * @returns true if the specified link is somewhere in the bracelet area
+     */
+    public containsLink(link: Link): boolean {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            const bracelet = this.bracelets[i]!;
+            if (bracelet.containsLink(link)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -4,6 +4,7 @@ import { StaticLoveLinks } from './StaticLoveLinks';
 import { Bracelet } from "./Bracelet"
 import { Link } from './Link';
 import { Side } from './Side';
+import { BraceletArea } from './BraceletArea';
 
 type NamedPlayerAction<K extends keyof PlayerActions> = {
     name: K;
@@ -94,6 +95,17 @@ export class CommandManager {
             }
         }
         return placements;
+    }
+
+    /**
+     * @returns true is the last command was a CompleteCommand
+     */
+    public lastCommandIsACompletion() {
+        if (this.commands.length == 0) {
+            return false;
+        }
+        const lastCommand = this.commands[this.commands.length-1];
+        return (lastCommand instanceof CompleteCommand);
     }
 
     /**
@@ -208,5 +220,49 @@ export class CompleteCommand implements Command {
      */
     public toAct(): undefined {
         return undefined
+    }
+}
+
+export class NewBraceletCommand implements Command {
+    private commandManager: CommandManager;
+    private playerBracelet: Bracelet;
+    public bracelet: Bracelet;
+    private link: Link;
+    private bracelets: BraceletArea;
+
+    /**
+     * Create a new bracelet, with the specified `link`
+     */
+    constructor(commandManager: CommandManager, playerBracelet: Bracelet, bracelets: BraceletArea) {
+        this.commandManager = commandManager;
+        this.playerBracelet = playerBracelet;
+        this.bracelets = bracelets;
+        this.link = this.playerBracelet.lock_link;
+        this.bracelet = this.bracelets.createBracelet(this.link.id);
+    }
+
+    public execute() {
+        this.bracelet.appendLink(this.link);
+        StaticLoveLinks.page.nextAction();
+    }
+
+    public undo() {
+        this.playerBracelet.appendLink(this.link);
+        this.bracelets.remove(this.bracelet);
+    }
+
+    /**
+     * A complete action is supposed to merge with the previous ExtendCommand
+     */
+    public toAct(): NamedPlayerAction<"actNewBracelet"> {
+        if (!this.link) {
+            throw new Error("ExtendCommand has no link, make sure to 'execute' the command");
+        }
+        return {
+            name: "actNewBracelet",
+            args: {
+                link_id: this.link.id
+            }
+        };
     }
 }

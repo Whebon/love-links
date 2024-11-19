@@ -17,7 +17,7 @@ export interface LinkDivs {
  */
 export class Link {
     private static UNIQUE_ID: number = 999;
-    public static links: Map<number, Link> = new Map<number, Link>();
+    private static links: Map<number, Link> = new Map<number, Link>();
     private static MASTER = 48;
 
     public id: number;
@@ -60,24 +60,24 @@ export class Link {
         return Link.ofId(+dbCard.id, +dbCard.type_arg);
     }
 
-    public static ofId(id: number, gemstone?: number) {
-        const link = StaticLoveLinks.page.gamedatas.card_types[id];
-        if (!link) {
+    public static ofId(id: number, gemstone: number = 0) {
+        const type = StaticLoveLinks.page.gamedatas.card_types[id];
+        if (!type) {
             throw new Error(`Link ${id} does not not exist`);
         }
-        if (!gemstone) {
-            gemstone = 0;
-        }
-        return new Link(link.key, link.lock, gemstone, id);
+        let link = this.get(id) ?? new Link(type.key, type.lock, gemstone, id);
+        link.gemstone = gemstone;
+        return link;
     }
 
     /**
      * Get the link corresponding to the given id
      */
-    public static get(link_id: number) {
+    public static get(link_id: number): Link | undefined {
         const link = this.links.get(link_id);
         if (!link) {
-            throw new Error(`Link ${link_id} is unknown.`)
+            console.log(`Link ${link_id} is unknown.`);
+            return undefined;
         }
         return link;
     }

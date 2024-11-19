@@ -75,6 +75,7 @@ export class Bracelet {
      */
     public get key_link(): Link {
         if (!this.links[0]) {
+            console.log(this.links);
             throw new Error("Cannot get the first link from an empty bracelet");
         }
         return this.links[0];
@@ -253,6 +254,16 @@ export class Bracelet {
             top: -radius*Math.cos(angle) + this.containerHeight/2 + this.PADDING,
             rotate: angle
         }
+    }
+
+    /**
+     * Remove and delete this bracelet. Only empty bracelets can be removed.
+     */
+    public remove() {
+        if (this.links.length > 0) {
+            throw new Error("Only empty bracelets can be removed. Please make sure all links are properly unregistered");
+        }
+        this.container.remove();
     }
 
     /**
