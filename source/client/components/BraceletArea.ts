@@ -52,6 +52,19 @@ export class BraceletArea {
     }
 
     /**
+     * Remove and delete all bracelets with a bracelet id above `bracelet_id`
+     */
+    public removeBraceletIdsAbove(bracelet_id: number) {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            if (this.bracelets[i]!.bracelet_id > bracelet_id) {
+                this.bracelets[i]!.remove();
+                this.bracelets.splice(i, 1);
+                return;
+            }
+        }
+    }
+
+    /**
      * Remove the given bracelet
      */
     public remove(bracelet: Bracelet) {
@@ -63,7 +76,7 @@ export class BraceletArea {
             }
         }
         console.log(this.bracelets);
-        throw new Error(`Bracelet ${bracelet.bracelet_id} not found`)
+        throw new Error(`Bracelet ${bracelet.bracelet_id} not found`);
     }
 
     /**

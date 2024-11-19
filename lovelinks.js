@@ -498,6 +498,15 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
                 bracelet.setBlinking(state);
             }
         };
+        BraceletArea.prototype.removeBraceletIdsAbove = function (bracelet_id) {
+            for (var i = 0; i < this.bracelets.length; i++) {
+                if (this.bracelets[i].bracelet_id > bracelet_id) {
+                    this.bracelets[i].remove();
+                    this.bracelets.splice(i, 1);
+                    return;
+                }
+            }
+        };
         BraceletArea.prototype.remove = function (bracelet) {
             for (var i = 0; i < this.bracelets.length; i++) {
                 if (bracelet.bracelet_id == this.bracelets[i].bracelet_id) {
@@ -1062,18 +1071,18 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         LoveLinks.prototype.nextAction = function () {
             console.log("nextAction");
             var placements = this.commandManager.numberOfPlacements();
-            if (this.commandManager.lastCommandIsACompletion()) {
-                this.setClientState('newBracelet', {
-                    descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
-                });
-            }
-            else if (placements == 2) {
+            if (this.myStock.countNonEmptyBracelets() == 0) {
                 this.setClientState('client_confirm', {
                     descriptionmyturn: _("${you} must confirm your placements")
                 });
                 return;
             }
-            else if (this.myStock.countNonEmptyBracelets() == 0) {
+            else if (this.commandManager.lastCommandIsACompletion()) {
+                this.setClientState('newBracelet', {
+                    descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
+                });
+            }
+            else if (placements == 2) {
                 this.setClientState('client_confirm', {
                     descriptionmyturn: _("${you} must confirm your placements")
                 });
@@ -1202,7 +1211,12 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         };
         LoveLinks.prototype.notif_startRound = function (notif) {
             console.log('notif_startRound', notif);
-            throw new Error("TODO: reduce the number of slots at the start of the round");
+            this.gamedatas.round = notif.args.round;
+            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
+                var player_id = _a[_i];
+                var number_of_slots = this.gamedatas.round == 1 ? 5 : 4;
+                this.stocks[player_id].removeBraceletIdsAbove(number_of_slots);
+            }
         };
         return LoveLinks;
     }(Gamegui));

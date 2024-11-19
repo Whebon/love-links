@@ -447,7 +447,15 @@ class LoveLinks extends Gamegui
 	public nextAction() {
 		console.log("nextAction");
 		const placements = this.commandManager.numberOfPlacements();
-		if (this.commandManager.lastCommandIsACompletion()) {
+		if (this.myStock.countNonEmptyBracelets() == 0) {
+			//When a stock is empty, prematurely end the player's turn
+			this.setClientState('client_confirm', {
+				descriptionmyturn: _("${you} must confirm your placements")
+			})
+			return;
+		} 
+		else if (this.commandManager.lastCommandIsACompletion()) {
+			//When the last action was a complete bracelet action, you must place a new bracelet
 			this.setClientState('newBracelet', {
 				descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
 			})
@@ -459,13 +467,6 @@ class LoveLinks extends Gamegui
 			})
 			return;
 		}
-		else if (this.myStock.countNonEmptyBracelets() == 0) {
-			//When a stock is empty, prematurely end the player's turn
-			this.setClientState('client_confirm', {
-				descriptionmyturn: _("${you} must confirm your placements")
-			})
-			return;
-		} 
 		else if (placements == 1) {
 			//Place your 2nd link
 			this.setClientState('client_placeLink', {
@@ -656,11 +657,12 @@ class LoveLinks extends Gamegui
 
 	notif_startRound(notif: NotifFrom<'startRound'>) {
 		console.log('notif_startRound', notif);
-		throw new Error("TODO: reduce the number of slots at the start of the round");
-	// 	const number_of_slots = gamedatas.round == 1 ? 5 : 4;
-	// 	for (let i = 1; i <= number_of_slots; i++) {
-	// 		this.stocks[player_id].createBracelet(i);
-	// 	}
+		this.gamedatas.round = notif.args.round;
+		//reduce the number of slots at the start of the round
+		for (let player_id of this.gamedatas.playerorder) {
+			const number_of_slots = this.gamedatas.round == 1 ? 5 : 4;
+			this.stocks[player_id]!.removeBraceletIdsAbove(number_of_slots);
+		}
 	}
 }
 

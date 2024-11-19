@@ -32,7 +32,9 @@ declare global {
 			link: DbCard,
 			side: Side | "both"
 		}
-		'startRound': {}
+		'startRound': {
+			round: number
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
