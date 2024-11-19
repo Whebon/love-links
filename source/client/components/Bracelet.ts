@@ -191,7 +191,7 @@ export class Bracelet {
      * Should this bracelet be circular?
      */
     private isCircular() {
-        return this.canBeCompleted();
+        return (this.links.length >= 4);
     }
 
     /**
@@ -298,7 +298,7 @@ export class Bracelet {
      * @returns true if the player can complete this bracelet
      */
     public canBeCompleted(): boolean {
-        return (this.links.length >= 4);
+        return (this.links.length >= 5);
     }
 
     /**

@@ -226,6 +226,9 @@ class LoveLinks extends Gamegui
 			}
 			else {
 				elem.classList.add("lovelinks-pulse");
+				setTimeout(() => {
+					elem?.classList?.remove("lovelinks-pulse");
+				}, 1000);
 			}
 		}
 	}

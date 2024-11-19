@@ -248,7 +248,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             return false;
         };
         Bracelet.prototype.isCircular = function () {
-            return this.canBeCompleted();
+            return (this.links.length >= 4);
         };
         Bracelet.prototype.getCoordinates = function (i) {
             var lineCoords = {
@@ -320,7 +320,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             this.registerLink(link);
         };
         Bracelet.prototype.canBeCompleted = function () {
-            return (this.links.length >= 4);
+            return (this.links.length >= 5);
         };
         Bracelet.prototype.setComplete = function (state) {
             this.isComplete = state;
@@ -917,15 +917,22 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
         };
         LoveLinks.prototype.pulseLink = function (link_id) {
-            for (var _i = 0, _a = ["#lovelinks-key-".concat(link_id), "#lovelinks-lock-".concat(link_id), "#lovelinks-gemstone-".concat(link_id)]; _i < _a.length; _i++) {
-                var elem_id = _a[_i];
+            var _loop_1 = function (elem_id) {
                 var elem = document.querySelector(elem_id);
                 if (!elem) {
                     console.warn("Pulse animation failed: '".concat(elem_id, "' not found"));
                 }
                 else {
                     elem.classList.add("lovelinks-pulse");
+                    setTimeout(function () {
+                        var _a;
+                        (_a = elem === null || elem === void 0 ? void 0 : elem.classList) === null || _a === void 0 ? void 0 : _a.remove("lovelinks-pulse");
+                    }, 1000);
                 }
+            };
+            for (var _i = 0, _a = ["#lovelinks-key-".concat(link_id), "#lovelinks-lock-".concat(link_id), "#lovelinks-gemstone-".concat(link_id)]; _i < _a.length; _i++) {
+                var elem_id = _a[_i];
+                _loop_1(elem_id);
             }
         };
         LoveLinks.prototype.onClickOtherStock = function (bracelet, link, side) {

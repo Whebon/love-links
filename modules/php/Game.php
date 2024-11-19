@@ -592,6 +592,11 @@ class Game extends \Table
             }
         }
 
+        //check if the bracelet is long enough
+        if ($side == "both" && count($bracelet) < 4) {
+            throw new BgaUserException(_("Complete bracelets must be of at least length 5"));
+        }
+
         //extend the bracelet
         $location_arg = $side == "key" ? reset($bracelet)["location_arg"] - 1 : end($bracelet)["location_arg"] + 1;
         $this->deck->moveCard($link_id, BRACELET.$bracelet_id, $location_arg);
