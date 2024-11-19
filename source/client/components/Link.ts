@@ -1,4 +1,5 @@
 import { DbCard } from "./DbCard";
+import { Metal } from "./Metal";
 import { StaticLoveLinks } from "./StaticLoveLinks";
 
 /**
@@ -17,6 +18,7 @@ export interface LinkDivs {
 export class Link {
     private static UNIQUE_ID: number = 999;
     public static links: Map<number, Link> = new Map<number, Link>();
+    private static MASTER = 48;
 
     public id: number;
     public key: number;
@@ -36,6 +38,22 @@ export class Link {
         this.key = key
         this.lock = lock
         this.gemstone = gemstone
+    }
+
+    public get metal(): Metal {
+        const link = StaticLoveLinks.page.gamedatas.card_types[this.id];
+        if (!link) {
+            throw new Error(`Link ${this.id}'s metal is not defined by the server`);
+        }
+        return link.metal;
+    }
+    
+    public key_displayed(): string | number {
+        return this.key == Link.MASTER ? "M" : this.key;
+    }
+
+    public lock_displayed(): string | number {
+        return this.lock == Link.MASTER ? "M" : this.lock;
     }
 
     public static ofDbCard(dbCard: DbCard) {

@@ -17,12 +17,25 @@ interface LinkCoordiates {
 }
 
 export class Bracelet {
-    private get GEMSTONE_WIDTH() {
-        return (this.player_id == 0) ? 25 : 20;
+    /**
+     * Proportial size of the gemstone within the gemstone holder
+     */
+    private get GEMSTONE_FACTOR() {
+        return 0.875; //factor 
     }
 
+    /**
+     * Width of the gemstone (+holder) in pixels
+     */
+    private get GEMSTONE_WIDTH() {
+        return (this.player_id == 0) ? 28 : 24;
+    }
+
+    /**
+     * Width of a key/lock in pixels
+     */
     private get LINK_WIDTH() {
-        return (this.player_id == 0) ? 65 : 45;
+        return (this.player_id == 0) ? 66 : 44;
     }
 
     private get LINK_HEIGHT() { return this.LINK_WIDTH;}
@@ -54,6 +67,7 @@ export class Bracelet {
         this.isComplete = false;
         this.isBlinking = false;
         parent.appendChild(this.container);
+        this.updateDisplay();
     }
 
     /**
@@ -109,6 +123,9 @@ export class Bracelet {
             this.containerWidth = Math.max(2, (this.links.length + 1)) * this.LINK_WIDTH;
             this.containerHeight = this.LINK_HEIGHT;
         }
+        // Only increase the container size. Otherwise the flexbox keeps wrapping back and forth between 1 and 2 rows
+        this.containerWidth = Math.max(this.containerWidth, +dojo.getStyle(this.container, 'width'));
+        this.containerHeight = Math.max(this.containerHeight, +dojo.getStyle(this.container, 'height'));
         dojo.setStyle(this.container, 'width', `${this.containerWidth}px`);
         dojo.setStyle(this.container, 'height', `${this.containerHeight}px`);
     }
@@ -117,21 +134,25 @@ export class Bracelet {
      * Register a new Link object on this bracelet
      */
     private registerLink(link: Link) {
+        const color = StaticLoveLinks.page.getGemstoneColor(link.gemstone);
+        const metal = link.metal;
         this.container.insertAdjacentHTML('afterbegin', `
-            <div style="width: ${this.LINK_WIDTH}px; height: ${this.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-key" id="lovelinks-key-${link.id}">
-                <div class="lovelinks-number">${link.key}</div>
+            <div style="width: ${this.LINK_WIDTH}px; height: ${this.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-key lovelinks-${metal}" id="lovelinks-key-${link.id}">
+                <div class="lovelinks-number">${link.key_displayed()}</div>
             </div>
-            <div style="width: ${this.LINK_WIDTH}px; height: ${this.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-lock" id="lovelinks-lock-${link.id}">
-                <div class="lovelinks-number">${link.lock}</div>
+            <div style="width: ${this.LINK_WIDTH}px; height: ${this.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-lock lovelinks-${metal}" id="lovelinks-lock-${link.id}">
+                <div class="lovelinks-number">${link.lock_displayed()}</div>
             </div>
-            <div style="width: ${this.GEMSTONE_WIDTH}px; height: ${this.GEMSTONE_HEIGHT}px;" class="lovelinks-gemstone" id="lovelinks-gemstone-${link.id}">
+            <div style="width: ${this.GEMSTONE_WIDTH}px; height: ${this.GEMSTONE_HEIGHT}px;" class="lovelinks-gemstoneholder lovelinks-${metal}" id="lovelinks-gemstone-${link.id}">
+                <div style="width: ${this.GEMSTONE_WIDTH*this.GEMSTONE_FACTOR}px; height: ${this.GEMSTONE_HEIGHT*this.GEMSTONE_FACTOR}px;" 
+                class="lovelinks-gemstone lovelinks-gemstone-color-${color}"></div>
             </div>
         `);
         const prevDivs = link.divs;
         const newDivs = {
             key: this.container.querySelector(".lovelinks-key")! as HTMLElement,
             lock: this.container.querySelector(".lovelinks-lock")! as HTMLElement,
-            gemstone: this.container.querySelector(".lovelinks-gemstone")! as HTMLElement,
+            gemstone: this.container.querySelector(".lovelinks-gemstoneholder")! as HTMLElement,
             bracelet: this
         }
         if (prevDivs) {
@@ -207,9 +228,11 @@ export class Bracelet {
      * @param circumference total circumference of the circle
      */
     private toStraightCoordinates(coords: Coordinates): Coordinates {
+        const horizontalOffset = (this.containerWidth-this.LINK_WIDTH*(this.links.length+1))/2;
+        const verticalOffset = (this.containerHeight-this.LINK_HEIGHT)/2;
         return {
-            left: coords.left + - this.LINK_WIDTH/2 + this.PADDING,
-            top: coords.top + this.LINK_HEIGHT/2 + this.PADDING,
+            left: coords.left + - this.LINK_WIDTH/2 + this.PADDING + horizontalOffset,
+            top: coords.top + this.LINK_HEIGHT/2 + this.PADDING + verticalOffset,
             rotate: 0
         }
     }
@@ -233,7 +256,19 @@ export class Bracelet {
     }
 
     /**
-     * Add a new link in front of the bracelet
+     * @returns true if this bracelet contains a link with the same id as the specified link
+     */
+    public containsLink(link: Link): boolean {
+        for (const myLink of this.links) {
+            if (myLink.id == link.id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Add a new link in front of the bracelet (key side)
      */
     public prependLink(link: Link) {
         this.links.splice(0, 0, link);
@@ -241,7 +276,7 @@ export class Bracelet {
     }
 
     /**
-     * Add a new link at the end of the bracelet
+     * Add a new link at the end of the bracelet (lock side)
      */
     public appendLink(link: Link) {
         this.links.push(link);
@@ -352,7 +387,7 @@ export class Bracelet {
             //gemstone position
             dojo.setStyle(link.divs.gemstone, 'left', `${coords.gemstone.left - this.GEMSTONE_WIDTH/2}px`);
             dojo.setStyle(link.divs.gemstone, 'top', `${coords.gemstone.top  - this.GEMSTONE_HEIGHT/2}px`);
-            //dojo.setStyle(link.divs.gemstone,  'rotate', `${coords.gemstone.rotate}rad`);
+            dojo.setStyle(link.divs.gemstone,  'rotate', `${coords.gemstone.rotate}rad`);
             this.setRotate(link.divs.gemstone, coords.gemstone.rotate);
         }
     }

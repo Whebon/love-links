@@ -1,0 +1,1 @@
+export type Metal = "bronze" | "silver" | "gold";

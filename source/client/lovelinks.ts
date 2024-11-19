@@ -20,6 +20,7 @@ import { BraceletArea } from "./components/BraceletArea"
 import { TPL } from "./components/TPL"
 import { Bracelet } from './components/Bracelet';
 import { DbCard } from './components/DbCard';
+import { GemstoneColor } from './components/GemstoneColor';
 
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
@@ -97,8 +98,8 @@ class LoveLinks extends Gamegui
 		for (const bracelet_id in gamedatas.bracelets) {
 			const links = gamedatas.bracelets[bracelet_id]!;
 			const bracelet = this.bracelets.createBracelet(+bracelet_id);
-			for (const link_id in links) {
-				const link = links[link_id]!;
+			for (const i in links) {
+				const link = links[i]!;
 				bracelet.appendLink(Link.ofDbCard(link));
 			}
 		}
@@ -162,7 +163,7 @@ class LoveLinks extends Gamegui
 				break;
 			case 'client_completeBracelet':
 				this.addActionButton("complete-button", _("Complete"), "onCompleteBracelet");
-				this.addActionButton("skip-button", _("Skip"), "nextAction", undefined, false, 'gray');
+				this.addActionButton("skip-button", _("Extend"), "nextAction"); //, undefined, false, 'gray'
 				break;
 			case 'client_confirm':
 				this.addActionButton("confirm-button", _("Confirm"), "onSubmitCommands");
@@ -373,28 +374,75 @@ class LoveLinks extends Gamegui
 
 	public nextAction() {
 		console.log("nextAction");
+		//When a stock is empty, end the player's turn
+		if (this.myStock.countNonEmptyBracelets() == 0) {
+			this.setClientState('client_confirm', {
+				descriptionmyturn: _("${you} must confirm your placements")
+			})
+			return;
+		}
+
+		//Start the next action
 		const placements = this.commandManager.numberOfPlacements();
 		if (placements == 0) {
 			this.setClientState('client_placeLink', {
 				descriptionmyturn: _("${you} must place a link")
 			})
+			return;
 		}
 		else if (placements == 1) {
 			this.setClientState('client_placeLink', {
 				descriptionmyturn: _("${you} must place another link")
 			})
+			return;
 		}
 		else if (placements == 2) {
 			this.setClientState('client_confirm', {
 				descriptionmyturn: _("${you} must confirm your placements")
 			})
+			return;
 		}
 		else {
 			throw new Error(`Unexpected number of placements this turn: ${placements}`);
 		}
-
 	}
 	
+	public getGemstoneColor(player_id: number): GemstoneColor {
+		const player = this.gamedatas.players[player_id];
+		if (!player) {
+			return "undefined";
+		}
+		switch(player.color) {
+			case "ff0000": 
+				return "red";
+			case "008000": 
+				return "green";
+			case "0000ff": 
+				return "blue";
+			case "ffa500": 
+				return "yellow"
+			case "000000": 
+				return "black";
+			case "ffffff": 
+				return "white";
+			case "e94190": 
+				return "pink";
+			case "982fff": 
+				return "purple";
+			case "72c3b1": 
+				return "cyan";
+			case "f07f16": 
+				return "orange";
+			case "bdd002": 
+				return "khaki";
+			case "7b7b7b": 
+				return "gray";
+			default:
+				console.warn("Player color ${player.color} is not supported");
+				return "gray";
+		}
+	}
+
 	/* console.log("-");
 	Example:
 	onMyMethodToCall1( evt: Event )
@@ -441,6 +489,7 @@ class LoveLinks extends Gamegui
 		const notifs: ([keyof NotifTypes, number])[] = [
 			['newBracelet', 1000],
 			['refillStock', 1000],
+			['placeLink', 1000]
 		];
 
 		notifs.forEach((notif) => {
@@ -463,6 +512,45 @@ class LoveLinks extends Gamegui
 	}
 	*/
 
+	notif_placeLink(notif: NotifFrom<'placeLink'>) {
+		console.log('notif_placeLink', notif);
+		let link = Link.ofDbCard(notif.args.link);
+		const stock = this.stocks[notif.args.player_id]!;
+		const slot = stock.getBraceletWithLink(link);
+		if (!slot) {
+			if (notif.args.player_id != this.player_id) {
+				const name = this.gamedatas.players[notif.args.player_id]!.name;
+				throw new Error(`Link #${notif.args.link.id} as not found in ${name}'s Stock`);
+			}
+			//the link is already in place, play a pulse animation instead
+			const id = notif.args.link.id;
+			for (let elem_id of [`#lovelinks-key-${id}`, `#lovelinks-lock-${id}`, `#lovelinks-gemstone-${id}`]) {
+				const elem = document.querySelector(elem_id);
+				if (!elem) {
+					console.warn(`Pulse animation failed: '${elem_id}' not found`);
+				}
+				else {
+					elem.classList.add("lovelinks-pulse")
+				}
+			}
+			return;
+		}
+		link = slot!.key_link; //get the link from the slot
+		const bracelet = this.bracelets.get(notif.args.bracelet_id);
+		switch(notif.args.side) {
+			case 'key':
+				bracelet.prependLink(link);
+				break;
+			case 'lock':
+				bracelet.appendLink(link);
+				break;
+			case 'both':
+				bracelet.appendLink(link);
+				bracelet.setComplete(true);
+				break;
+		}
+	}
+
 	notif_newBracelet(notif: NotifFrom<'newBracelet'>) {
 		console.log('notif_newBracelet', notif);
 		const bracelet = this.bracelets.createBracelet(notif.args.link_id);
@@ -484,6 +572,8 @@ class LoveLinks extends Gamegui
 			}
 			const link = notif.args.links[+i]!;
 			slot.appendLink(Link.ofDbCard(link));
+			console.log("draw link:");
+			console.log(link);
 		}
 	}
 }

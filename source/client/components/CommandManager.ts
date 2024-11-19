@@ -147,7 +147,7 @@ export class ExtendCommand implements Command {
         }
         if (Link.isValidConnection(this.bracelet.key_link, this.bracelet.lock_link) && this.bracelet.canBeCompleted()) {
 			StaticLoveLinks.page.setClientState('client_completeBracelet', {
-                descriptionmyturn: _("${you} may complete this bracelet")
+                descriptionmyturn: _("${you} may choose to complete or extend this bracelet")
             })
         }
         else {

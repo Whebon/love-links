@@ -1,4 +1,5 @@
 import Gamegui = require('ebg/core/gamegui');
+import { GemstoneColor } from './GemstoneColor';
 
 /**
  * Global static singleton reference to the main page
@@ -6,5 +7,6 @@ import Gamegui = require('ebg/core/gamegui');
 export class StaticLoveLinks {
     public static page: Gamegui & {
         nextAction: () => void;
+        getGemstoneColor: (player_id: number) => GemstoneColor;
     };
 }

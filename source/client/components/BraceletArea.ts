@@ -42,20 +42,52 @@ export class BraceletArea {
     }
 
     /**
-     * highlight all links that connect to the link
+     * @returns number of non empty bracelets in this area
      */
-    public highlightPossibleLinks(link: Link) {
+    public countNonEmptyBracelets(): number {
+        let count = 0;
+        for (let i = 0; i < this.bracelets.length; i++) {
+            const bracelet = this.bracelets[i]!;
+            if (bracelet.size() > 0) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * @returns the bracelet containing the given link
+     */
+    public getBraceletWithLink(link: Link): Bracelet | undefined {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            const bracelet = this.bracelets[i]!;
+            if (bracelet.containsLink(link)) {
+                return bracelet;
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * highlight all links that connect to the link
+     * @returns number of valid moves
+     */
+    public highlightPossibleLinks(link: Link): number {
+        let count = 0;
         for (let i = 0; i < this.bracelets.length; i++) {
             const bracelet = this.bracelets[i]!;
             if (!bracelet.isComplete) {
                 if (Link.isValidConnection(bracelet.key_link, link)) {
                     bracelet.key_link.divs?.key.classList.add("lovelinks-highlighted");
+                    count += 1;
                 }
                 if (Link.isValidConnection(link, bracelet.lock_link)) {
                     bracelet.lock_link.divs?.lock.classList.add("lovelinks-highlighted");
+                    count += 1;
                 }
             }
         }
+        return count;
     }
 
     public deselectAll() {

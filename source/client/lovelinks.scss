@@ -24,6 +24,24 @@
     }
 }
 
+.lovelinks-pulse  {
+    animation-name: pulse;
+    animation-duration: 1s;
+}
+  
+@keyframes pulse {
+    from {
+        scale: 1;
+    }
+    50% {
+        scale: 1.5;
+    }
+    to {
+        scale: 1;
+    }
+}
+
+
 .lovelinks-blinking {
 	animation: blinker 0.5s infinite;
 }
@@ -40,10 +58,17 @@
     outline: 3px solid red;
 }
 
+#page-content {
+    .lovelinks-bracelet-area {
+        gap: 20px;
+    }
+}
+
 .lovelinks-bracelet-area {
     position: relative;
     display: flex;
     justify-content: space-evenly;
+    align-items: center;
     flex-wrap: wrap;
 }
 
@@ -64,11 +89,23 @@
         position: absolute;
         user-select: none;
         pointer-events: none;
-        top: 45%;
+        top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         text-align: center;
         font-size: large;
+    }
+
+    &.lovelinks-bronze {
+        background-position-x: 0%;
+    }
+
+    &.lovelinks-silver {
+        background-position-x: -100%;
+    }
+
+    &.lovelinks-gold {
+        background-position-x: -200%;
     }
 
     &.lovelinks-lock {
@@ -88,12 +125,75 @@
     }
 }
 
-
-.lovelinks-gemstone {
-    background-image: url(img/gemstones.png);
-    background-size: 400% 100%;
+.lovelinks-gemstoneholder {
+    background-image: url(img/gemstoneholders.png);
+    background-size: 300% 300%;
     transform-origin: center;
     transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out, width 1s ease-out, height 1s ease-out;
     z-index: 3;
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.lovelinks-bronze {
+        background-position-x: 0%;
+    }
+
+    &.lovelinks-silver {
+        background-position-x: -100%;
+    }
+
+    &.lovelinks-gold {
+        background-position-x: -200%;
+    }
+}
+
+.lovelinks-gemstone {
+    background-image: url(img/gemstones.png);
+    background-size: 400% 300%;
+    transform-origin: center;
+    transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out, width 1s ease-out, height 1s ease-out;
+    z-index: 3;
+    position: absolute;
+
+    &.lovelinks-gemstone-color-undefined {
+        display: none;
+    }
+    &.lovelinks-gemstone-color-red {
+        background-position: -100% -200%;
+    }
+    &.lovelinks-gemstone-color-green {
+        background-position: -300% 0%;
+    }
+    &.lovelinks-gemstone-color-blue {
+        background-position: -100% 0%;
+    }
+    &.lovelinks-gemstone-color-yellow {
+        background-position: -300% -200%;
+    }
+    &.lovelinks-gemstone-color-black {
+        background-position: 0% 0%;
+    }
+    &.lovelinks-gemstone-color-white {
+        background-position: -200% -200%;
+    }
+    &.lovelinks-gemstone-color-pink {
+        background-position: -300% -100%;
+    }
+    &.lovelinks-gemstone-color-purple {
+        background-position: 0% -200%;
+    }
+    &.lovelinks-gemstone-color-cyan {
+        background-position: -200% 0%;
+    }
+    &.lovelinks-gemstone-color-orange {
+        background-position: -200% -100%;
+    }
+    &.lovelinks-gemstone-color-khaki {
+        background-position: -100% -100%;
+    }
+    &.lovelinks-gemstone-color-gray {
+        background-position: 0% -100%;
+    }
 }

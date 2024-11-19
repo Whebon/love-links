@@ -57,6 +57,10 @@ class LoveLinksDeck extends \Deck {
     //     return $this->new_bracelet_id;
     // }
 
+    function getCardFromLocation($card_id, $location, $location_arg = null) {
+        return current($this->getCardsFromLocation(array($card_id), $location, $location_arg));
+    }
+
     /**
      * Assign the given card ids to a player by modifying the 'type_arg'
      * @param array $card_ids
@@ -71,18 +75,18 @@ class LoveLinksDeck extends \Deck {
     /**
      * Get cards in a bracelet location grouped by bracelet
      */
-    function getBracelets(string $location): array {
-        if ($location != BRACELET && $location != COMPLETED) {
-            throw new BgaSystemException("getBracelets is only defined for bracelet locations, not '".$location."'");
+    function getBracelets(string $location_prefix): array {
+        if ($location_prefix != BRACELET && $location_prefix != COMPLETED) {
+            throw new BgaSystemException("getBracelets is only defined for bracelet locations, not '".$location_prefix."'");
         }
-        $all_links = $this->getCardsInLocationPrefix(BRACELET);
+        $all_links = $this->getCardsInLocationPrefix($location_prefix);
         $bracelets = array();
         foreach ($all_links as $link) {
-            $bracelet_id = substr($link["location"], strlen(BRACELET));
+            $bracelet_id = substr($link["location"], strlen($location_prefix));
             if (!array_key_exists($bracelet_id, $bracelets)) {
                 $bracelets[$bracelet_id] = array();
             }
-            $bracelets[$bracelet_id][$link["id"]] = $link;
+            $bracelets[$bracelet_id][] = $link;
         }
         return $bracelets;
     }
@@ -92,9 +96,10 @@ class LoveLinksDeck extends \Deck {
         $sql = "SELECT card_id id, card_type type, card_type_arg type_arg, card_location location, card_location_arg location_arg ";
         $sql .= "FROM ".$this->table;
         $sql .= " WHERE card_location LIKE '".addslashes($location_prefix)."%' ";
+        $sql .= "ORDER BY location_arg";
         $dbres = self::DbQuery( $sql );
         while( $row = mysql_fetch_assoc( $dbres ) ){
-            $result[ $row['id'] ] = $row;
+            $result[] = $row;
         }
         return $result;
     }

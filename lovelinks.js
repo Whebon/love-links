@@ -13,6 +13,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+define("components/GemstoneColor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("components/StaticLoveLinks", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -25,6 +29,10 @@ define("components/StaticLoveLinks", ["require", "exports"], function (require, 
     exports.StaticLoveLinks = StaticLoveLinks;
 });
 define("components/DbCard", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("components/Metal", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -46,6 +54,23 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
             this.lock = lock;
             this.gemstone = gemstone;
         }
+        Object.defineProperty(Link.prototype, "metal", {
+            get: function () {
+                var link = StaticLoveLinks_1.StaticLoveLinks.page.gamedatas.card_types[this.id];
+                if (!link) {
+                    throw new Error("Link ".concat(this.id, "'s metal is not defined by the server"));
+                }
+                return link.metal;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Link.prototype.key_displayed = function () {
+            return this.key == Link.MASTER ? "M" : this.key;
+        };
+        Link.prototype.lock_displayed = function () {
+            return this.lock == Link.MASTER ? "M" : this.lock;
+        };
         Link.ofDbCard = function (dbCard) {
             return Link.ofId(+dbCard.id, +dbCard.type_arg);
         };
@@ -73,6 +98,7 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
         };
         Link.UNIQUE_ID = 999;
         Link.links = new Map();
+        Link.MASTER = 48;
         return Link;
     }());
     exports.Link = Link;
@@ -103,17 +129,25 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             this.isComplete = false;
             this.isBlinking = false;
             parent.appendChild(this.container);
+            this.updateDisplay();
         }
+        Object.defineProperty(Bracelet.prototype, "GEMSTONE_FACTOR", {
+            get: function () {
+                return 0.875;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(Bracelet.prototype, "GEMSTONE_WIDTH", {
             get: function () {
-                return (this.player_id == 0) ? 25 : 20;
+                return (this.player_id == 0) ? 28 : 24;
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(Bracelet.prototype, "LINK_WIDTH", {
             get: function () {
-                return (this.player_id == 0) ? 65 : 45;
+                return (this.player_id == 0) ? 66 : 44;
             },
             enumerable: false,
             configurable: true
@@ -169,16 +203,20 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 this.containerWidth = Math.max(2, (this.links.length + 1)) * this.LINK_WIDTH;
                 this.containerHeight = this.LINK_HEIGHT;
             }
+            this.containerWidth = Math.max(this.containerWidth, +dojo.getStyle(this.container, 'width'));
+            this.containerHeight = Math.max(this.containerHeight, +dojo.getStyle(this.container, 'height'));
             dojo.setStyle(this.container, 'width', "".concat(this.containerWidth, "px"));
             dojo.setStyle(this.container, 'height', "".concat(this.containerHeight, "px"));
         };
         Bracelet.prototype.registerLink = function (link) {
-            this.container.insertAdjacentHTML('afterbegin', "\n            <div style=\"width: ".concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-key\" id=\"lovelinks-key-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.key, "</div>\n            </div>\n            <div style=\"width: ").concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-lock\" id=\"lovelinks-lock-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.lock, "</div>\n            </div>\n            <div style=\"width: ").concat(this.GEMSTONE_WIDTH, "px; height: ").concat(this.GEMSTONE_HEIGHT, "px;\" class=\"lovelinks-gemstone\" id=\"lovelinks-gemstone-").concat(link.id, "\">\n            </div>\n        "));
+            var color = StaticLoveLinks_2.StaticLoveLinks.page.getGemstoneColor(link.gemstone);
+            var metal = link.metal;
+            this.container.insertAdjacentHTML('afterbegin', "\n            <div style=\"width: ".concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-key lovelinks-").concat(metal, "\" id=\"lovelinks-key-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.key_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-lock lovelinks-").concat(metal, "\" id=\"lovelinks-lock-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.lock_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.GEMSTONE_WIDTH, "px; height: ").concat(this.GEMSTONE_HEIGHT, "px;\" class=\"lovelinks-gemstoneholder lovelinks-").concat(metal, "\" id=\"lovelinks-gemstone-").concat(link.id, "\">\n                <div style=\"width: ").concat(this.GEMSTONE_WIDTH * this.GEMSTONE_FACTOR, "px; height: ").concat(this.GEMSTONE_HEIGHT * this.GEMSTONE_FACTOR, "px;\" \n                class=\"lovelinks-gemstone lovelinks-gemstone-color-").concat(color, "\"></div>\n            </div>\n        "));
             var prevDivs = link.divs;
             var newDivs = {
                 key: this.container.querySelector(".lovelinks-key"),
                 lock: this.container.querySelector(".lovelinks-lock"),
-                gemstone: this.container.querySelector(".lovelinks-gemstone"),
+                gemstone: this.container.querySelector(".lovelinks-gemstoneholder"),
                 bracelet: this
             };
             if (prevDivs) {
@@ -235,9 +273,11 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             };
         };
         Bracelet.prototype.toStraightCoordinates = function (coords) {
+            var horizontalOffset = (this.containerWidth - this.LINK_WIDTH * (this.links.length + 1)) / 2;
+            var verticalOffset = (this.containerHeight - this.LINK_HEIGHT) / 2;
             return {
-                left: coords.left + -this.LINK_WIDTH / 2 + this.PADDING,
-                top: coords.top + this.LINK_HEIGHT / 2 + this.PADDING,
+                left: coords.left + -this.LINK_WIDTH / 2 + this.PADDING + horizontalOffset,
+                top: coords.top + this.LINK_HEIGHT / 2 + this.PADDING + verticalOffset,
                 rotate: 0
             };
         };
@@ -252,6 +292,15 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 top: -radius * Math.cos(angle) + this.containerHeight / 2 + this.PADDING,
                 rotate: angle
             };
+        };
+        Bracelet.prototype.containsLink = function (link) {
+            for (var _i = 0, _a = this.links; _i < _a.length; _i++) {
+                var myLink = _a[_i];
+                if (myLink.id == link.id) {
+                    return true;
+                }
+            }
+            return false;
         };
         Bracelet.prototype.prependLink = function (link) {
             this.links.splice(0, 0, link);
@@ -333,6 +382,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 }
                 dojo.setStyle(link.divs.gemstone, 'left', "".concat(coords.gemstone.left - this.GEMSTONE_WIDTH / 2, "px"));
                 dojo.setStyle(link.divs.gemstone, 'top', "".concat(coords.gemstone.top - this.GEMSTONE_HEIGHT / 2, "px"));
+                dojo.setStyle(link.divs.gemstone, 'rotate', "".concat(coords.gemstone.rotate, "rad"));
                 this.setRotate(link.divs.gemstone, coords.gemstone.rotate);
             }
         };
@@ -505,7 +555,7 @@ define("components/CommandManager", ["require", "exports", "components/StaticLov
             }
             if (Link_1.Link.isValidConnection(this.bracelet.key_link, this.bracelet.lock_link) && this.bracelet.canBeCompleted()) {
                 StaticLoveLinks_3.StaticLoveLinks.page.setClientState('client_completeBracelet', {
-                    descriptionmyturn: _("${you} may complete this bracelet")
+                    descriptionmyturn: _("${you} may choose to complete or extend this bracelet")
                 });
             }
             else {
@@ -579,19 +629,42 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
             this.player_id = player_id;
             this.onClickBracelet = onClickBracelet;
         }
+        BraceletArea.prototype.countNonEmptyBracelets = function () {
+            var count = 0;
+            for (var i = 0; i < this.bracelets.length; i++) {
+                var bracelet = this.bracelets[i];
+                if (bracelet.size() > 0) {
+                    count++;
+                }
+            }
+            return count;
+        };
+        BraceletArea.prototype.getBraceletWithLink = function (link) {
+            for (var i = 0; i < this.bracelets.length; i++) {
+                var bracelet = this.bracelets[i];
+                if (bracelet.containsLink(link)) {
+                    return bracelet;
+                }
+            }
+            return undefined;
+        };
         BraceletArea.prototype.highlightPossibleLinks = function (link) {
             var _a, _b;
+            var count = 0;
             for (var i = 0; i < this.bracelets.length; i++) {
                 var bracelet = this.bracelets[i];
                 if (!bracelet.isComplete) {
                     if (Link_2.Link.isValidConnection(bracelet.key_link, link)) {
                         (_a = bracelet.key_link.divs) === null || _a === void 0 ? void 0 : _a.key.classList.add("lovelinks-highlighted");
+                        count += 1;
                     }
                     if (Link_2.Link.isValidConnection(link, bracelet.lock_link)) {
                         (_b = bracelet.lock_link.divs) === null || _b === void 0 ? void 0 : _b.lock.classList.add("lovelinks-highlighted");
+                        count += 1;
                     }
                 }
             }
+            return count;
         };
         BraceletArea.prototype.deselectAll = function () {
             for (var i = 0; i < this.bracelets.length; i++) {
@@ -687,8 +760,8 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             for (var bracelet_id in gamedatas.bracelets) {
                 var links = gamedatas.bracelets[bracelet_id];
                 var bracelet = this.bracelets.createBracelet(+bracelet_id);
-                for (var link_id in links) {
-                    var link = links[link_id];
+                for (var i in links) {
+                    var link = links[i];
                     bracelet.appendLink(Link_3.Link.ofDbCard(link));
                 }
             }
@@ -731,7 +804,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     break;
                 case 'client_completeBracelet':
                     this.addActionButton("complete-button", _("Complete"), "onCompleteBracelet");
-                    this.addActionButton("skip-button", _("Skip"), "nextAction", undefined, false, 'gray');
+                    this.addActionButton("skip-button", _("Extend"), "nextAction");
                     break;
                 case 'client_confirm':
                     this.addActionButton("confirm-button", _("Confirm"), "onSubmitCommands");
@@ -846,24 +919,68 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         };
         LoveLinks.prototype.nextAction = function () {
             console.log("nextAction");
+            if (this.myStock.countNonEmptyBracelets() == 0) {
+                this.setClientState('client_confirm', {
+                    descriptionmyturn: _("${you} must confirm your placements")
+                });
+                return;
+            }
             var placements = this.commandManager.numberOfPlacements();
             if (placements == 0) {
                 this.setClientState('client_placeLink', {
                     descriptionmyturn: _("${you} must place a link")
                 });
+                return;
             }
             else if (placements == 1) {
                 this.setClientState('client_placeLink', {
                     descriptionmyturn: _("${you} must place another link")
                 });
+                return;
             }
             else if (placements == 2) {
                 this.setClientState('client_confirm', {
                     descriptionmyturn: _("${you} must confirm your placements")
                 });
+                return;
             }
             else {
                 throw new Error("Unexpected number of placements this turn: ".concat(placements));
+            }
+        };
+        LoveLinks.prototype.getGemstoneColor = function (player_id) {
+            var player = this.gamedatas.players[player_id];
+            if (!player) {
+                return "undefined";
+            }
+            switch (player.color) {
+                case "ff0000":
+                    return "red";
+                case "008000":
+                    return "green";
+                case "0000ff":
+                    return "blue";
+                case "ffa500":
+                    return "yellow";
+                case "000000":
+                    return "black";
+                case "ffffff":
+                    return "white";
+                case "e94190":
+                    return "pink";
+                case "982fff":
+                    return "purple";
+                case "72c3b1":
+                    return "cyan";
+                case "f07f16":
+                    return "orange";
+                case "bdd002":
+                    return "khaki";
+                case "7b7b7b":
+                    return "gray";
+                default:
+                    console.warn("Player color ${player.color} is not supported");
+                    return "gray";
             }
         };
         LoveLinks.prototype.setupNotifications = function () {
@@ -872,11 +989,50 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             var notifs = [
                 ['newBracelet', 1000],
                 ['refillStock', 1000],
+                ['placeLink', 1000]
             ];
             notifs.forEach(function (notif) {
                 dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
                 _this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
+        };
+        LoveLinks.prototype.notif_placeLink = function (notif) {
+            console.log('notif_placeLink', notif);
+            var link = Link_3.Link.ofDbCard(notif.args.link);
+            var stock = this.stocks[notif.args.player_id];
+            var slot = stock.getBraceletWithLink(link);
+            if (!slot) {
+                if (notif.args.player_id != this.player_id) {
+                    var name_1 = this.gamedatas.players[notif.args.player_id].name;
+                    throw new Error("Link #".concat(notif.args.link.id, " as not found in ").concat(name_1, "'s Stock"));
+                }
+                var id = notif.args.link.id;
+                for (var _i = 0, _a = ["#lovelinks-key-".concat(id), "#lovelinks-lock-".concat(id), "#lovelinks-gemstone-".concat(id)]; _i < _a.length; _i++) {
+                    var elem_id = _a[_i];
+                    var elem = document.querySelector(elem_id);
+                    if (!elem) {
+                        console.warn("Pulse animation failed: '".concat(elem_id, "' not found"));
+                    }
+                    else {
+                        elem.classList.add("lovelinks-pulse");
+                    }
+                }
+                return;
+            }
+            link = slot.key_link;
+            var bracelet = this.bracelets.get(notif.args.bracelet_id);
+            switch (notif.args.side) {
+                case 'key':
+                    bracelet.prependLink(link);
+                    break;
+                case 'lock':
+                    bracelet.appendLink(link);
+                    break;
+                case 'both':
+                    bracelet.appendLink(link);
+                    bracelet.setComplete(true);
+                    break;
+            }
         };
         LoveLinks.prototype.notif_newBracelet = function (notif) {
             console.log('notif_newBracelet', notif);
@@ -898,6 +1054,8 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 }
                 var link = notif.args.links[+i];
                 slot.appendLink(Link_3.Link.ofDbCard(link));
+                console.log("draw link:");
+                console.log(link);
             }
         };
         return LoveLinks;
