@@ -17,17 +17,6 @@ define("components/GemstoneColor", ["require", "exports"], function (require, ex
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/StaticLoveLinks", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.StaticLoveLinks = void 0;
-    var StaticLoveLinks = (function () {
-        function StaticLoveLinks() {
-        }
-        return StaticLoveLinks;
-    }());
-    exports.StaticLoveLinks = StaticLoveLinks;
-});
 define("components/DbCard", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -86,12 +75,7 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
             return link;
         };
         Link.get = function (link_id) {
-            var link = this.links.get(link_id);
-            if (!link) {
-                console.log("Link ".concat(link_id, " is unknown."));
-                return undefined;
-            }
-            return link;
+            return this.links.get(link_id);
         };
         Link.isValidConnection = function (key_link, lock_link) {
             var key = key_link.key;
@@ -104,6 +88,76 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
         return Link;
     }());
     exports.Link = Link;
+});
+define("components/Supply", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Supply = void 0;
+    var Supply = (function () {
+        function Supply(parent, title) {
+            if (title) {
+                var wrap = document.createElement('div');
+                wrap.classList.add("whiteblock");
+                parent.appendChild(wrap);
+                wrap.innerHTML = "\n                <h3 class=\"lovelinks-title\">".concat(title, "</h3>\n                <div class=\"lovelinks-supply-table-wrap\">\n                    <div class=\"lovelinks-supply-table\"></div>\n                </div>\n            ");
+                this.container = wrap.querySelector(".lovelinks-supply-table");
+            }
+            else {
+                this.container = document.createElement('div');
+                this.container.classList.add("lovelinks-supply-table");
+                parent.appendChild(this.container);
+            }
+            this.cells = [];
+            for (var i = 0; i < 9; i++) {
+                this.cells.push([]);
+                for (var j = 0; j < 10; j++) {
+                    var cell = document.createElement('div');
+                    cell.classList.add("lovelinks-supply-cell");
+                    this.container.appendChild(cell);
+                    this.cells[this.cells.length - 1].push(cell);
+                }
+            }
+        }
+        Supply.prototype.add = function (link) {
+            var cell = this.linkToCell(link);
+            var dot = document.createElement('div');
+            dot.classList.add("lovelinks-dot", "lovelinks-dot-" + link.metal);
+            cell.appendChild(dot);
+        };
+        Supply.prototype.remove = function (link) {
+            console.log("supply.remove");
+            var cell = this.linkToCell(link);
+            var child = cell.lastChild;
+            if (!child) {
+                console.log(link);
+                console.warn("Attempted to remove a link that is not in the supply");
+                return;
+            }
+            cell.removeChild(child);
+        };
+        Supply.prototype.linkToCell = function (link) {
+            var i = Math.min(8, link.key - 2);
+            var j = Math.min(9, link.lock - 2);
+            if (!this.cells[i] || !this.cells[i][j]) {
+                console.log(this.cells);
+                throw new Error("this.cells is not setup properly, cell[".concat(i, "][").concat(j, "] is not defined"));
+            }
+            return this.cells[i][j];
+        };
+        return Supply;
+    }());
+    exports.Supply = Supply;
+});
+define("components/StaticLoveLinks", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StaticLoveLinks = void 0;
+    var StaticLoveLinks = (function () {
+        function StaticLoveLinks() {
+        }
+        return StaticLoveLinks;
+    }());
+    exports.StaticLoveLinks = StaticLoveLinks;
 });
 define("components/Side", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -212,6 +266,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             dojo.setStyle(this.container, 'height', "".concat(this.containerHeight, "px"));
         };
         Bracelet.prototype.registerLink = function (link) {
+            var _this = this;
             var color = StaticLoveLinks_2.StaticLoveLinks.page.getGemstoneColor(link.gemstone);
             var metal = link.metal;
             this.container.insertAdjacentHTML('afterbegin', "\n            <div style=\"width: ".concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-key lovelinks-").concat(metal, "\" id=\"lovelinks-key-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.key_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-lock lovelinks-").concat(metal, "\" id=\"lovelinks-lock-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.lock_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.GEMSTONE_WIDTH, "px; height: ").concat(this.GEMSTONE_HEIGHT, "px;\" class=\"lovelinks-gemstoneholder lovelinks-").concat(metal, "\" id=\"lovelinks-gemstone-").concat(link.id, "\">\n                <div style=\"width: ").concat(this.GEMSTONE_WIDTH * this.GEMSTONE_FACTOR, "px; height: ").concat(this.GEMSTONE_HEIGHT * this.GEMSTONE_FACTOR, "px;\" \n                class=\"lovelinks-gemstone lovelinks-gemstone-color-").concat(color, "\"></div>\n            </div>\n        "));
@@ -227,6 +282,20 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.lock, prevDivs.lock);
                 StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.gemstone, prevDivs.gemstone);
                 prevDivs.bracelet.unregisterLink(link);
+            }
+            else {
+                var supply = StaticLoveLinks_2.StaticLoveLinks.page.supply;
+                if (supply) {
+                    var cell = supply.linkToCell(link);
+                    StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.key, cell);
+                    StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.lock, cell);
+                    StaticLoveLinks_2.StaticLoveLinks.page.placeOnObject(newDivs.gemstone, cell);
+                    setTimeout(function () {
+                        link.divs = newDivs;
+                        _this.updateDisplay();
+                    }, 1000);
+                    return;
+                }
             }
             link.divs = newDivs;
             this.updateDisplay();
@@ -791,7 +860,7 @@ define("components/TPL", ["require", "exports"], function (require, exports) {
     }());
     exports.TPL = TPL;
 });
-define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "ebg/counter"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1) {
+define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "components/Supply", "ebg/counter"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1, Supply_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var LoveLinks = (function (_super) {
@@ -845,6 +914,16 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     var link = links[i];
                     bracelet.appendLink(Link_3.Link.ofDbCard(link));
                 }
+            }
+            this.supply = new Supply_1.Supply(gamePlayArea, _("Supply"));
+            for (var link_id in gamedatas.bronze_remaining) {
+                this.supply.add(Link_3.Link.ofId(+link_id));
+            }
+            for (var link_id in gamedatas.silver_remaining) {
+                this.supply.add(Link_3.Link.ofId(+link_id));
+            }
+            for (var link_id in gamedatas.gold_remaining) {
+                this.supply.add(Link_3.Link.ofId(+link_id));
             }
             this.setupNotifications();
             console.log("Ending game setup");
@@ -1144,7 +1223,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             console.log('notifications subscriptions setup');
             var notifs = [
                 ['newBracelet', 1000],
-                ['refillStock', 1000],
+                ['refillStock', 2000],
                 ['placeLink', 1000],
                 ['startRound', 1]
             ];
@@ -1193,6 +1272,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.notif_refillStock = function (notif) {
+            var _a;
             console.log('notif_refillStock', notif);
             var stock = this.stocks[notif.args.player_id];
             if (!stock) {
@@ -1205,8 +1285,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     slot = stock.get(slot_id);
                     slot_id++;
                 }
-                var link = notif.args.links[+i];
-                slot.appendLink(Link_3.Link.ofDbCard(link));
+                var link = Link_3.Link.ofDbCard(notif.args.links[+i]);
+                slot.appendLink(link);
+                (_a = this.supply) === null || _a === void 0 ? void 0 : _a.remove(link);
             }
         };
         LoveLinks.prototype.notif_startRound = function (notif) {

@@ -74,12 +74,7 @@ export class Link {
      * Get the link corresponding to the given id
      */
     public static get(link_id: number): Link | undefined {
-        const link = this.links.get(link_id);
-        if (!link) {
-            console.log(`Link ${link_id} is unknown.`);
-            return undefined;
-        }
-        return link;
+        return this.links.get(link_id);
     }
 
     /**

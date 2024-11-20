@@ -19,12 +19,18 @@ import { Link } from "./components/Link"
 import { BraceletArea } from "./components/BraceletArea"
 import { TPL } from "./components/TPL"
 import { Bracelet } from './components/Bracelet';
+import { Supply } from './components/Supply'
 import { DbCard } from './components/DbCard';
 import { GemstoneColor } from './components/GemstoneColor';
 
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
 {
+	/**
+	 * A table of remaining links
+	 */
+	public supply: Supply | undefined;
+
 	/**
 	 * Unfinished bracelets
 	 */
@@ -71,6 +77,7 @@ class LoveLinks extends Gamegui
 		TPL.init(this);
 		const gamePlayArea = document.getElementById("game_play_area")!;
 
+		//Create the bracelet area
 		this.bracelets = new BraceletArea(gamePlayArea, 0, _("Bracelets"), this.onClickBracelet.bind(this));
 		for (const player_id in gamedatas.players) {
 			const player = gamedatas.players[player_id]!;
@@ -103,7 +110,18 @@ class LoveLinks extends Gamegui
 				bracelet.appendLink(Link.ofDbCard(link));
 			}
 		}
-		
+
+		// Create the supply
+		this.supply = new Supply(gamePlayArea, _("Supply"));
+		for (const link_id in gamedatas.bronze_remaining) {
+			this.supply.add(Link.ofId(+link_id));
+		}
+		for (const link_id in gamedatas.silver_remaining) {
+			this.supply.add(Link.ofId(+link_id));
+		}
+		for (const link_id in gamedatas.gold_remaining) {
+			this.supply.add(Link.ofId(+link_id));
+		}
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -567,7 +585,7 @@ class LoveLinks extends Gamegui
 		//[notif_type, duration, has_private_arguments]
 		const notifs: ([keyof NotifTypes, number])[] = [
 			['newBracelet', 1000],
-			['refillStock', 1000],
+			['refillStock', 2000],
 			['placeLink', 1000],
 			['startRound', 1]
 		];
@@ -650,8 +668,9 @@ class LoveLinks extends Gamegui
 				slot = stock.get(slot_id);
 				slot_id++;
 			}
-			const link = notif.args.links[+i]!;
-			slot.appendLink(Link.ofDbCard(link));
+			const link = Link.ofDbCard(notif.args.links[+i]!);
+			slot.appendLink(link);
+			this.supply?.remove(link);
 		}
 	}
 

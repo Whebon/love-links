@@ -37,8 +37,8 @@
 
 	"3": {
 		"name": "playerTurn",
-		"description": "${actplayer} must take actions",
-		"descriptionmyturn": "${you} must take actions",
+		"description": "${actplayer} is taking their turn",
+		"descriptionmyturn": "${you} are taking your turn",
 		"type": "activeplayer",
 		"possibleactions": {
 			"actMultipleActions": [

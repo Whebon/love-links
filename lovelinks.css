@@ -12,6 +12,10 @@
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
+.lovelinks-title {
+  text-align: center;
+}
+
 @keyframes blinker {
   from {
     opacity: 1;
@@ -56,7 +60,7 @@
 }
 
 #page-content .lovelinks-bracelet-area {
-  gap: 20px;
+  column-gap: 20px;
 }
 
 .lovelinks-bracelet-area {
@@ -181,4 +185,47 @@
 }
 .lovelinks-gemstone.lovelinks-gemstone-color-gray {
   background-position: 0% -100%;
+}
+
+.lovelinks-supply-table-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:root {
+  --lovelinks-supply-table-scale: 0.33;
+}
+
+.lovelinks-supply-table {
+  background-image: url(img/supply.png);
+  background-size: contain;
+  width: calc(var(--lovelinks-supply-table-scale) * 1182px);
+  height: calc(var(--lovelinks-supply-table-scale) * 829px);
+  padding-left: calc(var(--lovelinks-supply-table-scale) * 186px);
+  padding-top: calc(var(--lovelinks-supply-table-scale) * 170px);
+  display: grid;
+  grid-template-columns: repeat(10, calc(var(--lovelinks-supply-table-scale) * 118px));
+  grid-template-rows: repeat(9, calc(var(--lovelinks-supply-table-scale) * 92px));
+  gap: 0px;
+}
+
+.lovelinks-supply-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+.lovelinks-supply-cell .lovelinks-dot {
+  width: calc(var(--lovelinks-supply-table-scale) * 35px);
+  height: calc(var(--lovelinks-supply-table-scale) * 35px);
+  border-radius: 100%;
+}
+.lovelinks-supply-cell .lovelinks-dot.lovelinks-dot-bronze {
+  background-color: rgb(197, 90, 17);
+}
+.lovelinks-supply-cell .lovelinks-dot.lovelinks-dot-silver {
+  background-color: rgb(128, 128, 128);
+}
+.lovelinks-supply-cell .lovelinks-dot.lovelinks-dot-gold {
+  background-color: rgb(212, 175, 55);
 }

@@ -9,7 +9,7 @@ import { Side } from './Side';
  * Manages a collection of bracelets within an enclosed area
  */
 export class BraceletArea {
-    private container: HTMLElement;
+    public container: HTMLElement;
     private player_id: number;
 
     public bracelets: Bracelet[];

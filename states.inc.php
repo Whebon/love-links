@@ -45,8 +45,8 @@ $machinestates = array(
 	),
 	3 => array(
 		'name' => 'playerTurn',
-		'description' => clienttranslate('${actplayer} must take actions'),
-		'descriptionmyturn' => clienttranslate('${you} must take actions'),
+		'description' => clienttranslate('${actplayer} is taking their turn'),
+		'descriptionmyturn' => clienttranslate('${you} are taking your turn'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actMultipleActions', 'actPlaceLink', 'actNewBracelet'],
 		'transitions' => array(

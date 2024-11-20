@@ -162,6 +162,20 @@ export class Bracelet {
             StaticLoveLinks.page.placeOnObject(newDivs.gemstone, prevDivs.gemstone);
             (prevDivs.bracelet as Bracelet).unregisterLink(link);
         }
+        else {
+            const supply = StaticLoveLinks.page.supply;
+            if (supply) {
+                const cell = supply.linkToCell(link);
+                StaticLoveLinks.page.placeOnObject(newDivs.key, cell);
+                StaticLoveLinks.page.placeOnObject(newDivs.lock, cell);
+                StaticLoveLinks.page.placeOnObject(newDivs.gemstone,cell);
+                setTimeout(() => {
+                    link.divs = newDivs;
+                    this.updateDisplay();
+                }, 1000);
+                return;
+            }
+        }
         link.divs = newDivs;
         this.updateDisplay();
     }

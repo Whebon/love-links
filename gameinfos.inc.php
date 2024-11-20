@@ -12,10 +12,10 @@
 
 /** @var (string|int|null|bool|string[]|int[])[] $gameinfos */
 $gameinfos = array(
-	'game_name' => 'My Great Game',
-	'publisher' => 'My Publishing Company',
-	'publisher_website' => 'http://www.mypublishingcompany.com/',
-	'publisher_bgg_id' => 1234,
+	'game_name' => 'Love Links',
+	'publisher' => '',
+	'publisher_website' => 'https://www.youtube.com/channel/UCKi1GvGVOwXA4fx7ysumPNw',
+	'publisher_bgg_id' => 0,
 	'bgg_id' => 336934,
 	'players' => [2, 3, 4],
 	'player_colors' => ['ff0000', '008000', '0000ff', 'ffa500', '000000', 'ffffff', 'e94190', '982fff', '72c3b1', 'f07f16', 'bdd002', '7b7b7b'],

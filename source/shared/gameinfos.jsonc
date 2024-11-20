@@ -15,10 +15,10 @@
 	"$schema": "../../node_modules/bga-ts-template/schema/gameinfos.schema.json",
 
 	// Game Externals and basic information
-	"game_name": "My Great Game",
-	"publisher": "My Publishing Company",
-	"publisher_website": "http://www.mypublishingcompany.com/",
-	"publisher_bgg_id": 1234,
+	"game_name": "Love Links",
+	"publisher": "",
+	"publisher_website": "https://www.youtube.com/channel/UCKi1GvGVOwXA4fx7ysumPNw",
+	"publisher_bgg_id": 0,
 	"bgg_id": 336934,
 
 	// Players
