@@ -12,6 +12,38 @@
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
+.lovelinks-bracelet-counter {
+  background-image: url("img/icons.png");
+  background-size: 200% 100%;
+  background-position: 0%;
+  position: static;
+  height: 23px;
+  width: 23px;
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 4px;
+  transform: translateY(5px);
+}
+.lovelinks-bracelet-counter before {
+  content: "\f005";
+}
+
+.lovelinks-link-counter {
+  background-image: url("img/icons.png");
+  background-size: 200% 100%;
+  background-position: -100%;
+  position: static;
+  height: 23px;
+  width: 23px;
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 4px;
+  transform: translateY(5px);
+}
+.lovelinks-link-counter before {
+  content: "\f005";
+}
+
 .lovelinks-title {
   text-align: center;
 }

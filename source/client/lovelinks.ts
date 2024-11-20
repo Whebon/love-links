@@ -9,8 +9,13 @@
  */
 /// <amd-module name="bgagame/lovelinks"/>
 
+//needed for the IDE
 import Gamegui = require('ebg/core/gamegui');
+import Counter = require('ebg/counter'); 
+
+//needed for BGA
 import "ebg/counter";
+import "ebg/stock"; 
 
 import { StaticLoveLinks } from "./components/StaticLoveLinks"
 import { CommandManager, Command, ExtendCommand, CompleteCommand, NewBraceletCommand } from "./components/CommandManager"
@@ -26,34 +31,28 @@ import { GemstoneColor } from './components/GemstoneColor';
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
 {
-	/**
-	 * A table of remaining links
-	 */
+	/** Completed bracelets per player */
+	public braceletCounters: Record<number, Counter> = {};
+
+	/** Links in completed bracelets per player */
+	public linkCounters: Record<number, Counter> = {};
+
+	/** A table of remaining links */
 	public supply: Supply | undefined;
 
-	/**
-	 * Unfinished bracelets
-	 */
+	/** Unfinished bracelets */
 	public bracelets!: BraceletArea;
 
-	/**
-	 * Bracelet stock per player
-	 */
+	/** Bracelet stock per player */
 	public stocks: Record<number, BraceletArea> = {};
 
-	/**
-	 * Stock bracelet that is currently selected
-	 */
+	/** Stock bracelet that is currently selected */
 	public selected: Bracelet | undefined;
 
-	/**
-	 * Action performed in this turn
-	 */
+	/** Action performed in this turn */
 	public commandManager: CommandManager = new CommandManager();
 
-	/**
-	 * Stock of the current player
-	 */
+	/** Stock of the current player */
 	public get myStock(): BraceletArea {
 		const stock = this.stocks[this.player_id];
 		if (!stock) {
@@ -99,6 +98,30 @@ class LoveLinks extends Gamegui
 				slot.appendLink(Link.ofDbCard(link));
 				slot_id += 1;
 			}
+
+			// Add bracelet and link counters
+			const player_board_div = $('player_board_'+player_id)?.querySelector(".player_score")!;
+
+			//bracelet counters
+			const bracelet_counter_span = document.createElement('span');
+			player_board_div.insertAdjacentHTML('afterbegin', `<i class="lovelinks-bracelet-counter" id="lovelinks-bracelet-counter-${player_id}"></i>`);
+			player_board_div.prepend(bracelet_counter_span);
+			this.addTooltip('lovelinks-bracelet-counter-'+player_id, _("Number of completed bracelets."), '');
+			this.braceletCounters[player_id] = new ebg.counter();
+			this.braceletCounters[player_id].create(bracelet_counter_span);
+			this.braceletCounters[player_id].setValue(2);
+
+			//link counters
+			const link_counter_span = document.createElement('span');
+			player_board_div.insertAdjacentHTML('afterbegin', `<i class="lovelinks-link-counter" id="lovelinks-link-counter-${player_id}"></i>`);
+			player_board_div.prepend(link_counter_span);
+			this.addTooltip('lovelinks-link-counter-'+player_id, _("Number of links in completed bracelets."), '');
+			this.linkCounters[player_id] = new ebg.counter();
+			this.linkCounters[player_id].create(link_counter_span);
+			this.linkCounters[player_id].setValue(12);
+
+			//tooltip for the points
+			this.addTooltip('icon_point_'+player_id, _("Points scored."), '');
 		}
 
 		// Create the bracelets

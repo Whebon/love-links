@@ -860,13 +860,15 @@ define("components/TPL", ["require", "exports"], function (require, exports) {
     }());
     exports.TPL = TPL;
 });
-define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "components/Supply", "ebg/counter"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1, Supply_1) {
+define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "components/Supply", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1, Supply_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var LoveLinks = (function (_super) {
         __extends(LoveLinks, _super);
         function LoveLinks() {
             var _this = _super.call(this) || this;
+            _this.braceletCounters = {};
+            _this.linkCounters = {};
             _this.stocks = {};
             _this.commandManager = new CommandManager_1.CommandManager();
             StaticLoveLinks_4.StaticLoveLinks.page = _this;
@@ -885,6 +887,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             configurable: true
         });
         LoveLinks.prototype.setup = function (gamedatas) {
+            var _a;
             console.log("Starting game setup");
             console.log(gamedatas);
             TPL_1.TPL.init(this);
@@ -906,6 +909,22 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     slot.appendLink(Link_3.Link.ofDbCard(link));
                     slot_id += 1;
                 }
+                var player_board_div = (_a = $('player_board_' + player_id)) === null || _a === void 0 ? void 0 : _a.querySelector(".player_score");
+                var bracelet_counter_span = document.createElement('span');
+                player_board_div.insertAdjacentHTML('afterbegin', "<i class=\"lovelinks-bracelet-counter\" id=\"lovelinks-bracelet-counter-".concat(player_id, "\"></i>"));
+                player_board_div.prepend(bracelet_counter_span);
+                this.addTooltip('lovelinks-bracelet-counter-' + player_id, _("Number of completed bracelets."), '');
+                this.braceletCounters[player_id] = new ebg.counter();
+                this.braceletCounters[player_id].create(bracelet_counter_span);
+                this.braceletCounters[player_id].setValue(2);
+                var link_counter_span = document.createElement('span');
+                player_board_div.insertAdjacentHTML('afterbegin', "<i class=\"lovelinks-link-counter\" id=\"lovelinks-link-counter-".concat(player_id, "\"></i>"));
+                player_board_div.prepend(link_counter_span);
+                this.addTooltip('lovelinks-link-counter-' + player_id, _("Number of links in completed bracelets."), '');
+                this.linkCounters[player_id] = new ebg.counter();
+                this.linkCounters[player_id].create(link_counter_span);
+                this.linkCounters[player_id].setValue(12);
+                this.addTooltip('icon_point_' + player_id, _("Points scored."), '');
             }
             for (var bracelet_id in gamedatas.bracelets) {
                 var links = gamedatas.bracelets[bracelet_id];
