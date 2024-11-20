@@ -35,6 +35,16 @@ declare global {
 		'startRound': {
 			round: number
 		}
+		'removeBracelet': {
+			player_id: number,
+			bracelet_id: number,
+			nbr_links: number
+		}
+		'scoreBracelet': {
+			player_id: number,
+			bracelet_id: number,
+			points: number
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */

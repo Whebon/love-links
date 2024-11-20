@@ -17,6 +17,17 @@ define("components/GemstoneColor", ["require", "exports"], function (require, ex
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("components/StaticLoveLinks", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.StaticLoveLinks = void 0;
+    var StaticLoveLinks = (function () {
+        function StaticLoveLinks() {
+        }
+        return StaticLoveLinks;
+    }());
+    exports.StaticLoveLinks = StaticLoveLinks;
+});
 define("components/DbCard", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -88,76 +99,6 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
         return Link;
     }());
     exports.Link = Link;
-});
-define("components/Supply", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Supply = void 0;
-    var Supply = (function () {
-        function Supply(parent, title) {
-            if (title) {
-                var wrap = document.createElement('div');
-                wrap.classList.add("whiteblock");
-                parent.appendChild(wrap);
-                wrap.innerHTML = "\n                <h3 class=\"lovelinks-title\">".concat(title, "</h3>\n                <div class=\"lovelinks-supply-table-wrap\">\n                    <div class=\"lovelinks-supply-table\"></div>\n                </div>\n            ");
-                this.container = wrap.querySelector(".lovelinks-supply-table");
-            }
-            else {
-                this.container = document.createElement('div');
-                this.container.classList.add("lovelinks-supply-table");
-                parent.appendChild(this.container);
-            }
-            this.cells = [];
-            for (var i = 0; i < 9; i++) {
-                this.cells.push([]);
-                for (var j = 0; j < 10; j++) {
-                    var cell = document.createElement('div');
-                    cell.classList.add("lovelinks-supply-cell");
-                    this.container.appendChild(cell);
-                    this.cells[this.cells.length - 1].push(cell);
-                }
-            }
-        }
-        Supply.prototype.add = function (link) {
-            var cell = this.linkToCell(link);
-            var dot = document.createElement('div');
-            dot.classList.add("lovelinks-dot", "lovelinks-dot-" + link.metal);
-            cell.appendChild(dot);
-        };
-        Supply.prototype.remove = function (link) {
-            console.log("supply.remove");
-            var cell = this.linkToCell(link);
-            var child = cell.lastChild;
-            if (!child) {
-                console.log(link);
-                console.warn("Attempted to remove a link that is not in the supply");
-                return;
-            }
-            cell.removeChild(child);
-        };
-        Supply.prototype.linkToCell = function (link) {
-            var i = Math.min(8, link.key - 2);
-            var j = Math.min(9, link.lock - 2);
-            if (!this.cells[i] || !this.cells[i][j]) {
-                console.log(this.cells);
-                throw new Error("this.cells is not setup properly, cell[".concat(i, "][").concat(j, "] is not defined"));
-            }
-            return this.cells[i][j];
-        };
-        return Supply;
-    }());
-    exports.Supply = Supply;
-});
-define("components/StaticLoveLinks", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.StaticLoveLinks = void 0;
-    var StaticLoveLinks = (function () {
-        function StaticLoveLinks() {
-        }
-        return StaticLoveLinks;
-    }());
-    exports.StaticLoveLinks = StaticLoveLinks;
 });
 define("components/Side", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -364,6 +305,21 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 top: -radius * Math.cos(angle) + this.containerHeight / 2 + this.PADDING,
                 rotate: angle
             };
+        };
+        Bracelet.prototype.fadeOut = function (to) {
+            var _this = this;
+            var fadeAnimation = dojo.fadeOut({
+                node: this.container,
+                duration: 1000
+            });
+            fadeAnimation.play();
+            setTimeout(function () {
+                dojo.setStyle(_this.container, 'width', "0px");
+                dojo.setStyle(_this.container, 'height', "0px");
+            }, 1000);
+            setTimeout(function () {
+                _this.container.remove();
+            }, 2000);
         };
         Bracelet.prototype.remove = function () {
             if (this.links.length > 0) {
@@ -575,6 +531,17 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
                     return;
                 }
             }
+        };
+        BraceletArea.prototype.fadeOutBraceletId = function (bracelet_id) {
+            for (var i = 0; i < this.bracelets.length; i++) {
+                if (bracelet_id == this.bracelets[i].bracelet_id) {
+                    this.bracelets[i].fadeOut();
+                    this.bracelets.splice(i, 1);
+                    return;
+                }
+            }
+            console.log(this.bracelets);
+            throw new Error("Bracelet ".concat(bracelet_id, " not found"));
         };
         BraceletArea.prototype.remove = function (bracelet) {
             for (var i = 0; i < this.bracelets.length; i++) {
@@ -859,6 +826,65 @@ define("components/TPL", ["require", "exports"], function (require, exports) {
         return TPL;
     }());
     exports.TPL = TPL;
+});
+define("components/Supply", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Supply = void 0;
+    var Supply = (function () {
+        function Supply(parent, title) {
+            if (title) {
+                var wrap = document.createElement('div');
+                wrap.classList.add("whiteblock");
+                parent.appendChild(wrap);
+                wrap.innerHTML = "\n                <h3 class=\"lovelinks-title\">".concat(title, "</h3>\n                <div class=\"lovelinks-supply-table-wrap\">\n                    <div class=\"lovelinks-supply-table\"></div>\n                </div>\n            ");
+                this.container = wrap.querySelector(".lovelinks-supply-table");
+            }
+            else {
+                this.container = document.createElement('div');
+                this.container.classList.add("lovelinks-supply-table");
+                parent.appendChild(this.container);
+            }
+            this.cells = [];
+            for (var i = 0; i < 9; i++) {
+                this.cells.push([]);
+                for (var j = 0; j < 10; j++) {
+                    var cell = document.createElement('div');
+                    cell.classList.add("lovelinks-supply-cell");
+                    this.container.appendChild(cell);
+                    this.cells[this.cells.length - 1].push(cell);
+                }
+            }
+        }
+        Supply.prototype.add = function (link) {
+            var cell = this.linkToCell(link);
+            var dot = document.createElement('div');
+            dot.classList.add("lovelinks-dot", "lovelinks-dot-" + link.metal);
+            cell.appendChild(dot);
+        };
+        Supply.prototype.remove = function (link) {
+            console.log("supply.remove");
+            var cell = this.linkToCell(link);
+            var child = cell.lastChild;
+            if (!child) {
+                console.log(link);
+                console.warn("Attempted to remove a link that is not in the supply");
+                return;
+            }
+            cell.removeChild(child);
+        };
+        Supply.prototype.linkToCell = function (link) {
+            var i = Math.min(8, link.key - 2);
+            var j = Math.min(9, link.lock - 2);
+            if (!this.cells[i] || !this.cells[i][j]) {
+                console.log(this.cells);
+                throw new Error("this.cells is not setup properly, cell[".concat(i, "][").concat(j, "] is not defined"));
+            }
+            return this.cells[i][j];
+        };
+        return Supply;
+    }());
+    exports.Supply = Supply;
 });
 define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "components/Supply", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1, Supply_1) {
     "use strict";
@@ -1244,12 +1270,31 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 ['newBracelet', 1000],
                 ['refillStock', 2000],
                 ['placeLink', 1000],
+                ['scoreBracelet', 1500],
+                ['removeBracelet', 1000],
                 ['startRound', 1]
             ];
             notifs.forEach(function (notif) {
                 dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
                 _this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
+        };
+        LoveLinks.prototype.notif_scoreBracelet = function (notif) {
+            var _a;
+            console.log('notif_scoreBracelet', notif);
+            var label = document.createElement('div');
+            label.innerHTML = (notif.args.points > 0 ? "+" : "") + notif.args.points;
+            label.classList.add("lovelinks-points");
+            this.bracelets.get(notif.args.bracelet_id).container.appendChild(label);
+            dojo.setStyle(label, 'color', "#" + this.gamedatas.players[notif.args.player_id].color);
+            (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.incValue(notif.args.points);
+        };
+        LoveLinks.prototype.notif_removeBracelet = function (notif) {
+            console.log('notif_removeBracelet', notif);
+            console.log(this.braceletCounters);
+            this.bracelets.fadeOutBraceletId(notif.args.bracelet_id);
+            this.braceletCounters[notif.args.player_id].incValue(1);
+            this.linkCounters[notif.args.player_id].incValue(notif.args.nbr_links);
         };
         LoveLinks.prototype.notif_placeLink = function (notif) {
             console.log('notif_placeLink', notif);

@@ -1,5 +1,3 @@
-import Gamegui = require('ebg/core/gamegui');
-
 import { StaticLoveLinks } from "./StaticLoveLinks"
 import { Link } from "./Link"
 import { Side } from './Side';
@@ -268,6 +266,25 @@ export class Bracelet {
             top: -radius*Math.cos(angle) + this.containerHeight/2 + this.PADDING,
             rotate: angle
         }
+    }
+
+    /**
+     * Fade out delete this bracelet. Then remove it.
+     */
+    public fadeOut(to?: string) {
+        const fadeAnimation = dojo.fadeOut({ 
+            node: this.container, 
+            //end: () => dojo.destroy(this.container),
+            duration: 1000
+        });
+        fadeAnimation.play();
+        setTimeout(() => {
+            dojo.setStyle(this.container, 'width', `0px`);
+            dojo.setStyle(this.container, 'height', `0px`);
+        }, 1000);
+        setTimeout(() => {
+            this.container.remove();
+        }, 2000);
     }
 
     /**

@@ -22,6 +22,8 @@ use BgaSystemException;
 use BgaUserException;
 use BgaVisibleSystemException;
 
+use function PHPSTORM_META\map;
+
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 if (!defined('STOCK')) {
@@ -626,7 +628,7 @@ class Game extends \Table
        
         //if the player completed a bracelet, they need to start a new bracelet as a free action
         if ($side == "both") {
-            $this->deck->moveAllCardsInLocationKeepOrder($link_id, BRACELET.$bracelet_id);
+            $this->completeBracelet($bracelet_id);
             $this->dummyNextState("trNewBracelet");
             return;
         }
@@ -824,6 +826,101 @@ class Game extends \Table
     }
 
     
+    /////////////////////////////////////////////////
+    ///////  ~scoring
+
+    /**
+     * The active player completed a bracelet and scores points
+     */
+    public function completeBracelet($bracelet_id) {
+        $player_id = $this->getActivePlayerId();
+        $links = $this->deck->getCardsInLocation(BRACELET.$bracelet_id);
+
+        $this->notifyAllPlayers('message', clienttranslate('${player_name} completed a bracelet'), array(
+            "player_name" => $this->getPlayerNameById($player_id)
+        ));
+
+        $this->scoreBraceletMetal($player_id, $bracelet_id, $links);
+        $this->scoreBraceletLongBracelet($player_id, $bracelet_id, $links);
+        $this->scoreBraceletGemstone($player_id, $bracelet_id, $links);
+        $this->scoreBraceletDomination($player_id, $bracelet_id, $links);
+        $this->scoreBraceletDiamond($player_id, $bracelet_id, $links);
+        $this->scoreBraceletEmerald($player_id, $bracelet_id, $links);
+        $this->scoreBraceletMatchingLink($player_id, $bracelet_id, $links);
+
+        $this->deck->moveAllCardsInLocationKeepOrder(BRACELET.$bracelet_id, COMPLETED.$bracelet_id);
+        $this->notifyAllPlayers('removeBracelet', '', array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "bracelet_id" => $bracelet_id,
+            "nbr_links" => count($links)
+        ));
+    }
+
+    public function scoreBraceletMetal($player_id, $bracelet_id, $links) {
+        $counts = array(
+            BRONZE => 0,
+            SILVER => 0,
+            GOLD => 0
+        );
+        foreach ($links as $link_id => $link) {
+            $counts[$this->getMetal($link_id)]++;
+        }
+        $this->scoreBracelet($player_id, $bracelet_id, 2*$counts[BRONZE], clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} bronze links(s)'), array(
+            "nbr" => $counts[BRONZE]
+        ));
+        $this->scoreBracelet($player_id, $bracelet_id, 3*$counts[SILVER], clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} silver links(s)'), array(
+            "nbr" => $counts[SILVER]
+        ));
+        $this->scoreBracelet($player_id, $bracelet_id, 5*$counts[GOLD], clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} golden link(s)'), array(
+            "nbr" => $counts[GOLD]
+        ));
+    }
+
+    public function scoreBraceletLongBracelet($player_id, $bracelet_id, $links) {
+        $length = count($links);
+        $points = max(0, 2*$length-10);
+        $this->scoreBracelet($player_id, $bracelet_id, $points, clienttranslate('Long bracelet points: ${player_name} scores ${points} for a bracelet of length ${length}'), array(
+            "length" => $length
+        ));
+    }
+
+    public function scoreBraceletGemstone($player_id, $bracelet_id, $links) {
+        //TODO
+    }
+
+    public function scoreBraceletDomination($player_id, $bracelet_id, $links) {
+        //TODO
+    }
+
+    public function scoreBraceletDiamond($player_id, $bracelet_id, $links) {
+        //TODO
+    }
+
+    public function scoreBraceletEmerald($player_id, $bracelet_id, $links) {
+        //TODO
+    }
+
+    public function scoreBraceletMatchingLink($player_id, $bracelet_id, $links) {
+        //TODO
+    }
+
+    /**
+     * Score points for a bracelet and notify players
+     */
+    public function scoreBracelet(mixed $player_id, mixed $bracelet_id, int $points, string $notificationLog, array $additionalNotificationArgs) {
+        if ($points == 0) {
+            return;
+        }
+        $notificationArgs = array_merge( array(
+            "player_id" => $player_id,
+            "player_name" => $this->getPlayerNameById($player_id),
+            "bracelet_id" => $bracelet_id,
+            "points" => $points
+        ), $additionalNotificationArgs);
+        $this->notifyAllPlayers('scoreBracelet', $notificationLog, $notificationArgs);
+    }
+
     /////////////////////////////////////////////////
     ///////  ~utility
 
@@ -1072,6 +1169,9 @@ class Game extends \Table
         return $link." ".$key."-".$lock;
     }
 
+    public function getMetal(int $link_id) {
+        return self::$CARD_TYPES[$link_id]["metal"];
+    }
 
     public function getKey(int $link_id) {
         return self::$CARD_TYPES[$link_id]["key"];

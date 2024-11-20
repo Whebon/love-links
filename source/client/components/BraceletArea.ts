@@ -67,6 +67,21 @@ export class BraceletArea {
     /**
      * Remove the given bracelet
      */
+    public fadeOutBraceletId(bracelet_id: number) {
+        for (let i = 0; i < this.bracelets.length; i++) {
+            if (bracelet_id == this.bracelets[i]!.bracelet_id) {
+                this.bracelets[i]!.fadeOut();
+                this.bracelets.splice(i, 1);
+                return;
+            }
+        }
+        console.log(this.bracelets);
+        throw new Error(`Bracelet ${bracelet_id} not found`);
+    }
+
+    /**
+     * Remove the given bracelet
+     */
     public remove(bracelet: Bracelet) {
         for (let i = 0; i < this.bracelets.length; i++) {
             if (bracelet.bracelet_id == this.bracelets[i]!.bracelet_id) {

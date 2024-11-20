@@ -12,6 +12,40 @@
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
+.lovelinks-points {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: fit-content;
+  font-size: xxx-large;
+  z-index: 10;
+  color: black;
+  animation: wiggleUpwards 1.5s linear;
+  opacity: 0;
+}
+
+@keyframes wiggleUpwards {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(-50%, -50%) translate(-5px, -25%);
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(0, -50%);
+    opacity: 1;
+  }
+  75% {
+    transform: translate(-50%, -50%) translate(-5px, -75%);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(0, -100%);
+    opacity: 0;
+  }
+}
 .lovelinks-bracelet-counter {
   background-image: url("img/icons.png");
   background-size: 200% 100%;
