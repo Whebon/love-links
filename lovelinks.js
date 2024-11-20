@@ -918,7 +918,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             console.log(gamedatas);
             TPL_1.TPL.init(this);
             var gamePlayArea = document.getElementById("game_play_area");
-            this.bracelets = new BraceletArea_1.BraceletArea(gamePlayArea, 0, _("Bracelets"), this.onClickBracelet.bind(this));
+            this.bracelets = new BraceletArea_1.BraceletArea(gamePlayArea, 0, _("Bracelets-in-assembly"), this.onClickBracelet.bind(this));
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];
                 var player_board = document.getElementById("player_board_" + player_id);
@@ -960,7 +960,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     bracelet.appendLink(Link_3.Link.ofDbCard(link));
                 }
             }
-            this.supply = new Supply_1.Supply(gamePlayArea, _("Supply"));
+            this.supply = new Supply_1.Supply(gamePlayArea, _("Links still to come"));
             for (var link_id in gamedatas.bronze_remaining) {
                 this.supply.add(Link_3.Link.ofId(+link_id));
             }

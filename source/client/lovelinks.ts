@@ -77,7 +77,7 @@ class LoveLinks extends Gamegui
 		const gamePlayArea = document.getElementById("game_play_area")!;
 
 		//Create the bracelet area
-		this.bracelets = new BraceletArea(gamePlayArea, 0, _("Bracelets"), this.onClickBracelet.bind(this));
+		this.bracelets = new BraceletArea(gamePlayArea, 0, _("Bracelets-in-assembly"), this.onClickBracelet.bind(this));
 		for (const player_id in gamedatas.players) {
 			const player = gamedatas.players[player_id]!;
 			const player_board = document.getElementById("player_board_"+player_id)!;
@@ -135,7 +135,7 @@ class LoveLinks extends Gamegui
 		}
 
 		// Create the supply
-		this.supply = new Supply(gamePlayArea, _("Supply"));
+		this.supply = new Supply(gamePlayArea, _("Links still to come"));
 		for (const link_id in gamedatas.bronze_remaining) {
 			this.supply.add(Link.ofId(+link_id));
 		}
