@@ -1013,7 +1013,12 @@ class Game extends \Table
     }
 
     public function scoreBraceletDomination($player_id, $bracelet_id, $links) {
-        //TODO
+        foreach ($links as $link_id => $link) {
+            if ($link["type_arg"] != 0 && $link["type_arg"] != $player_id) {
+                return; //skip domination points if any gemstone is non-empty, non-owned
+            }
+        }
+        $this->scoreBracelet($player_id, $bracelet_id, 10, 'domination', clienttranslate('Diamond points: ${player_name} scores ${points}'), array());
     }
 
     public function scoreBraceletDiamond($player_id, $bracelet_id, $links) {
