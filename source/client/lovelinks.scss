@@ -28,7 +28,8 @@
         animation: wiggleUpwards 1.5s linear;
     }
     &.lovelinks-points-negative {
-        animation: wiggleDownwards 1.5s linear;
+        animation: wiggleUpwards 1.5s linear;
+        //animation: wiggleDownwards 1.5s linear;
     }
 }
 
