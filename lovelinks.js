@@ -1356,9 +1356,18 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 case 'matching':
                     keyword = _("Matching Link");
                     break;
+                case 'master':
+                    keyword = _("Master Lock");
+                    break;
             }
             label.innerHTML = (notif.args.points > 0 ? "+" : "") + notif.args.points + " " + notif.args.keyword;
             label.classList.add("lovelinks-points");
+            if (notif.args.points > 0) {
+                label.classList.add("lovelinks-points-positive");
+            }
+            else {
+                label.classList.add("lovelinks-points-negative");
+            }
             this.bracelets.get(notif.args.bracelet_id).container.appendChild(label);
             dojo.setStyle(label, 'color', "#" + this.gamedatas.players[notif.args.player_id].color);
             (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.incValue(notif.args.points);

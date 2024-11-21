@@ -1,1 +1,1 @@
-export type ScoreKeyword = "bronze" | "silver" | "gold" | "long" | "gemstone" | "domination" | "emerald" | "diamond" | "matching"
+export type ScoreKeyword = "bronze" | "silver" | "gold" | "long" | "gemstone" | "domination" | "emerald" | "diamond" | "matching" | "master"

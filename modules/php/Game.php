@@ -712,6 +712,9 @@ class Game extends \Table
             "side" => $side
         ));
 
+        //master lock penalty
+        $this->masterLockPenalty($player_id, $bracelet_id, $link);
+
         //score points for completing a bracelet
         if ($side == "both") {
             $this->completeBracelet($bracelet_id);
@@ -754,12 +757,12 @@ class Game extends \Table
     public function actNewBracelet(int $link_id) {
         $player_id = $player_id = $this->getActivePlayerId();
         $link = $this->deck->getCardFromLocation($link_id, STOCK.$player_id);
-        $this->createBraceletFromActivePlayer($link_id);
 
         //2 cases:
         // * if the player completed a bracelet, they need to start a new bracelet as a free action (mandatory_new_bracelet)
         // * if the player cannot make a move, they are allowed to start a new bracelet
 
+        //make sure the player is allowed to start a new bracelet
         $mandatory_new_bracelet = $this->getGameStateValue("mandatory_new_bracelet");
         if ($mandatory_new_bracelet) {
             $this->setGameStateValue("mandatory_new_bracelet", 0);
@@ -767,6 +770,13 @@ class Game extends \Table
         else if ($this->hasPossibleMoves($player_id)) {
             throw new BgaUserException(_("Unable to start a new bracelet. You must extend an existing bracelet if possible."));
         }
+
+        //create the new bracelet
+        $bracelet_id = $link_id;
+        $this->createBraceletFromActivePlayer($bracelet_id);
+
+        //master lock penalty
+        $this->masterLockPenalty($player_id, $bracelet_id, $link);
 
         //increase the number of placements this turn (if this is a "free action", the bracelet completion was not counted as a placement)
         $placements = $this->getGameStateValue("placements");
@@ -1078,6 +1088,12 @@ class Game extends \Table
         $this->DbQuery($sql);
     }
 
+    public function masterLockPenalty($player_id, $bracelet_id, $link) {
+        if ($this->getLock((int)$link["id"]) == MASTER) {
+            $this->scoreBracelet($player_id, $bracelet_id, -2, 'master', clienttranslate('Master Lock Penalty: ${player_name} loses ${points} for placing the master lock'), array());
+        }
+    }
+
     /**
      * Score points for a bracelet and notify players
      */
@@ -1111,9 +1127,11 @@ class Game extends \Table
                 $key_link_id = reset($bracelet)["id"];
                 $lock_link_id = end($bracelet)["id"];
                 if ($this->isValidConnection($key_link_id, $playerLink["id"])) {
+                    die("a".$key_link_id);
                     return true;
                 }
                 if ($this->isValidConnection($playerLink["id"], $lock_link_id)) {
+                    die("b".$key_link_id);
                     return true;
                 }
             }
