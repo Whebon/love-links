@@ -37,6 +37,10 @@ define("components/StaticLoveLinks", ["require", "exports"], function (require, 
     }());
     exports.StaticLoveLinks = StaticLoveLinks;
 });
+define("components/Bonus", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("components/DbCard", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -74,6 +78,17 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(Link.prototype, "bonus", {
+            get: function () {
+                var link = StaticLoveLinks_1.StaticLoveLinks.page.gamedatas.card_types[this.id];
+                if (!link) {
+                    throw new Error("Link ".concat(this.id, "'s metal is not defined by the server"));
+                }
+                return link.bonus;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Link.prototype.key_displayed = function () {
             return this.key == Link.MASTER ? "M" : this.key;
         };
@@ -104,7 +119,7 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
         };
         Link.UNIQUE_ID = 999;
         Link.links = new Map();
-        Link.MASTER = 48;
+        Link.MASTER = 240;
         return Link;
     }());
     exports.Link = Link;
@@ -219,7 +234,8 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             var _this = this;
             var color = StaticLoveLinks_2.StaticLoveLinks.page.getGemstoneColor(link.gemstone);
             var metal = link.metal;
-            this.container.insertAdjacentHTML('afterbegin', "\n            <div style=\"width: ".concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-key lovelinks-").concat(metal, "\" id=\"lovelinks-key-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.key_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-lock lovelinks-").concat(metal, "\" id=\"lovelinks-lock-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.lock_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.GEMSTONE_WIDTH, "px; height: ").concat(this.GEMSTONE_HEIGHT, "px;\" class=\"lovelinks-gemstoneholder lovelinks-").concat(metal, "\" id=\"lovelinks-gemstone-").concat(link.id, "\">\n                <div style=\"width: ").concat(this.GEMSTONE_WIDTH * this.GEMSTONE_FACTOR, "px; height: ").concat(this.GEMSTONE_HEIGHT * this.GEMSTONE_FACTOR, "px;\" \n                class=\"lovelinks-gemstone lovelinks-gemstone-color-").concat(color, "\"></div>\n            </div>\n        "));
+            var bonus = link.bonus;
+            this.container.insertAdjacentHTML('afterbegin', "\n            <div style=\"width: ".concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-key lovelinks-").concat(metal, "\" id=\"lovelinks-key-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.key_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-lock lovelinks-").concat(metal, "\" id=\"lovelinks-lock-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.lock_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.GEMSTONE_WIDTH, "px; height: ").concat(this.GEMSTONE_HEIGHT, "px;\" class=\"lovelinks-gemstoneholder lovelinks-").concat(metal, " lovelinks-").concat(bonus, "\" id=\"lovelinks-gemstone-").concat(link.id, "\">\n                <div style=\"width: ").concat(this.GEMSTONE_WIDTH * this.GEMSTONE_FACTOR, "px; height: ").concat(this.GEMSTONE_HEIGHT * this.GEMSTONE_FACTOR, "px;\" \n                class=\"lovelinks-gemstone lovelinks-gemstone-color-").concat(color, "\"></div>\n            </div>\n        "));
             var prevDivs = link.divs;
             var newDivs = {
                 key: this.container.querySelector(".lovelinks-key"),
@@ -1295,7 +1311,8 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 ['placeLink', 1000],
                 ['scoreBracelet', 1500],
                 ['removeBracelet', 1500],
-                ['startRound', 1]
+                ['startRound', 1],
+                ['debugMessage', 1]
             ];
             notifs.forEach(function (notif) {
                 dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
@@ -1391,6 +1408,10 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 var number_of_slots = this.gamedatas.round == 1 ? 5 : 4;
                 this.stocks[player_id].removeBraceletIdsAbove(number_of_slots);
             }
+        };
+        LoveLinks.prototype.notif_debugMessage = function (notif) {
+            console.log('notif_debugMessage', notif);
+            this.showMessage(notif.args.msg, 'info');
         };
         return LoveLinks;
     }(Gamegui));

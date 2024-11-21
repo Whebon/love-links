@@ -1,3 +1,4 @@
+import { Bonus } from "./Bonus";
 import { DbCard } from "./DbCard";
 import { Metal } from "./Metal";
 import { StaticLoveLinks } from "./StaticLoveLinks";
@@ -18,7 +19,7 @@ export interface LinkDivs {
 export class Link {
     private static UNIQUE_ID: number = 999;
     private static links: Map<number, Link> = new Map<number, Link>();
-    private static MASTER = 48;
+    private static MASTER = 240;
 
     public id: number;
     public key: number;
@@ -46,6 +47,14 @@ export class Link {
             throw new Error(`Link ${this.id}'s metal is not defined by the server`);
         }
         return link.metal;
+    }
+
+    public get bonus(): Bonus {
+        const link = StaticLoveLinks.page.gamedatas.card_types[this.id];
+        if (!link) {
+            throw new Error(`Link ${this.id}'s metal is not defined by the server`);
+        }
+        return link.bonus;
     }
     
     public key_displayed(): string | number {

@@ -649,7 +649,8 @@ class LoveLinks extends Gamegui
 			['placeLink', 1000],
 			['scoreBracelet', 1500],
 			['removeBracelet', 1500],
-			['startRound', 1]
+			['startRound', 1],
+			['debugMessage', 1]
 		];
 
 		notifs.forEach((notif) => {
@@ -771,6 +772,11 @@ class LoveLinks extends Gamegui
 			const number_of_slots = this.gamedatas.round == 1 ? 5 : 4;
 			this.stocks[player_id]!.removeBraceletIdsAbove(number_of_slots);
 		}
+	}
+
+	notif_debugMessage(notif: NotifFrom<'debugMessage'>) {
+		console.log('notif_debugMessage', notif);
+		this.showMessage(notif.args.msg, 'info');
 	}
 }
 

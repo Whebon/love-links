@@ -172,6 +172,15 @@
 .lovelinks-gemstoneholder.lovelinks-gold {
   background-position-x: -200%;
 }
+.lovelinks-gemstoneholder.lovelinks-nobonus {
+  background-position-y: 0%;
+}
+.lovelinks-gemstoneholder.lovelinks-emerald {
+  background-position-y: -100%;
+}
+.lovelinks-gemstoneholder.lovelinks-diamond {
+  background-position-y: -200%;
+}
 
 .lovelinks-player-board-icon-1 {
   height: 20px;

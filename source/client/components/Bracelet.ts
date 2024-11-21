@@ -135,6 +135,7 @@ export class Bracelet {
     private registerLink(link: Link) {
         const color = StaticLoveLinks.page.getGemstoneColor(link.gemstone);
         const metal = link.metal;
+        const bonus = link.bonus;
         this.container.insertAdjacentHTML('afterbegin', `
             <div style="width: ${this.LINK_WIDTH}px; height: ${this.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-key lovelinks-${metal}" id="lovelinks-key-${link.id}">
                 <div class="lovelinks-number">${link.key_displayed()}</div>
@@ -142,7 +143,7 @@ export class Bracelet {
             <div style="width: ${this.LINK_WIDTH}px; height: ${this.LINK_HEIGHT}px;" class="lovelinks-heart lovelinks-lock lovelinks-${metal}" id="lovelinks-lock-${link.id}">
                 <div class="lovelinks-number">${link.lock_displayed()}</div>
             </div>
-            <div style="width: ${this.GEMSTONE_WIDTH}px; height: ${this.GEMSTONE_HEIGHT}px;" class="lovelinks-gemstoneholder lovelinks-${metal}" id="lovelinks-gemstone-${link.id}">
+            <div style="width: ${this.GEMSTONE_WIDTH}px; height: ${this.GEMSTONE_HEIGHT}px;" class="lovelinks-gemstoneholder lovelinks-${metal} lovelinks-${bonus}" id="lovelinks-gemstone-${link.id}">
                 <div style="width: ${this.GEMSTONE_WIDTH*this.GEMSTONE_FACTOR}px; height: ${this.GEMSTONE_HEIGHT*this.GEMSTONE_FACTOR}px;" 
                 class="lovelinks-gemstone lovelinks-gemstone-color-${color}"></div>
             </div>

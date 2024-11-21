@@ -218,6 +218,18 @@
     &.lovelinks-gold {
         background-position-x: -200%;
     }
+
+    &.lovelinks-nobonus {
+        background-position-y: 0%;
+    }
+
+    &.lovelinks-emerald {
+        background-position-y: -100%;
+    }
+
+    &.lovelinks-diamond {
+        background-position-y: -200%;
+    }
 }
 
 .lovelinks-player-board-icon-1 {

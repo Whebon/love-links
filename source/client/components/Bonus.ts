@@ -1,0 +1,1 @@
+export type Bonus = "nobonus" | "emerald" | "diamond";

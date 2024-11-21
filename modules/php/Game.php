@@ -35,12 +35,15 @@ if (!defined('STOCK')) {
     define('SILVER', 'silver');
     define('GOLD', 'gold');
     define('TEMP', 'temp');
-    define('MASTER', 48);
+    define('MASTER', 240);
+    define('NOBONUS', 'nobonus');
+    define('EMERALD', 'emerald');
+    define('DIAMOND', 'diamond');
 }
 
 class Game extends \Table
 {
-    private static int $SHORT_GAME_POINTS_TO_WIN = 28;
+    private static int $SHORT_GAME_POINTS_TO_WIN = 90;
     private static array $CARD_TYPES;
     private static int $PLACEMENTS_PER_TURN = 2;
     private LoveLinksDeck $deck;
@@ -71,462 +74,554 @@ class Game extends \Table
             1 => [
                 "key" => 2,
                 "lock" => 3,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             2 => [
                 "key" => 2,
                 "lock" => 3,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             3 => [
                 "key" => 2,
                 "lock" => 4,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             4 => [
                 "key" => 2,
                 "lock" => 4,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             5 => [
                 "key" => 2,
                 "lock" => 5,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             6 => [
                 "key" => 2,
                 "lock" => 5,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             7 => [
                 "key" => 2,
                 "lock" => 6,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             8 => [
                 "key" => 2,
                 "lock" => 6,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             9 => [
                 "key" => 2,
                 "lock" => 7,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             10 => [
                 "key" => 2,
                 "lock" => 7,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             11 => [
                 "key" => 2,
                 "lock" => 8,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             12 => [
                 "key" => 2,
                 "lock" => 8,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             13 => [
                 "key" => 3,
                 "lock" => 2,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             14 => [
                 "key" => 3,
                 "lock" => 4,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             15 => [
                 "key" => 3,
                 "lock" => 4,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             16 => [
                 "key" => 3,
                 "lock" => 5,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             17 => [
                 "key" => 3,
                 "lock" => 5,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             18 => [
                 "key" => 3,
                 "lock" => 6,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             19 => [
                 "key" => 3,
                 "lock" => 6,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             20 => [
                 "key" => 3,
                 "lock" => 7,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             21 => [
                 "key" => 3,
                 "lock" => 7,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             22 => [
                 "key" => 4,
                 "lock" => 2,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             23 => [
                 "key" => 4,
                 "lock" => 5,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             24 => [
                 "key" => 4,
                 "lock" => 5,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             25 => [
                 "key" => 4,
                 "lock" => 6,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             26 => [
                 "key" => 4,
                 "lock" => 6,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             27 => [
                 "key" => 5,
                 "lock" => 2,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             28 => [
                 "key" => 5,
                 "lock" => 3,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             29 => [
                 "key" => 5,
                 "lock" => 4,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             30 => [
                 "key" => 5,
                 "lock" => 4,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             31 => [
                 "key" => 6,
                 "lock" => 4,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             32 => [
                 "key" => 7,
                 "lock" => 2,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => DIAMOND
             ],
             33 => [
                 "key" => 7,
                 "lock" => MASTER,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             34 => [
                 "key" => 7,
                 "lock" => MASTER,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             35 => [
                 "key" => 8,
                 "lock" => 2,
-                "metal" => BRONZE
+                "metal" => BRONZE,
+                "bonus" => NOBONUS
             ],
             36 => [
                 "key" => 2,
                 "lock" => 9,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             37 => [
                 "key" => 2,
                 "lock" => 9,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             38 => [
                 "key" => 2,
                 "lock" => 10,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             39 => [
                 "key" => 2,
                 "lock" => 10,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             40 => [
                 "key" => 3,
                 "lock" => 8,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             41 => [
                 "key" => 3,
                 "lock" => 8,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             42 => [
                 "key" => 3,
                 "lock" => 9,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             43 => [
                 "key" => 3,
                 "lock" => 9,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             44 => [
                 "key" => 3,
                 "lock" => 10,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             45 => [
                 "key" => 3,
                 "lock" => 10,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             46 => [
                 "key" => 4,
                 "lock" => 7,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             47 => [
                 "key" => 4,
                 "lock" => 7,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             48 => [
                 "key" => 4,
                 "lock" => 8,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             49 => [
                 "key" => 4,
                 "lock" => 8,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             50 => [
                 "key" => 4,
                 "lock" => 9,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             51 => [
                 "key" => 4,
                 "lock" => 9,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             52 => [
                 "key" => 5,
                 "lock" => 6,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             53 => [
                 "key" => 5,
                 "lock" => 6,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             54 => [
                 "key" => 5,
                 "lock" => 8,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             55 => [
                 "key" => 5,
                 "lock" => 8,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             56 => [
                 "key" => 6,
                 "lock" => 7,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             57 => [
                 "key" => 7,
                 "lock" => 4,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => EMERALD
             ],
             58 => [
                 "key" => 7,
                 "lock" => 6,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => EMERALD
             ],
             59 => [
                 "key" => 8,
                 "lock" => 4,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             60 => [
                 "key" => 9,
                 "lock" => 4,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             61 => [
                 "key" => 9,
                 "lock" => MASTER,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             62 => [
                 "key" => 9,
                 "lock" => MASTER,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             63 => [
                 "key" => 10,
                 "lock" => 3,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             64 => [
                 "key" => 10,
                 "lock" => MASTER,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             65 => [
                 "key" => 10,
                 "lock" => MASTER,
-                "metal" => SILVER
+                "metal" => SILVER,
+                "bonus" => NOBONUS
             ],
             66 => [
                 "key" => 4,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             67 => [
                 "key" => 4,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             68 => [
                 "key" => 5,
                 "lock" => 9,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             69 => [
                 "key" => 5,
                 "lock" => 9,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             70 => [
                 "key" => 5,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             71 => [
                 "key" => 5,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             72 => [
                 "key" => 6,
                 "lock" => 8,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             73 => [
                 "key" => 6,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             74 => [
                 "key" => 6,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             75 => [
                 "key" => 7,
                 "lock" => 8,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => EMERALD
             ],
             76 => [
                 "key" => 7,
                 "lock" => 8,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => EMERALD
             ],
             77 => [
                 "key" => 7,
                 "lock" => 9,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => EMERALD
             ],
             78 => [
                 "key" => 7,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => EMERALD
             ],
             79 => [
                 "key" => 7,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => EMERALD
             ],
             80 => [
                 "key" => 8,
                 "lock" => 6,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             81 => [
                 "key" => 8,
                 "lock" => 9,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             82 => [
                 "key" => 8,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             83 => [
                 "key" => 8,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             84 => [
                 "key" => 9,
                 "lock" => 6,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             85 => [
                 "key" => 9,
                 "lock" => 8,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             86 => [
                 "key" => 9,
                 "lock" => 8,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             87 => [
                 "key" => 9,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             88 => [
                 "key" => 9,
                 "lock" => 10,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             89 => [
                 "key" => 10,
                 "lock" => 4,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             90 => [
                 "key" => 10,
                 "lock" => 7,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => DIAMOND
             ],
             91 => [
                 "key" => 10,
                 "lock" => 8,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
             92 => [
                 "key" => 10,
                 "lock" => 9,
-                "metal" => GOLD
+                "metal" => GOLD,
+                "bonus" => NOBONUS
             ],
         ];
 
@@ -1128,6 +1223,114 @@ class Game extends \Table
                 $this->createBraceletFromSupply((int)$link["id"]);
             }
         }
+    }
+
+    /**
+     * Get first link id corresponding to a key lock pair
+     */
+    function getLinkId($key, $lock) {
+        if ($lock == 0) {
+            $lock = MASTER;
+        }
+        foreach (self::$CARD_TYPES as $type_id => $card_type) {
+            if ($card_type["key"] == $key && $card_type["lock"] == $lock) {
+                return $type_id;
+            }
+        }
+        throw new BgaUserException("link $key - $lock does not exist");
+    }
+
+    /////////////////////////////////////////////////
+    ///////  ~debug
+
+    /**
+     * Move all links back into the supply
+     */
+    function debugDestroyAll() {
+        $links = $this->deck->getCardsInLocationPrefix("");
+        foreach ($links as $_ => $link) { 
+            $this->deck->moveCard($link["id"], $this->getMetal((int)$link["id"]));
+        }
+        $this->notifyAllPlayers('debugMessage', '', array('msg' => "debugDestroyAll successful, please REFRESH the page"));
+    }
+
+    /**
+     * Move all links in bracelets back into the supply
+     */
+    function debugDestroyBracelets() {
+        $links = $this->deck->getCardsInLocationPrefix(BRACELET);
+        foreach ($links as $_ => $link) { 
+            $this->deck->moveCard($link["id"], $this->getMetal((int)$link["id"]));
+        }
+    }
+
+    /**
+     * Move all links in the current player's stock back into the supply
+     */
+    function debugDestroyStock($player_id) {
+        $links = $this->deck->getCardsInLocationPrefix(STOCK.$player_id);
+        foreach ($links as $_ => $link) { 
+            $this->deck->moveCard($link["id"], $this->getMetal((int)$link["id"]));
+        }
+    }
+
+    /**
+     * example: debugBracelet(2,7,7,10,10,4,4,7)
+     */
+    function debugBracelet(...$key_lock_values) {
+        $this->debugDestroyBracelets();
+        $this->_debugBracelet(1000, ...$key_lock_values); 
+    } 
+    function debugBracelet1(...$key_lock_values) {
+        $this->debugDestroyBracelets();
+        $this->_debugBracelet(1001, ...$key_lock_values); 
+    } 
+    function debugBracelet2(...$key_lock_values) {
+        $this->_debugBracelet(1002, ...$key_lock_values); 
+    } 
+    function debugBracelet3(...$key_lock_values) {
+        $this->_debugBracelet(1003, ...$key_lock_values); 
+    } 
+    function debugBracelet4(...$key_lock_values) {
+        $this->_debugBracelet(1004, ...$key_lock_values); 
+    } 
+    function debugBracelet5(...$key_lock_values) {
+        $this->_debugBracelet(1005, ...$key_lock_values); 
+    } 
+    function _debugBracelet($bracelet_id, ...$key_lock_values) {
+        $n = count($key_lock_values);
+        if ($n % 2 == 1) {
+            throw new BgaUserException("Please provide an even number of values");
+        }
+        for ($i = 0; $i < $n; $i+=2) { 
+            $key = (int)$key_lock_values[$i];
+            $lock = (int)$key_lock_values[$i+1];
+            $link_id = $this->getLinkId($key, $lock);
+            $gemstone = array_rand($this->getNextPlayerTable());
+            $this->deck->assignCards(array($link_id), $gemstone);
+            $this->deck->moveCard($link_id, BRACELET.$bracelet_id, $i/2);
+        }
+        $this->notifyAllPlayers('debugMessage', '', array('msg' => "debugBracelet successful, please REFRESH the page"));
+    }
+
+    /**
+     * example: debugStock(7,2,7,4,4,7)
+     */
+    function debugStock(...$key_lock_values) {
+        $player_id = $this->getCurrentPlayerId();
+        $this->debugDestroyStock($player_id);
+        $n = count($key_lock_values);
+        if ($n % 2 == 1) {
+            throw new BgaUserException("Please provide an even number of values");
+        }
+        for ($i = 0; $i < $n; $i+=2) { 
+            $key = (int)$key_lock_values[$i];
+            $lock = (int)$key_lock_values[$i+1];
+            $link_id = $this->getLinkId($key, $lock);
+            $this->deck->assignCards(array($link_id), $player_id);
+            $this->deck->moveCard($link_id, STOCK.$player_id, $i/2);
+        }
+        $this->notifyAllPlayers('debugMessage', '', array('msg' => "debugStock successful, please REFRESH the page"));
     }
 
     /**

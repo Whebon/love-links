@@ -11,6 +11,7 @@
 import { DbCard } from './components/DbCard';
 import { Side } from './components/Side';
 import { Metal } from './components/Metal';
+import { Bonus } from './components/Bonus';
 
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
@@ -46,6 +47,9 @@ declare global {
 			bracelet_id: number,
 			points: number
 		}
+		'debugMessage': {
+			msg: string
+		}
 	}
 
 	/** @gameSpecific Add game specific gamedatas arguments here. See {@link Gamedatas} for more information. */
@@ -55,7 +59,8 @@ declare global {
 			[link_id: number]: {
 				key: number,
 				lock: number,
-				metal: Metal
+				metal: Metal,
+				bonus: Bonus
 			}
 		}
 		'round': number
