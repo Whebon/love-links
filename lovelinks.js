@@ -696,8 +696,11 @@ define("components/CommandManager", ["require", "exports", "components/StaticLov
             var placements = 0;
             for (var _i = 0, _a = this.commands; _i < _a.length; _i++) {
                 var command = _a[_i];
-                if (command instanceof ExtendCommand) {
+                if (command instanceof ExtendCommand || command instanceof NewBraceletCommand) {
                     placements += 1;
+                }
+                if (command instanceof CompleteCommand) {
+                    placements -= 1;
                 }
             }
             return placements;
@@ -1046,12 +1049,12 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             switch (stateName) {
                 case 'newBracelet':
                     this.addActionButton("new-bracelet-button", _("New Bracelet"), "onNewBracelet");
-                    if (this.commandManager.numberOfPlacements() > 0) {
+                    if (this.commandManager.hasCommands()) {
                         this.addUndoButton();
                     }
                     break;
                 case 'client_placeLink':
-                    if (this.commandManager.numberOfPlacements() > 0) {
+                    if (this.commandManager.hasCommands()) {
                         this.addUndoButton();
                     }
                     break;
@@ -1244,6 +1247,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 this.setClientState('newBracelet', {
                     descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
                 });
+                return;
             }
             else if (placements == 2) {
                 this.setClientState('client_confirm', {

@@ -239,12 +239,12 @@ class LoveLinks extends Gamegui
 		switch(stateName) {
 			case 'newBracelet':
 				this.addActionButton("new-bracelet-button", _("New Bracelet"), "onNewBracelet");
-				if (this.commandManager.numberOfPlacements() > 0) {
+				if (this.commandManager.hasCommands()) {
 					this.addUndoButton();
 				}
 				break;
 			case 'client_placeLink':
-				if (this.commandManager.numberOfPlacements() > 0) {
+				if (this.commandManager.hasCommands()) {
 					this.addUndoButton();
 				}
 				break;
@@ -537,6 +537,7 @@ class LoveLinks extends Gamegui
 			this.setClientState('newBracelet', {
 				descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
 			})
+			return;
 		}
 		else if (placements == 2) {
 			//Confirm your 2 placements

@@ -90,8 +90,11 @@ export class CommandManager {
     public numberOfPlacements() {
         let placements = 0;
         for (const command of this.commands) {
-            if (command instanceof ExtendCommand) {
+            if (command instanceof ExtendCommand || command instanceof NewBraceletCommand) {
                 placements += 1;
+            }
+            if (command instanceof CompleteCommand) {
+                placements -= 1;
             }
         }
         return placements;

@@ -66,6 +66,7 @@ class Game extends \Table
         $this->initGameStateLabels([
             "round" => 10,
             "placements" => 11,
+            "mandatory_new_bracelet" => 12,
             "game_length" => 100,
             "allow_undo" => 101
         ]);        
@@ -711,14 +712,16 @@ class Game extends \Table
             "side" => $side
         ));
 
-        //increase the number of placements this turn
-        $placements = $this->getGameStateValue("placements");
-        $placements += 1;
-        $this->setGameStateValue("placements", $placements);
-
         //score points for completing a bracelet
         if ($side == "both") {
             $this->completeBracelet($bracelet_id);
+        }
+
+        //if this was a regular placement, increase the number of placements this turn
+        $placements = $this->getGameStateValue("placements");
+        if ($side != "both") {
+            $placements += 1;
+            $this->setGameStateValue("placements", $placements);
         }
 
         ////////////////////////////////////
@@ -733,6 +736,7 @@ class Game extends \Table
        
         //if the player completed a bracelet, they need to start a new bracelet as a free action
         if ($side == "both") {
+            $this->setGameStateValue("mandatory_new_bracelet", 1);
             $this->dummyNextState("trNewBracelet");
             return;
         }
@@ -753,8 +757,21 @@ class Game extends \Table
         $this->createBraceletFromActivePlayer($link_id);
 
         //2 cases:
+        // * if the player completed a bracelet, they need to start a new bracelet as a free action (mandatory_new_bracelet)
         // * if the player cannot make a move, they are allowed to start a new bracelet
-        // * if the player completed a bracelet, they need to start a new bracelet as a free action
+
+        $mandatory_new_bracelet = $this->getGameStateValue("mandatory_new_bracelet");
+        if ($mandatory_new_bracelet) {
+            $this->setGameStateValue("mandatory_new_bracelet", 0);
+        }
+        else if ($this->hasPossibleMoves($player_id)) {
+            throw new BgaUserException(_("Unable to start a new bracelet. You must extend an existing bracelet if possible."));
+        }
+
+        //increase the number of placements this turn (if this is a "free action", the bracelet completion was not counted as a placement)
+        $placements = $this->getGameStateValue("placements");
+        $placements += 1;
+        $this->setGameStateValue("placements", $placements);
 
         //if the player ran out of links, end their turn
         $linksLeft = $this->deck->countCardsInLocation(STOCK.$player_id);
@@ -1082,6 +1099,27 @@ class Game extends \Table
 
     /////////////////////////////////////////////////
     ///////  ~utility
+
+    /**
+     * Returns true if the given player_id is able to place down a piece
+     */
+    public function hasPossibleMoves($player_id) {
+        $bracelets = $this->deck->getBracelets(BRACELET);
+        $playerLinks = $this->deck->getCardsInLocation(STOCK.$player_id);
+        foreach ($playerLinks as $playerLink) {
+            foreach ($bracelets as $bracelet) {
+                $key_link_id = reset($bracelet)["id"];
+                $lock_link_id = end($bracelet)["id"];
+                if ($this->isValidConnection($key_link_id, $playerLink["id"])) {
+                    return true;
+                }
+                if ($this->isValidConnection($playerLink["id"], $lock_link_id)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * $this->gamestate->nextState(state), but behaves differently based on the "Allow undo" setting
@@ -1530,6 +1568,7 @@ class Game extends \Table
         // Dummy content.
         $this->setGameStateInitialValue("round", 0);
         $this->setGameStateInitialValue("placements", 0);
+        $this->setGameStateInitialValue("mandatory_new_bracelet", 0);
 
         // Init game statistics.
         //
