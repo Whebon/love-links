@@ -1036,7 +1036,30 @@ class Game extends \Table
     }
 
     public function scoreBraceletGemstone($player_id, $bracelet_id, $links) {
-        //TODO
+        $players = $this->loadPlayersBasicInfos();
+        $playerGemstones = 0;
+        foreach ($links as $link) {
+            if ($link["type_arg"] == $player_id) {
+                $playerGemstones += 1;
+            }
+        }
+        foreach ($players as $opponent_id => $opponent) {
+            if ($opponent_id != $player_id) {
+                $opponentGemstones = 0;
+                foreach ($links as $link) {
+                    if ($link["type_arg"] == $opponent_id) {
+                        $opponentGemstones += 1;
+                    }
+                }
+                $points = -5*max(0, $opponentGemstones - $playerGemstones);
+                $this->scoreBracelet($opponent_id, $bracelet_id, $points, 'gemstones', 
+                    clienttranslate('Gemstone points: ${player_name} loses ${points} points, because they have ${opponentGemstones} gemstones in the bracelet (And the active player has ${playerGemstones} gemstones in the bracelet).'), array(
+                        "opponentGemstones" => $opponentGemstones,
+                        "playerGemstones" => $playerGemstones
+                    )
+                );
+            }
+        }
     }
 
     public function scoreBraceletDomination($player_id, $bracelet_id, $links) {
@@ -1045,7 +1068,7 @@ class Game extends \Table
                 return; //skip domination points if any gemstone is non-empty, non-owned
             }
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 10, 'domination', clienttranslate('Diamond points: ${player_name} scores ${points}'), array());
+        $this->scoreBracelet($player_id, $bracelet_id, 10, 'domination', clienttranslate('Diamond points: ${player_name} scores ${points} points'), array());
     }
 
     public function scoreBraceletDiamond($player_id, $bracelet_id, $links) {
@@ -1055,7 +1078,7 @@ class Game extends \Table
                 $count++;
             }
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 10*$count, 'diamond', clienttranslate('Diamond points: ${player_name} scores ${points} for ${nbr} diamond links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 10*$count, 'diamond', clienttranslate('Diamond points: ${player_name} scores ${points} points for ${nbr} diamond links(s)'), array(
             "nbr" => $count
         ));
     }
@@ -1067,7 +1090,7 @@ class Game extends \Table
                 $count++;
             }
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 5*$count, 'emerald', clienttranslate('Emerald points: ${player_name} scores ${points} for ${nbr} diamond links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 5*$count, 'emerald', clienttranslate('Emerald points: ${player_name} scores ${points} points for ${nbr} diamond links(s)'), array(
             "nbr" => $count
         ));
     }
@@ -1090,7 +1113,7 @@ class Game extends \Table
 
     public function masterLockPenalty($player_id, $bracelet_id, $link) {
         if ($this->getLock((int)$link["id"]) == MASTER) {
-            $this->scoreBracelet($player_id, $bracelet_id, -2, 'master', clienttranslate('Master Lock Penalty: ${player_name} loses ${points} for placing the master lock'), array());
+            $this->scoreBracelet($player_id, $bracelet_id, -2, 'master', clienttranslate('Master Lock Penalty: ${player_name} loses ${points} points for placing the master lock'), array());
         }
     }
 
@@ -1200,7 +1223,6 @@ class Game extends \Table
      */
     public function createBraceletFromActivePlayer(int $link_id) {
         $player_id = $this->getActivePlayerId();
-        //$bracelet_id = $this->deck->getNewBraceletId(); //TODO: safely remove this
         $this->deck->moveCard($link_id, BRACELET.$link_id);
         $this->deck->assignCards(array($link_id), $player_id);
         $this->notifyAllPlayers('newBracelet', clienttranslate('${player_name} starts a new bracelet with ${link_name}'), array(
@@ -1215,7 +1237,6 @@ class Game extends \Table
      * Create a new bracelet with a link
      */
     public function createBraceletFromSupply(int $link_id) {
-        //$bracelet_id = $this->deck->getNewBraceletId(); //TODO: safely remove this
         $this->deck->moveCard($link_id, BRACELET.$link_id);
         $this->notifyAllPlayers('newBracelet', clienttranslate('Starting a new bracelet with ${link_name}'), array(
             "link_name" => $this->getLinkName($link_id),
@@ -1477,8 +1498,6 @@ class Game extends \Table
         foreach ($result["players"] as $player_id => $player) {
             $result["stocks"][$player_id] = $this->deck->getCardsInLocation(STOCK.$player_id);
         }
-
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;
     }
