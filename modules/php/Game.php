@@ -1017,11 +1017,27 @@ class Game extends \Table
     }
 
     public function scoreBraceletDiamond($player_id, $bracelet_id, $links) {
-        //TODO
+        $count = 0;
+        foreach ($links as $link_id => $link) {
+            if ($this->getBonus($link_id) == DIAMOND) {
+                $count++;
+            }
+        }
+        $this->scoreBracelet($player_id, $bracelet_id, 10*$count, 'diamond', clienttranslate('Diamond points: ${player_name} scores ${points} for ${nbr} diamond links(s)'), array(
+            "nbr" => $count
+        ));
     }
 
     public function scoreBraceletEmerald($player_id, $bracelet_id, $links) {
-        //TODO
+        $count = 0;
+        foreach ($links as $link_id => $link) {
+            if ($this->getBonus($link_id) == EMERALD) {
+                $count++;
+            }
+        }
+        $this->scoreBracelet($player_id, $bracelet_id, 5*$count, 'emerald', clienttranslate('Emerald points: ${player_name} scores ${points} for ${nbr} diamond links(s)'), array(
+            "nbr" => $count
+        ));
     }
 
     public function scoreBraceletMatchingLink($player_id, $bracelet_id, $links) {
@@ -1444,6 +1460,10 @@ class Game extends \Table
 
     public function getMetal(int $link_id) {
         return self::$CARD_TYPES[$link_id]["metal"];
+    }
+
+    public function getBonus(int $link_id) {
+        return self::$CARD_TYPES[$link_id]["bonus"];
     }
 
     public function getKey(int $link_id) {
