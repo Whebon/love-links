@@ -1323,7 +1323,37 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             var _a;
             console.log('notif_scoreBracelet', notif);
             var label = document.createElement('div');
-            label.innerHTML = (notif.args.points > 0 ? "+" : "") + notif.args.points;
+            var keyword = "???";
+            switch (notif.args.keyword) {
+                case 'bronze':
+                    keyword = _("Bronze");
+                    break;
+                case 'silver':
+                    keyword = _("Silver");
+                    break;
+                case 'gold':
+                    keyword = _("Gold");
+                    break;
+                case 'long':
+                    keyword = _("Long Bracelet");
+                    break;
+                case 'gemstone':
+                    keyword = _("Gemstone");
+                    break;
+                case 'domination':
+                    keyword = _("Domination");
+                    break;
+                case 'diamond':
+                    keyword = _("Diamond");
+                    break;
+                case 'emerald':
+                    keyword = _("Emerald");
+                    break;
+                case 'matching':
+                    keyword = _("Matching Link");
+                    break;
+            }
+            label.innerHTML = (notif.args.points > 0 ? "+" : "") + notif.args.points + " " + notif.args.keyword;
             label.classList.add("lovelinks-points");
             this.bracelets.get(notif.args.bracelet_id).container.appendChild(label);
             dojo.setStyle(label, 'color', "#" + this.gamedatas.players[notif.args.player_id].color);
@@ -1416,4 +1446,8 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         return LoveLinks;
     }(Gamegui));
     dojo.setObject("bgagame.lovelinks", LoveLinks);
+});
+define("components/ScoreKeyword", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });

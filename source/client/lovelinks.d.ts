@@ -12,6 +12,7 @@ import { DbCard } from './components/DbCard';
 import { Side } from './components/Side';
 import { Metal } from './components/Metal';
 import { Bonus } from './components/Bonus';
+import { ScoreKeyword } from './components/ScoreKeyword';
 
 // If you have any imports/exports in this file, 'declare global' is access/merge your game specific types with framework types. 'export {};' is used to avoid possible confusion with imports/exports.
 declare global {
@@ -45,7 +46,8 @@ declare global {
 		'scoreBracelet': {
 			player_id: number,
 			bracelet_id: number,
-			points: number
+			points: number,
+			keyword: ScoreKeyword
 		}
 		'debugMessage': {
 			msg: string

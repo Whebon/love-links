@@ -989,13 +989,13 @@ class Game extends \Table
         foreach ($links as $link_id => $link) {
             $counts[$this->getMetal($link_id)]++;
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 2*$counts[BRONZE], clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} bronze links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 2*$counts[BRONZE], 'bronze', clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} bronze links(s)'), array(
             "nbr" => $counts[BRONZE]
         ));
-        $this->scoreBracelet($player_id, $bracelet_id, 3*$counts[SILVER], clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} silver links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 3*$counts[SILVER],  'silver', clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} silver links(s)'), array(
             "nbr" => $counts[SILVER]
         ));
-        $this->scoreBracelet($player_id, $bracelet_id, 5*$counts[GOLD], clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} golden link(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 5*$counts[GOLD], 'gold', clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} golden link(s)'), array(
             "nbr" => $counts[GOLD]
         ));
     }
@@ -1003,7 +1003,7 @@ class Game extends \Table
     public function scoreBraceletLongBracelet($player_id, $bracelet_id, $links) {
         $length = count($links);
         $points = max(0, 2*$length-10);
-        $this->scoreBracelet($player_id, $bracelet_id, $points, clienttranslate('Long bracelet points: ${player_name} scores ${points} for a bracelet of length ${length}'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, $points, 'long', clienttranslate('Long bracelet points: ${player_name} scores ${points} for a bracelet of length ${length}'), array(
             "length" => $length
         ));
     }
@@ -1043,7 +1043,7 @@ class Game extends \Table
     /**
      * Score points for a bracelet and notify players
      */
-    public function scoreBracelet(mixed $player_id, mixed $bracelet_id, int $points, string $notificationLog, array $additionalNotificationArgs) {
+    public function scoreBracelet(mixed $player_id, mixed $bracelet_id, int $points, string $keyword, string $notificationLog, array $additionalNotificationArgs) {
         if ($points == 0) {
             return;
         }
@@ -1051,7 +1051,8 @@ class Game extends \Table
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "bracelet_id" => $bracelet_id,
-            "points" => $points
+            "points" => $points,
+            "keyword" => $keyword
         ), $additionalNotificationArgs);
         $this->notifyAllPlayers('scoreBracelet', $notificationLog, $notificationArgs);
         $sql = "UPDATE player SET player_score = player_score + $points WHERE player_id='$player_id'";
@@ -1314,7 +1315,7 @@ class Game extends \Table
     }
 
     /**
-     * example: debugStock(7,2,7,4,4,7)
+     * example: debugStock(7,2,7,4)
      */
     function debugStock(...$key_lock_values) {
         $player_id = $this->getCurrentPlayerId();
