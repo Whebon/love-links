@@ -27,15 +27,19 @@ import { Bracelet } from './components/Bracelet';
 import { Supply } from './components/Supply'
 import { DbCard } from './components/DbCard';
 import { GemstoneColor } from './components/GemstoneColor';
+import { getUniqueId } from 'dojo/dnd/common';
 
 /** The root for all of your game code. */
 class LoveLinks extends Gamegui
 {
-	/** Completed bracelets per player */
-	public braceletCounters: Record<number, Counter> = {};
+	// /** Completed bracelets per player */
+	// public braceletCounters: Record<number, Counter> = {};
 
-	/** Links in completed bracelets per player */
-	public linkCounters: Record<number, Counter> = {};
+	// /** Links in completed bracelets per player */
+	// public linkCounters: Record<number, Counter> = {};
+
+	// /** Maps [player_id] => [number of captured opponent's gemstones] */
+	public opponentGemstoneCounters: Record<number, Counter> = {};
 
 	/** A table of remaining links */
 	public supply: Supply | undefined;
@@ -99,30 +103,43 @@ class LoveLinks extends Gamegui
 				slot_id += 1;
 			}
 
-			// Add bracelet and link counters
-			const player_board_div = $('player_board_'+player_id)?.querySelector(".player_score")!;
+			// Add addional counter(s)
+			//const player_board_div = $('player_board_'+player_id)?.querySelector(".player_score")!;
+			const star_icon = $('icon_point_'+player_id)!
+			const adjacentHTML = this.getOpponentGemstoneCounterHTML(+player_id);
+			star_icon.insertAdjacentHTML('afterend', adjacentHTML);
+			const bracelet_counter_span = $(`lovelinks-opponent-gemstone-counter-${player_id}`) as HTMLElement;
+			this.opponentGemstoneCounters[player_id] = new ebg.counter();
+			this.opponentGemstoneCounters[player_id].create(bracelet_counter_span);
+			this.opponentGemstoneCounters[player_id].setValue((gamedatas.players[player_id]! as unknown as any).score_aux);
 
-			//bracelet counters
-			const bracelet_counter_span = document.createElement('span');
-			player_board_div.insertAdjacentHTML('afterbegin', `<i class="lovelinks-bracelet-counter" id="lovelinks-bracelet-counter-${player_id}"></i>`);
-			player_board_div.prepend(bracelet_counter_span);
-			this.addTooltip('lovelinks-bracelet-counter-'+player_id, _("Number of completed bracelets."), '');
-			this.braceletCounters[player_id] = new ebg.counter();
-			this.braceletCounters[player_id].create(bracelet_counter_span);
-			this.braceletCounters[player_id].setValue(2);
+			// //bracelet counters
+			// const bracelet_counter_span = document.createElement('span');
+			// player_board_div.insertAdjacentHTML('afterbegin', `<i class="lovelinks-bracelet-counter" id="lovelinks-bracelet-counter-${player_id}"></i>`);
+			// player_board_div.prepend(bracelet_counter_span);
+			// this.addTooltip('lovelinks-bracelet-counter-'+player_id, _("Number of completed bracelets."), '');
+			// this.braceletCounters[player_id] = new ebg.counter();
+			// this.braceletCounters[player_id].create(bracelet_counter_span);
+			// this.braceletCounters[player_id].setValue(2);
 
-			//link counters
-			const link_counter_span = document.createElement('span');
-			player_board_div.insertAdjacentHTML('afterbegin', `<i class="lovelinks-link-counter" id="lovelinks-link-counter-${player_id}"></i>`);
-			player_board_div.prepend(link_counter_span);
-			this.addTooltip('lovelinks-link-counter-'+player_id, _("Number of links in completed bracelets."), '');
-			this.linkCounters[player_id] = new ebg.counter();
-			this.linkCounters[player_id].create(link_counter_span);
-			this.linkCounters[player_id].setValue(12);
+			// //link counters
+			// const link_counter_span = document.createElement('span');
+			// player_board_div.insertAdjacentHTML('afterbegin', `<i class="lovelinks-link-counter" id="lovelinks-link-counter-${player_id}"></i>`);
+			// player_board_div.prepend(link_counter_span);
+			// this.addTooltip('lovelinks-link-counter-'+player_id, _("Number of links in completed bracelets."), '');
+			// this.linkCounters[player_id] = new ebg.counter();
+			// this.linkCounters[player_id].create(link_counter_span);
+			// this.linkCounters[player_id].setValue(12);
 
 			//tooltip for the points
-			this.addTooltip('icon_point_'+player_id, _("Points scored."), '');
+			this.addTooltip('icon_point_'+player_id, _("Score. The player with the highest score wins."), '');
 		}
+
+		//const opponentGemstoneIcons = document.querySelectorAll(".lovelinks-opponent-gemstone-icon");
+		const opponentGemstoneIcons = document.querySelectorAll(".lovelinks-player-board-icon-1");
+		opponentGemstoneIcons.forEach(icon => {
+			this.addTooltip(icon.id, _("Tiebreaker score. Only relevant if scores are equal. Number of captured opponent's gemstones."), '');
+		});
 
 		// Create the bracelets
 		for (const bracelet_id in gamedatas.bracelets) {
@@ -255,6 +272,26 @@ class LoveLinks extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
+
+	public getOpponentGemstoneCounterHTML(player_id: number): string {
+		let index = 0;
+		for (const opponent_id of this.gamedatas.playerorder) {
+			if (opponent_id == player_id) break;
+			index++;
+		}
+		const other_opponent_ids = [...this.gamedatas.playerorder.slice(index + 1), ...this.gamedatas.playerorder.slice(0, index)].reverse()
+		const next_opponent_id = other_opponent_ids.splice(0, 1)[0]!;
+		let iconcount = 1;
+		let html = ` • 
+			<span id="lovelinks-opponent-gemstone-counter-${player_id}">123</span>
+			<i id="${getUniqueId()}" class="lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-${iconcount} lovelinks-gemstone lovelinks-gemstone-color-${this.getGemstoneColor(next_opponent_id)}">
+		`;
+		for (const opponent_id of other_opponent_ids) {
+			iconcount++;
+			html += `<i id="${getUniqueId()}" class="lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-${iconcount} lovelinks-gemstone lovelinks-gemstone-color-${this.getGemstoneColor(opponent_id)}"></i>` //nested i
+		}
+		return html+`</i>`
+	}
 
 	/**
 	 * Show a pulse animation for the specified link id
@@ -647,10 +684,19 @@ class LoveLinks extends Gamegui
 
 	notif_removeBracelet(notif: NotifFrom<'removeBracelet'>) {
 		console.log('notif_removeBracelet', notif);
-		console.log(this.braceletCounters);
 		this.bracelets.fadeOutBraceletId(notif.args.bracelet_id);
-		this.braceletCounters[notif.args.player_id]!.incValue(1);
-		this.linkCounters[notif.args.player_id]!.incValue(notif.args.nbr_links);
+
+		let capturedGemstones = 0;
+		for (const i in notif.args.links) {
+			const link = Link.ofDbCard(notif.args.links[+i]!);
+			const gemstone = link.gemstone;
+			if (gemstone != this.player_id && gemstone != 0) {
+				capturedGemstones++;
+			}
+		}
+		this.opponentGemstoneCounters[notif.args.player_id]!.incValue(capturedGemstones);
+		// this.braceletCounters[notif.args.player_id]!.incValue(1);
+		// this.linkCounters[notif.args.player_id]!.incValue(notif.args.nbr_links);
 	}
 
 	notif_placeLink(notif: NotifFrom<'placeLink'>) {

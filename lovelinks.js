@@ -13,6 +13,15 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 define("components/GemstoneColor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -886,15 +895,14 @@ define("components/Supply", ["require", "exports"], function (require, exports) 
     }());
     exports.Supply = Supply;
 });
-define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "components/Supply", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1, Supply_1) {
+define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "components/StaticLoveLinks", "components/CommandManager", "components/Link", "components/BraceletArea", "components/TPL", "components/Supply", "dojo/dnd/common", "ebg/counter", "ebg/stock"], function (require, exports, Gamegui, StaticLoveLinks_4, CommandManager_1, Link_3, BraceletArea_1, TPL_1, Supply_1, common_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var LoveLinks = (function (_super) {
         __extends(LoveLinks, _super);
         function LoveLinks() {
             var _this = _super.call(this) || this;
-            _this.braceletCounters = {};
-            _this.linkCounters = {};
+            _this.opponentGemstoneCounters = {};
             _this.stocks = {};
             _this.commandManager = new CommandManager_1.CommandManager();
             StaticLoveLinks_4.StaticLoveLinks.page = _this;
@@ -913,7 +921,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             configurable: true
         });
         LoveLinks.prototype.setup = function (gamedatas) {
-            var _a;
+            var _this = this;
             console.log("Starting game setup");
             console.log(gamedatas);
             TPL_1.TPL.init(this);
@@ -935,23 +943,19 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     slot.appendLink(Link_3.Link.ofDbCard(link));
                     slot_id += 1;
                 }
-                var player_board_div = (_a = $('player_board_' + player_id)) === null || _a === void 0 ? void 0 : _a.querySelector(".player_score");
-                var bracelet_counter_span = document.createElement('span');
-                player_board_div.insertAdjacentHTML('afterbegin', "<i class=\"lovelinks-bracelet-counter\" id=\"lovelinks-bracelet-counter-".concat(player_id, "\"></i>"));
-                player_board_div.prepend(bracelet_counter_span);
-                this.addTooltip('lovelinks-bracelet-counter-' + player_id, _("Number of completed bracelets."), '');
-                this.braceletCounters[player_id] = new ebg.counter();
-                this.braceletCounters[player_id].create(bracelet_counter_span);
-                this.braceletCounters[player_id].setValue(2);
-                var link_counter_span = document.createElement('span');
-                player_board_div.insertAdjacentHTML('afterbegin', "<i class=\"lovelinks-link-counter\" id=\"lovelinks-link-counter-".concat(player_id, "\"></i>"));
-                player_board_div.prepend(link_counter_span);
-                this.addTooltip('lovelinks-link-counter-' + player_id, _("Number of links in completed bracelets."), '');
-                this.linkCounters[player_id] = new ebg.counter();
-                this.linkCounters[player_id].create(link_counter_span);
-                this.linkCounters[player_id].setValue(12);
-                this.addTooltip('icon_point_' + player_id, _("Points scored."), '');
+                var star_icon = $('icon_point_' + player_id);
+                var adjacentHTML = this.getOpponentGemstoneCounterHTML(+player_id);
+                star_icon.insertAdjacentHTML('afterend', adjacentHTML);
+                var bracelet_counter_span = $("lovelinks-opponent-gemstone-counter-".concat(player_id));
+                this.opponentGemstoneCounters[player_id] = new ebg.counter();
+                this.opponentGemstoneCounters[player_id].create(bracelet_counter_span);
+                this.opponentGemstoneCounters[player_id].setValue(gamedatas.players[player_id].score_aux);
+                this.addTooltip('icon_point_' + player_id, _("Score. The player with the highest score wins."), '');
             }
+            var opponentGemstoneIcons = document.querySelectorAll(".lovelinks-player-board-icon-1");
+            opponentGemstoneIcons.forEach(function (icon) {
+                _this.addTooltip(icon.id, _("Tiebreaker score. Only relevant if scores are equal. Number of captured opponent's gemstones."), '');
+            });
             for (var bracelet_id in gamedatas.bracelets) {
                 var links = gamedatas.bracelets[bracelet_id];
                 var bracelet = this.bracelets.createBracelet(+bracelet_id);
@@ -1048,6 +1052,25 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         };
         LoveLinks.prototype.addUndoButton = function () {
             this.addActionButton("undo-button", _("Undo"), "onUndo", undefined, false, 'gray');
+        };
+        LoveLinks.prototype.getOpponentGemstoneCounterHTML = function (player_id) {
+            var index = 0;
+            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
+                var opponent_id = _a[_i];
+                if (opponent_id == player_id)
+                    break;
+                index++;
+            }
+            var other_opponent_ids = __spreadArray(__spreadArray([], this.gamedatas.playerorder.slice(index + 1), true), this.gamedatas.playerorder.slice(0, index), true).reverse();
+            var next_opponent_id = other_opponent_ids.splice(0, 1)[0];
+            var iconcount = 1;
+            var html = " \u2022 \n\t\t\t<span id=\"lovelinks-opponent-gemstone-counter-".concat(player_id, "\">123</span>\n\t\t\t<i id=\"").concat((0, common_1.getUniqueId)(), "\" class=\"lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-").concat(iconcount, " lovelinks-gemstone lovelinks-gemstone-color-").concat(this.getGemstoneColor(next_opponent_id), "\">\n\t\t");
+            for (var _b = 0, other_opponent_ids_1 = other_opponent_ids; _b < other_opponent_ids_1.length; _b++) {
+                var opponent_id = other_opponent_ids_1[_b];
+                iconcount++;
+                html += "<i id=\"".concat((0, common_1.getUniqueId)(), "\" class=\"lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-").concat(iconcount, " lovelinks-gemstone lovelinks-gemstone-color-").concat(this.getGemstoneColor(opponent_id), "\"></i>");
+            }
+            return html + "</i>";
         };
         LoveLinks.prototype.pulseLink = function (link_id) {
             var _loop_1 = function (elem_id) {
@@ -1291,10 +1314,16 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         };
         LoveLinks.prototype.notif_removeBracelet = function (notif) {
             console.log('notif_removeBracelet', notif);
-            console.log(this.braceletCounters);
             this.bracelets.fadeOutBraceletId(notif.args.bracelet_id);
-            this.braceletCounters[notif.args.player_id].incValue(1);
-            this.linkCounters[notif.args.player_id].incValue(notif.args.nbr_links);
+            var capturedGemstones = 0;
+            for (var i in notif.args.links) {
+                var link = Link_3.Link.ofDbCard(notif.args.links[+i]);
+                var gemstone = link.gemstone;
+                if (gemstone != this.player_id && gemstone != 0) {
+                    capturedGemstones++;
+                }
+            }
+            this.opponentGemstoneCounters[notif.args.player_id].incValue(capturedGemstones);
         };
         LoveLinks.prototype.notif_placeLink = function (notif) {
             console.log('notif_placeLink', notif);

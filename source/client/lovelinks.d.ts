@@ -38,7 +38,8 @@ declare global {
 		'removeBracelet': {
 			player_id: number,
 			bracelet_id: number,
-			nbr_links: number
+			nbr_links: number,
+			links: {[link_id: number]: DbCard}
 		}
 		'scoreBracelet': {
 			player_id: number,

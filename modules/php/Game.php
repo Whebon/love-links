@@ -619,6 +619,14 @@ class Game extends \Table
         $placements += 1;
         $this->setGameStateValue("placements", $placements);
 
+        //score points for completing a bracelet
+        if ($side == "both") {
+            $this->completeBracelet($bracelet_id);
+        }
+
+        ////////////////////////////////////
+        //////// next state
+
         //if the player ran out of links, end their turn
         $linksLeft = $this->deck->countCardsInLocation(STOCK.$player_id);
         if ($linksLeft == 0) {
@@ -628,7 +636,6 @@ class Game extends \Table
        
         //if the player completed a bracelet, they need to start a new bracelet as a free action
         if ($side == "both") {
-            $this->completeBracelet($bracelet_id);
             $this->dummyNextState("trNewBracelet");
             return;
         }
@@ -847,12 +854,14 @@ class Game extends \Table
         $this->scoreBraceletDiamond($player_id, $bracelet_id, $links);
         $this->scoreBraceletEmerald($player_id, $bracelet_id, $links);
         $this->scoreBraceletMatchingLink($player_id, $bracelet_id, $links);
+        $this->scoreBraceletTiebreaking($player_id, $bracelet_id, $links);
 
         $this->deck->moveAllCardsInLocationKeepOrder(BRACELET.$bracelet_id, COMPLETED.$bracelet_id);
         $this->notifyAllPlayers('removeBracelet', '', array(
             "player_id" => $player_id,
             "player_name" => $this->getPlayerNameById($player_id),
             "bracelet_id" => $bracelet_id,
+            "links" => $links,
             "nbr_links" => count($links)
         ));
     }
@@ -905,6 +914,18 @@ class Game extends \Table
         //TODO
     }
 
+    public function scoreBraceletTiebreaking($player_id, $bracelet_id, $links) {
+        //count gemstones of other players
+        $points = 0;
+        foreach ($links as $link) {
+            if ($link["type_arg"] != 0 && $link["type_arg"] != $player_id) {
+                $points++;
+            }
+        }
+        $sql = "UPDATE player SET player_score_aux=player_score_aux+$points WHERE player_id='$player_id'";
+        $this->DbQuery($sql);
+    }
+
     /**
      * Score points for a bracelet and notify players
      */
@@ -919,6 +940,8 @@ class Game extends \Table
             "points" => $points
         ), $additionalNotificationArgs);
         $this->notifyAllPlayers('scoreBracelet', $notificationLog, $notificationArgs);
+        $sql = "UPDATE player SET player_score = player_score + $points WHERE player_id='$player_id'";
+        $this->DbQuery($sql);
     }
 
     /////////////////////////////////////////////////
@@ -1109,7 +1132,7 @@ class Game extends \Table
         // Get information about players.
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
         $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
+            "SELECT `player_id` `id`, `player_score` `score`, `player_score_aux` `score_aux` FROM `player`"
         );
 
         $result["round"] = $this->getGameStateValue("round");
