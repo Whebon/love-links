@@ -63,6 +63,7 @@ $machinestates = array(
 		'transitions' => array(
 			'trPlayerTurn' => 3,
 			'trStartRound' => 2,
+			'trEndGame' => 99,
 		),
 	),
 	33 => array(

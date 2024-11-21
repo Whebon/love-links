@@ -75,7 +75,7 @@
 		"type": "game",
 		"action": "stEndTurn",
 		"updateGameProgression": true,
-		"transitions": { "trPlayerTurn": 3, "trStartRound": 2 }
+		"transitions": { "trPlayerTurn": 3, "trStartRound": 2, "trEndGame": 99 }
 	},
 
 /*

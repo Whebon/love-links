@@ -14,17 +14,32 @@
 	"$schema": "../../node_modules/bga-ts-template/schema/gameoptions.schema.json",
 
 	"100": {
+		"name": "Game length",
+		"values": {
+		  "1": {
+			"name": "Standard",
+			"description": "The game ends after all links have been placed."
+		  },
+		  "2": {
+			"name": "Short",
+			"description": "The game ends after all links have been placed placed OR as soon as any player reached 90 points."
+		  }
+		},
+		"default": 1
+	},
+
+	"101": {
 		"name": "Allow undo",
 		"values": {
 		  "1": {
 			"name": "On",
-			"description": "Players are allowed to undo their entire turn"
+			"description": "Players are allowed to undo their entire turn."
 		  },
 		  "2": {
 			"name": "Off",
-			"description": "Each move within a turn is final and cannot be undone"
+			"description": "Each move within a turn is final and cannot be undone."
 		  }
 		},
 		"default": 1
-	  }
+	}
 }

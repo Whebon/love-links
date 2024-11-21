@@ -1294,7 +1294,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 ['refillStock', 2000],
                 ['placeLink', 1000],
                 ['scoreBracelet', 1500],
-                ['removeBracelet', 1000],
+                ['removeBracelet', 1500],
                 ['startRound', 1]
             ];
             notifs.forEach(function (notif) {

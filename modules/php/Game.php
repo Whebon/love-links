@@ -40,6 +40,7 @@ if (!defined('STOCK')) {
 
 class Game extends \Table
 {
+    private static int $SHORT_GAME_POINTS_TO_WIN = 28;
     private static array $CARD_TYPES;
     private static int $PLACEMENTS_PER_TURN = 2;
     private LoveLinksDeck $deck;
@@ -62,7 +63,8 @@ class Game extends \Table
         $this->initGameStateLabels([
             "round" => 10,
             "placements" => 11,
-            "allow_undo" => 100
+            "game_length" => 100,
+            "allow_undo" => 101
         ]);        
 
         self::$CARD_TYPES = [
@@ -756,11 +758,20 @@ class Game extends \Table
      * @return int
      * @see ./states.inc.php
      */
-    public function getGameProgression()
-    {
-        // TODO: compute and return the game progression
-
-        return 0;
+    public function getGameProgression() {
+        $counts = $this->deck->countCardsInLocations();
+        $players = $this->loadPlayersBasicInfos();
+        $total = count(self::$CARD_TYPES);
+        $remaining = ($counts[BRONZE] ?? 0) + ($counts[SILVER] ?? 0) + ($counts[GOLD] ?? 0); 
+        foreach ($players as $player_id => $player) {
+            $remaining += $counts[STOCK.$player_id] ?? 0;
+        }
+        $long_game_progression = 100*(1 - $remaining/$total);
+        if ($this->isLongGame()) {
+            return $long_game_progression;
+        }
+        $short_game_progression = 100 * $this->dbGetMaxScore() / self::$SHORT_GAME_POINTS_TO_WIN;
+        return max($short_game_progression, $long_game_progression);
     }
 
     /////////////////////////////////////////////////
@@ -822,13 +833,21 @@ class Game extends \Table
             }
         }
 
+        //Check if the game has been won (short game only)
+        if (!$this->isLongGame() && $this->dbGetScore($player_id) >= self::$SHORT_GAME_POINTS_TO_WIN) {
+            $this->gamestate->nextState("trEndGame");
+            return;
+        }
+
         //Start the next round or next round
         if ($trigger_next_round) {
             $this->activeNextPlayer();
             $this->gamestate->nextState("trStartRound");
+            return;
         }
         else {
             $this->gamestate->nextState("trPlayerTurn");
+            return;
         }
     }
 
@@ -953,8 +972,7 @@ class Game extends \Table
      * Off: actually transition to the state
      */
     public function dummyNextState(string $transition) {
-        $allow_undo = $this->getGameStateValue("allow_undo");
-        if ($allow_undo == 1) {
+        if ($this->allowUndo()) {
             $this->dummyTransition = $transition;
         }
         else {
@@ -973,6 +991,34 @@ class Game extends \Table
             $card_ids[] = $card["id"];
         }
         return $card_ids;
+    }
+
+    /**
+     * Returns true based on the game option
+     */
+    function allowUndo() {
+        return $this->getGameStateValue("allow_undo") == 1;
+    }
+
+    /**
+     * Returns true based on the game option
+     */
+    function isLongGame() {
+        return $this->getGameStateValue("game_length") == 1;
+    }
+
+    /**
+     * Get the score of a particular player
+     */
+    function dbGetScore($player_id) {
+        return $this->getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id='$player_id'");
+    }
+
+    /**
+     * Get the maximum score among all players
+     */
+    function dbGetMaxScore() {
+        return $this->getUniqueValueFromDB("SELECT MAX(player_score) FROM player");
     }
 
     /**

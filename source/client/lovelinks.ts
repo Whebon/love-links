@@ -648,7 +648,7 @@ class LoveLinks extends Gamegui
 			['refillStock', 2000],
 			['placeLink', 1000],
 			['scoreBracelet', 1500],
-			['removeBracelet', 1000],
+			['removeBracelet', 1500],
 			['startRound', 1]
 		];
 
