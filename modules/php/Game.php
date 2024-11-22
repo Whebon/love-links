@@ -931,14 +931,26 @@ class Game extends \Table
      * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
      */
     public function stEndTurn(): void {
-        // Reset the placements game state variable
-        $this->setGameStateValue("placements", 0);
-        $this->setGameStateValue("is_second_perfect_match", 0);
-
         // Refill the player's stock
         $player_id = (int)$this->getActivePlayerId();
         $round = $this->getGameStateValue("round");
         $this->refillStock($player_id, $round);
+
+        // Increment the placement counter
+        $placements = $this->getGameStateValue("placements", 0);
+        $sql = "UPDATE player SET player_placements=player_placements+$placements WHERE player_id='$player_id'";
+        $this->DbQuery($sql);
+
+        // Reset the placements game state variable
+        $this->setGameStateValue("placements", 0);
+        $this->setGameStateValue("is_second_perfect_match", 0);
+
+        // Update the points per turn statistic
+        $half_turns = $this->dbGetPlacements($player_id);
+        $turns = $half_turns/2;
+        $total_score = $this->dbGetScore($player_id);
+        $points_per_turn = $total_score / $turns;
+        $this->setStat($points_per_turn, "points_per_turn", $player_id);
 
         // Give some extra time to the active player when he completed an action
         $this->giveExtraTime($player_id);
@@ -990,8 +1002,9 @@ class Game extends \Table
         $links = $this->deck->getCardsInLocation(BRACELET.$bracelet_id);
         $this->incStat(1, "bracelet_completed", $player_id);
 
-        $this->notifyAllPlayers('message', clienttranslate('${player_name} completed a bracelet'), array(
-            "player_name" => $this->getPlayerNameById($player_id)
+        $this->notifyAllPlayers('startBraceletScoring', clienttranslate('${player_name} completed a bracelet'), array(
+            "player_name" => $this->getPlayerNameById($player_id),
+            "bracelet_id" => $bracelet_id
         ));
 
         $this->scoreBraceletMetal($player_id, $bracelet_id, $links);
@@ -1258,6 +1271,13 @@ class Game extends \Table
      */
     function isLongGame() {
         return $this->getGameStateValue("game_length") == 1;
+    }
+
+    /**
+     * Get the placements of a particular player
+     */
+    function dbGetPlacements($player_id) {
+        return $this->getUniqueValueFromDB("SELECT player_placements FROM player WHERE player_id='$player_id'");
     }
 
     /**
@@ -1677,7 +1697,7 @@ class Game extends \Table
         $this->setGameStateInitialValue("is_second_perfect_match", 0);
 
         // Init game statistics.
-        $this->initStat("player", "points_per_turn", 0);//TODO
+        $this->initStat("player", "points_per_turn", 0);
         $this->initStat("player", "bracelet_completed", 0);
         $this->initStat("player", "captured_gemstones", 0);
         $this->initStat("player", "bronze_points", 0);
@@ -1685,7 +1705,7 @@ class Game extends \Table
         $this->initStat("player", "gemstone_points", 0);
         $this->initStat("player", "domination_points", 0);
         $this->initStat("player", "diamond_points", 0);
-        $this->initStat("player", "matching_link_points", 0);//TODO
+        $this->initStat("player", "matching_link_points", 0);
         $this->initStat("player", "master_lock_penalties", 0);
 
         // Create the links

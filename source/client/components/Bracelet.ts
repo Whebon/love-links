@@ -44,7 +44,7 @@ export class Bracelet {
     public container: HTMLElement;
     public bracelet_id: number;
     public player_id: number;
-    private links: Link[];
+    public links: Link[];
     private onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void;
 
     public isComplete: boolean;

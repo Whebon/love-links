@@ -48,6 +48,9 @@ declare global {
 			bracelet_id: number,
 			points: number,
 			keyword: ScoreKeyword
+		},
+		'startBraceletScoring': {
+			bracelet_id: number
 		}
 		'debugMessage': {
 			msg: string

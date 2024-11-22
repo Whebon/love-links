@@ -648,6 +648,7 @@ class LoveLinks extends Gamegui
 			['newBracelet', 1000],
 			['refillStock', 2000],
 			['placeLink', 1000],
+			['startBraceletScoring', 1000],
 			['scoreBracelet', 1500],
 			['removeBracelet', 1500],
 			['startRound', 1],
@@ -673,6 +674,14 @@ class LoveLinks extends Gamegui
 		// Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 	}
 	*/
+
+	notif_startBraceletScoring(notif: NotifFrom<'startBraceletScoring'>) {
+		console.log('notif_startBraceletScoring', notif);
+		const bracelet = this.bracelets.get(notif.args.bracelet_id);
+		for (const link of bracelet.links) {
+			this.pulseLink(link.id);
+		}
+	}
 
 	notif_scoreBracelet(notif: NotifFrom<'scoreBracelet'>) {
 		console.log('notif_scoreBracelet', notif);
@@ -720,6 +729,9 @@ class LoveLinks extends Gamegui
 		}
 		this.bracelets.get(notif.args.bracelet_id).container.appendChild(label);
 		dojo.setStyle(label, 'color', "#"+this.gamedatas.players[notif.args.player_id]!.color);
+		setTimeout(() => {
+			label.remove();
+		}, 2000);
 		this.scoreCtrl[notif.args.player_id]?.incValue(notif.args.points);
 	}
 

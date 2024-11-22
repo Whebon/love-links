@@ -1313,6 +1313,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 ['newBracelet', 1000],
                 ['refillStock', 2000],
                 ['placeLink', 1000],
+                ['startBraceletScoring', 1000],
                 ['scoreBracelet', 1500],
                 ['removeBracelet', 1500],
                 ['startRound', 1],
@@ -1322,6 +1323,14 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
                 _this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
+        };
+        LoveLinks.prototype.notif_startBraceletScoring = function (notif) {
+            console.log('notif_startBraceletScoring', notif);
+            var bracelet = this.bracelets.get(notif.args.bracelet_id);
+            for (var _i = 0, _a = bracelet.links; _i < _a.length; _i++) {
+                var link = _a[_i];
+                this.pulseLink(link.id);
+            }
         };
         LoveLinks.prototype.notif_scoreBracelet = function (notif) {
             var _a;
@@ -1370,6 +1379,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
             this.bracelets.get(notif.args.bracelet_id).container.appendChild(label);
             dojo.setStyle(label, 'color', "#" + this.gamedatas.players[notif.args.player_id].color);
+            setTimeout(function () {
+                label.remove();
+            }, 2000);
             (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.incValue(notif.args.points);
         };
         LoveLinks.prototype.notif_removeBracelet = function (notif) {
