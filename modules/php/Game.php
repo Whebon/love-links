@@ -1579,7 +1579,9 @@ class Game extends \Table
      * @param mixed $lock_link_id link id of the link on the LOCK side
      */
     public function isPerfectMatch(mixed $key_link_id, mixed $lock_link_id) {
-        return true; //TODO
+        $key = self::$CARD_TYPES[$key_link_id]["key"];
+        $lock = self::$CARD_TYPES[$lock_link_id]["lock"];
+        return $lock == $key;
     }
 
     public function getLinkNames(array $links) {
