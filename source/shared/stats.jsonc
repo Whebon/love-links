@@ -11,5 +11,58 @@
  * This file is enforced by schema file located at 'bga-ts-template/template/schema'. If you are using VS Code, this schema file will be linked to this file automatically if 'generate-vscode-files' is set to true in 'template.config.jsonc. Hover over any fields for more information.
  */
 {
-	"$schema": "../../node_modules/bga-ts-template/schema/stats.schema.json"
+	"$schema": "../../node_modules/bga-ts-template/schema/stats.schema.json",
+
+	"player": {
+		"points_per_turn": {
+			"id": 10,
+			"name": "Points per turn",
+			"type": "int"
+		},
+		"bracelet_completed": {
+			"id": 11,
+			"name": "Bracelets completed",
+			"type": "int"
+		},
+		"captured_gemstones": {
+			"id": 12,
+			"name": "Captured Gemstones",
+			"type": "int"
+		},
+		"bronze_points": { //siler and gold also goes here
+			"id": 13,
+			"name": "Metal points",
+			"type": "int"
+		},
+		"long_bracelet_points": {
+			"id": 16,
+			"name": "Long bracelet points",
+			"type": "int"
+		},
+		"gemstone_points": {
+			"id": 17,
+			"name": "Gemstone points",
+			"type": "int"
+		},
+		"domination_points": {
+			"id": 18,
+			"name": "Domination points",
+			"type": "int"
+		},
+		"diamond_points": { //emerald also goes here
+			"id": 19,
+			"name": "Diamond and emerald points",
+			"type": "int"
+		},
+		"matching_link_points": {
+			"id": 21,
+			"name": "Matching link points",
+			"type": "int"
+		},
+		"master_lock_penalties": {
+			"id": 22,
+			"name": "Master lock penalties",
+			"type": "int"
+		}
+	}
 }

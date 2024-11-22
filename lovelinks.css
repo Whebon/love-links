@@ -165,18 +165,18 @@
 .lovelinks-heart.lovelinks-gold {
   background-position-x: -200%;
 }
-.lovelinks-heart.lovelinks-lock {
+.lovelinks-heart.lovelinks-key {
   z-index: 2;
   background-position-y: -100%;
 }
-.lovelinks-heart.lovelinks-lock .lovelinks-number {
+.lovelinks-heart.lovelinks-key .lovelinks-number {
   color: white;
 }
-.lovelinks-heart.lovelinks-key {
+.lovelinks-heart.lovelinks-lock {
   z-index: 1;
   background-position-y: 0%;
 }
-.lovelinks-heart.lovelinks-key .lovelinks-number {
+.lovelinks-heart.lovelinks-lock .lovelinks-number {
   color: black;
 }
 

@@ -67,6 +67,7 @@ class Game extends \Table
             "round" => 10,
             "placements" => 11,
             "mandatory_new_bracelet" => 12,
+            "is_second_perfect_match" => 13,
             "game_length" => 100,
             "allow_undo" => 101
         ]);        
@@ -715,6 +716,9 @@ class Game extends \Table
         //master lock penalty
         $this->masterLockPenalty($player_id, $bracelet_id, $link);
 
+        //score "Matching Link Points"
+        $this->scoreBraceletMatchingLink($player_id, $bracelet_id, $bracelet, $link_id, $side);
+
         //score points for completing a bracelet
         if ($side == "both") {
             $this->completeBracelet($bracelet_id);
@@ -929,6 +933,7 @@ class Game extends \Table
     public function stEndTurn(): void {
         // Reset the placements game state variable
         $this->setGameStateValue("placements", 0);
+        $this->setGameStateValue("is_second_perfect_match", 0);
 
         // Refill the player's stock
         $player_id = (int)$this->getActivePlayerId();
@@ -983,6 +988,7 @@ class Game extends \Table
     public function completeBracelet($bracelet_id) {
         $player_id = $this->getActivePlayerId();
         $links = $this->deck->getCardsInLocation(BRACELET.$bracelet_id);
+        $this->incStat(1, "bracelet_completed", $player_id);
 
         $this->notifyAllPlayers('message', clienttranslate('${player_name} completed a bracelet'), array(
             "player_name" => $this->getPlayerNameById($player_id)
@@ -994,7 +1000,6 @@ class Game extends \Table
         $this->scoreBraceletDomination($player_id, $bracelet_id, $links);
         $this->scoreBraceletDiamond($player_id, $bracelet_id, $links);
         $this->scoreBraceletEmerald($player_id, $bracelet_id, $links);
-        $this->scoreBraceletMatchingLink($player_id, $bracelet_id, $links);
         $this->scoreBraceletTiebreaking($player_id, $bracelet_id, $links);
 
         $this->deck->moveAllCardsInLocationKeepOrder(BRACELET.$bracelet_id, COMPLETED.$bracelet_id);
@@ -1016,23 +1021,25 @@ class Game extends \Table
         foreach ($links as $link_id => $link) {
             $counts[$this->getMetal($link_id)]++;
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 2*$counts[BRONZE], 'bronze', clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} bronze links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 2*$counts[BRONZE], 'bronze', clienttranslate('${points} Metal points: ${player_name} scores ${points} for ${nbr} bronze links(s)'), array(
             "nbr" => $counts[BRONZE]
         ));
-        $this->scoreBracelet($player_id, $bracelet_id, 3*$counts[SILVER],  'silver', clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} silver links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 3*$counts[SILVER],  'silver', clienttranslate('${points} Metal points: ${player_name} scores ${points} for ${nbr} silver links(s)'), array(
             "nbr" => $counts[SILVER]
         ));
-        $this->scoreBracelet($player_id, $bracelet_id, 5*$counts[GOLD], 'gold', clienttranslate('Metal points: ${player_name} scores ${points} for ${nbr} golden link(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 5*$counts[GOLD], 'gold', clienttranslate('${points} Metal points: ${player_name} scores ${points} for ${nbr} golden link(s)'), array(
             "nbr" => $counts[GOLD]
         ));
+        $this->incStat(2*$counts[BRONZE] + 3*$counts[SILVER] + 5*$counts[GOLD], "bronze_points", $player_id);
     }
 
     public function scoreBraceletLongBracelet($player_id, $bracelet_id, $links) {
         $length = count($links);
         $points = max(0, 2*$length-10);
-        $this->scoreBracelet($player_id, $bracelet_id, $points, 'long', clienttranslate('Long bracelet points: ${player_name} scores ${points} for a bracelet of length ${length}'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, $points, 'long', clienttranslate('${points} Long bracelet points: ${player_name} scores ${points} for a bracelet of length ${length}'), array(
             "length" => $length
         ));
+        $this->incStat($points, "long_bracelet_points", $player_id);
     }
 
     public function scoreBraceletGemstone($player_id, $bracelet_id, $links) {
@@ -1053,11 +1060,12 @@ class Game extends \Table
                 }
                 $points = -5*max(0, $opponentGemstones - $playerGemstones);
                 $this->scoreBracelet($opponent_id, $bracelet_id, $points, 'gemstones', 
-                    clienttranslate('Gemstone points: ${player_name} loses ${points} points, because they have ${opponentGemstones} gemstones in the bracelet (And the active player has ${playerGemstones} gemstones in the bracelet).'), array(
+                    clienttranslate('${points} Gemstone points: ${player_name} loses ${points} points, because they have ${opponentGemstones} gemstones in the bracelet (And the active player has ${playerGemstones} gemstones in the bracelet).'), array(
                         "opponentGemstones" => $opponentGemstones,
                         "playerGemstones" => $playerGemstones
                     )
                 );
+                $this->incStat($points, "gemstone_points", $player_id);
             }
         }
     }
@@ -1068,7 +1076,8 @@ class Game extends \Table
                 return; //skip domination points if any gemstone is non-empty, non-owned
             }
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 10, 'domination', clienttranslate('Diamond points: ${player_name} scores ${points} points'), array());
+        $this->scoreBracelet($player_id, $bracelet_id, 10, 'domination', clienttranslate('${points} Diamond points: ${player_name} scores ${points} points'), array());
+        $this->incStat(10, "domination_points", $player_id);
     }
 
     public function scoreBraceletDiamond($player_id, $bracelet_id, $links) {
@@ -1078,9 +1087,11 @@ class Game extends \Table
                 $count++;
             }
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 10*$count, 'diamond', clienttranslate('Diamond points: ${player_name} scores ${points} points for ${nbr} diamond links(s)'), array(
+        $points = 10*$count;
+        $this->scoreBracelet($player_id, $bracelet_id, $points, 'diamond', clienttranslate('${points} Diamond points: ${player_name} scores ${points} points for ${nbr} diamond links(s)'), array(
             "nbr" => $count
         ));
+        $this->incStat($points, "diamond_points", $player_id);
     }
 
     public function scoreBraceletEmerald($player_id, $bracelet_id, $links) {
@@ -1090,13 +1101,54 @@ class Game extends \Table
                 $count++;
             }
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 5*$count, 'emerald', clienttranslate('Emerald points: ${player_name} scores ${points} points for ${nbr} diamond links(s)'), array(
+        $points = 5*$count;
+        $this->scoreBracelet($player_id, $bracelet_id, $points, 'emerald', clienttranslate('${points} Emerald points: ${player_name} scores ${points} points for ${nbr} diamond links(s)'), array(
             "nbr" => $count
         ));
+        $this->incStat($points, "diamond_points", $player_id);
     }
 
-    public function scoreBraceletMatchingLink($player_id, $bracelet_id, $links) {
-        //TODO
+    public function scoreBraceletMatchingLink($player_id, $bracelet_id, $bracelet, $link_id, $side) {
+        $matches = 0;
+        if ($side == "key" || $side == "both") {
+            $key_link_id = reset($bracelet)["id"];
+            $lock_link_id = $link_id;
+            if ($this->isPerfectMatch($key_link_id, $lock_link_id)) {
+                $matches += 1;
+            }
+        }
+        if ($side == "lock" || $side == "both") {
+            $key_link_id = $link_id;
+            $lock_link_id = end($bracelet)["id"];
+            if ($this->isPerfectMatch($key_link_id, $lock_link_id)) {
+                $matches += 1;
+            }
+        }
+
+        if ($matches == 0) {
+            return;
+        }
+
+        if ($side == "both") {
+            $points = 4*$matches;
+            $suffix = ($matches == 1) ? 
+                clienttranslate('points for the matching their link on one side') :
+                clienttranslate('points for the matching their link on both sides');
+        }
+        else if ($this->getGameStateValue("is_second_perfect_match") == 1) {
+            $points = 3;
+            $suffix = clienttranslate('points for extending a bracelet with a matching link twice in one turn');
+        }
+        else {
+            $points = 1;
+            $suffix = clienttranslate('point for extending a bracelet with a matching link');
+            $this->setGameStateValue("is_second_perfect_match", 1);
+        }
+    
+        $this->scoreBracelet($player_id, $bracelet_id, $points, 'matching', clienttranslate('${points} Matching link points: ${player_name} scores ${points} ${suffix}'), array(
+            "suffix" => $suffix
+        ));
+        $this->incStat($points, "matching_link_points", $player_id);
     }
 
     public function scoreBraceletTiebreaking($player_id, $bracelet_id, $links) {
@@ -1109,11 +1161,13 @@ class Game extends \Table
         }
         $sql = "UPDATE player SET player_score_aux=player_score_aux+$points WHERE player_id='$player_id'";
         $this->DbQuery($sql);
+        $this->incStat($points, "captured_gemstones", $player_id);
     }
 
     public function masterLockPenalty($player_id, $bracelet_id, $link) {
         if ($this->getLock((int)$link["id"]) == MASTER) {
-            $this->scoreBracelet($player_id, $bracelet_id, -2, 'master', clienttranslate('Master Lock Penalty: ${player_name} loses ${points} points for placing the master lock'), array());
+            $this->scoreBracelet($player_id, $bracelet_id, -2, 'master', clienttranslate('${points} Master Lock Penalty: ${player_name} loses ${points} points for placing the master lock'), array());
+            $this->incStat(-2, "master_lock_penalties", $player_id);
         }
     }
 
@@ -1516,6 +1570,15 @@ class Game extends \Table
         return $lock % $key === 0;
     }
 
+    /**
+     * Returns true if `key_link` and `lock_link` match perfectly
+     * @param mixed $key_link_id link id of the link on the KEY side
+     * @param mixed $lock_link_id link id of the link on the LOCK side
+     */
+    public function isPerfectMatch(mixed $key_link_id, mixed $lock_link_id) {
+        return true; //TODO
+    }
+
     public function getLinkNames(array $links) {
         $n = count($links);
         $names = "";
@@ -1606,14 +1669,19 @@ class Game extends \Table
         $this->setGameStateInitialValue("round", 0);
         $this->setGameStateInitialValue("placements", 0);
         $this->setGameStateInitialValue("mandatory_new_bracelet", 0);
+        $this->setGameStateInitialValue("is_second_perfect_match", 0);
 
         // Init game statistics.
-        //
-        // NOTE: statistics used in this file must be defined in your `stats.inc.php` file.
-
-        // Dummy content.
-        // $this->initStat("table", "table_teststat1", 0);
-        // $this->initStat("player", "player_teststat1", 0);
+        $this->initStat("player", "points_per_turn", 0);//TODO
+        $this->initStat("player", "bracelet_completed", 0);
+        $this->initStat("player", "captured_gemstones", 0);
+        $this->initStat("player", "bronze_points", 0);
+        $this->initStat("player", "long_bracelet_points", 0);
+        $this->initStat("player", "gemstone_points", 0);
+        $this->initStat("player", "domination_points", 0);
+        $this->initStat("player", "diamond_points", 0);
+        $this->initStat("player", "matching_link_points", 0);//TODO
+        $this->initStat("player", "master_lock_penalties", 0);
 
         // Create the links
         $this->deck->createDeck(self::$CARD_TYPES);

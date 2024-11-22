@@ -383,6 +383,7 @@ export class Bracelet {
             this.reflowLink(link);
 
             //key position
+            dojo.setStyle(link.divs.key, 'opacity', this.isComplete || i > 0 ? '0.5' : '1');
             if (!this.isBlinking) {
                 link.divs.key.classList.remove("lovelinks-blinking");
             }
@@ -408,7 +409,7 @@ export class Bracelet {
             if (!this.isBlinking) {
                 link.divs.lock.classList.remove("lovelinks-blinking");
             }
-            dojo.setStyle(link.divs.lock, 'opacity', this.isComplete || i < this.links.length - 1 ? '0.5' : '1');
+            //dojo.setStyle(link.divs.lock, 'opacity', this.isComplete || i < this.links.length - 1 ? '0.5' : '1');
             dojo.setStyle(link.divs.lock, 'left', `${coords.lock.left - this.LINK_WIDTH/2}px`);
             dojo.setStyle(link.divs.lock, 'top', `${coords.lock.top - this.LINK_HEIGHT/2}px`);
             //dojo.setStyle(link.divs.lock,  'rotate', `${coords.lock.rotate}rad`);
