@@ -1021,13 +1021,13 @@ class Game extends \Table
         foreach ($links as $link_id => $link) {
             $counts[$this->getMetal($link_id)]++;
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 2*$counts[BRONZE], 'bronze', clienttranslate('${points} Metal points: ${player_name} scores ${points} for ${nbr} bronze links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 2*$counts[BRONZE], 'bronze', clienttranslate('${points} Metal points for ${player_name} scores ${points} points for ${nbr} bronze links(s)'), array(
             "nbr" => $counts[BRONZE]
         ));
-        $this->scoreBracelet($player_id, $bracelet_id, 3*$counts[SILVER],  'silver', clienttranslate('${points} Metal points: ${player_name} scores ${points} for ${nbr} silver links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 3*$counts[SILVER],  'silver', clienttranslate('${points} Metal points: ${player_name} scores ${points} points for ${nbr} silver links(s)'), array(
             "nbr" => $counts[SILVER]
         ));
-        $this->scoreBracelet($player_id, $bracelet_id, 5*$counts[GOLD], 'gold', clienttranslate('${points} Metal points: ${player_name} scores ${points} for ${nbr} golden link(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, 5*$counts[GOLD], 'gold', clienttranslate('${points} Metal points: ${player_name} scores ${points} points for ${nbr} golden link(s)'), array(
             "nbr" => $counts[GOLD]
         ));
         $this->incStat(2*$counts[BRONZE] + 3*$counts[SILVER] + 5*$counts[GOLD], "bronze_points", $player_id);
@@ -1036,7 +1036,7 @@ class Game extends \Table
     public function scoreBraceletLongBracelet($player_id, $bracelet_id, $links) {
         $length = count($links);
         $points = max(0, 2*$length-10);
-        $this->scoreBracelet($player_id, $bracelet_id, $points, 'long', clienttranslate('${points} Long bracelet points: ${player_name} scores ${points} for a bracelet of length ${length}'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, $points, 'long', clienttranslate('${points} Long bracelet points: ${player_name} scores ${points} points for a bracelet of length ${length}'), array(
             "length" => $length
         ));
         $this->incStat($points, "long_bracelet_points", $player_id);
@@ -1102,7 +1102,7 @@ class Game extends \Table
             }
         }
         $points = 5*$count;
-        $this->scoreBracelet($player_id, $bracelet_id, $points, 'emerald', clienttranslate('${points} Emerald points: ${player_name} scores ${points} points for ${nbr} diamond links(s)'), array(
+        $this->scoreBracelet($player_id, $bracelet_id, $points, 'emerald', clienttranslate('${points} Emerald points: ${player_name} scores ${points} points for ${nbr} emerald links(s)'), array(
             "nbr" => $count
         ));
         $this->incStat($points, "diamond_points", $player_id);

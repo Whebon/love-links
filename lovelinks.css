@@ -24,14 +24,29 @@
   z-index: 10;
   color: black;
   opacity: 0;
+  text-shadow: -1px -1px 0px #000, 0px -1px 0px #000, 1px -1px 0px #000, -1px 0px 0px #000, 1px 0px 0px #000, -1px 1px 0px #000, 0px 1px 0px #000, 1px 1px 0px #000, -2px -2px 0px #000, -1px -2px 0px #000, 0px -2px 0px #000, 1px -2px 0px #000, 2px -2px 0px #000, 2px -1px 0px #000, 2px 0px 0px #000, 2px 1px 0px #000, 2px 2px 0px #000, 1px 2px 0px #000, 0px 2px 0px #000, -1px 2px 0px #000, -2px 2px 0px #000, -2px 1px 0px #000, -2px 0px 0px #000, -2px -1px 0px #000;
 }
 .lovelinks-points.lovelinks-points-positive {
-  animation: wiggleUpwards 1.5s linear;
+  animation: moveUpwards 1.5s linear;
 }
 .lovelinks-points.lovelinks-points-negative {
-  animation: wiggleUpwards 1.5s linear;
+  animation: moveUpwards 1.5s linear;
 }
 
+@keyframes moveUpwards {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(0, -25%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(0, -50%);
+    opacity: 0;
+  }
+}
 @keyframes wiggleUpwards {
   0% {
     transform: translate(-50%, -50%) translate(0, 0);

@@ -25,11 +25,53 @@
     color: black;
     opacity: 0;
     &.lovelinks-points-positive {
-        animation: wiggleUpwards 1.5s linear;
+        animation: moveUpwards 1.5s linear;
     }
     &.lovelinks-points-negative {
-        animation: wiggleUpwards 1.5s linear;
+        animation: moveUpwards 1.5s linear;
         //animation: wiggleDownwards 1.5s linear;
+    }
+    text-shadow: 
+        /* first layer at 1px */
+        -1px -1px 0px #000,
+        0px -1px 0px #000,
+        1px -1px 0px #000,
+        -1px  0px 0px #000,
+        1px  0px 0px #000,
+        -1px  1px 0px #000,
+        0px  1px 0px #000,
+        1px  1px 0px #000,
+        /* second layer at 2px */
+        -2px -2px 0px #000,
+        -1px -2px 0px #000,
+        0px -2px 0px #000,
+        1px -2px 0px #000,
+        2px -2px 0px #000,
+        2px -1px 0px #000,
+        2px  0px 0px #000,
+        2px  1px 0px #000,
+        2px  2px 0px #000,
+        1px  2px 0px #000,
+        0px  2px 0px #000,
+        -1px  2px 0px #000,
+        -2px  2px 0px #000,
+        -2px  1px 0px #000,
+        -2px  0px 0px #000,
+        -2px -1px 0px #000;
+}
+
+@keyframes moveUpwards {
+    0% {
+        transform: translate(-50%, -50%) translate(0, 0);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -50%) translate(0, -25%);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) translate(0, -50%);
+        opacity: 0;
     }
 }
 
