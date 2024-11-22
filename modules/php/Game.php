@@ -1166,7 +1166,10 @@ class Game extends \Table
 
     public function masterLockPenalty($player_id, $bracelet_id, $link) {
         if ($this->getLock((int)$link["id"]) == MASTER) {
-            $this->scoreBracelet($player_id, $bracelet_id, -2, 'master', clienttranslate('${points} Master Lock Penalty: ${player_name} loses ${points} points for placing the master lock'), array());
+            $points = -2;
+            $this->scoreBracelet($player_id, $bracelet_id, $points, 'master', clienttranslate('${points} Master Lock Penalty: ${player_name} loses ${negative_points} points for placing the master lock'), array(
+                "negative_points" => -$points
+            ));
             $this->incStat(-2, "master_lock_penalties", $player_id);
         }
     }
