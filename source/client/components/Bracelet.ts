@@ -1,6 +1,7 @@
 import { StaticLoveLinks } from "./StaticLoveLinks"
 import { Link } from "./Link"
 import { Side } from './Side';
+import { Rays } from './Rays';
 
 interface Coordinates {
     top: number,
@@ -316,6 +317,13 @@ export class Bracelet {
     public prependLink(link: Link) {
         this.links.splice(0, 0, link);
         this.registerLink(link);
+        if (this.links.length >= 2) {
+            const link1 = this.links[0]!;
+            const link2 = this.links[1]!;
+            setTimeout(() => {
+                this.addRays(link1, link2);
+            }, 1000);
+        }
     }
 
     /**
@@ -324,6 +332,14 @@ export class Bracelet {
     public appendLink(link: Link) {
         this.links.push(link);
         this.registerLink(link);
+        if (this.links.length >= 2) {
+            const n = this.links.length;
+            const link1 = this.links[n-2]!;
+            const link2 = this.links[n-1]!;
+            setTimeout(() => {
+                this.addRays(link1, link2);
+            }, 1000);
+        }
     }
 
     /**
@@ -339,6 +355,14 @@ export class Bracelet {
      */
     public setComplete(state: boolean) {
         this.isComplete = state;
+        if (this.isComplete) {
+            const n = this.links.length;
+            const link1 = this.links[n-1]!;
+            const link2 = this.links[0]!;
+            setTimeout(() => {
+                this.addRays(link1, link2);
+            }, 1000);
+        }
         this.updateDisplay();
     }
 
@@ -367,6 +391,25 @@ export class Bracelet {
         link.divs.key.offsetHeight;
         link.divs.lock.offsetHeight;
         link.divs.gemstone.offsetHeight;
+    }
+
+    /*
+    * Adds "lovelinks-rays".
+    * Numbers are written on the key and lock individually
+    * Rays are written only on the lock
+    * @example: 
+    * link 1: 7 - 4 
+    * link 2: 4 - 5
+    * The 4-lock and 4-key will be visually connected.
+    */
+    public addRays(link1: Link, link2: Link) {
+        if (!this.containsLink(link1) || !this.containsLink(link2)) {
+            return;
+        }
+        const lock_div = link1.divs!.lock;
+        const key_div = link2.divs!.key;
+        lock_div.appendChild(Rays.getRayImage(link2.key, link1.lock));
+        key_div.appendChild(Rays.getRayImage(link2.key, link1.lock));
     }
 
     /**
@@ -433,6 +476,10 @@ export class Bracelet {
             dojo.setStyle(link.divs.gemstone, 'top', `${coords.gemstone.top  - this.GEMSTONE_HEIGHT/2}px`);
             dojo.setStyle(link.divs.gemstone,  'rotate', `${coords.gemstone.rotate}rad`);
             this.setRotate(link.divs.gemstone, coords.gemstone.rotate);
+
+            //remove rays at the end points of the bracelet
+            this.lock_link.divs?.lock.querySelector(".lovelinks-rays")?.remove();
+            this.key_link.divs?.key.querySelector(".lovelinks-rays")?.remove();
         }
     }
 

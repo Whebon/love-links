@@ -128,7 +128,79 @@ define("components/Side", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks"], function (require, exports, StaticLoveLinks_2) {
+define("components/Rays", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Rays = void 0;
+    var Rays = (function () {
+        function Rays() {
+        }
+        Rays.getRayImage = function (key, lock) {
+            var index = Rays.getRayIndex(key, lock);
+            var image = document.createElement('div');
+            image.classList.add("lovelinks-rays");
+            var row = Math.floor(index / Rays.IMAGES_PER_ROW);
+            var column = index % Rays.IMAGES_PER_ROW;
+            ;
+            image.style.backgroundPositionX = "-".concat(column * 100, "%");
+            image.style.backgroundPositionY = "-".concat(row * 100, "%");
+            return image;
+        };
+        Rays.getRayIndex = function (key, lock) {
+            if (key == 2 && lock == 2)
+                return 0;
+            else if (key == 2 && lock == 4)
+                return 1;
+            else if (key == 2 && lock == 6)
+                return 2;
+            else if (key == 2 && lock == 8)
+                return 3;
+            else if (key == 2 && lock == 10)
+                return 4;
+            else if (key == 2)
+                return 5;
+            else if (key == 3 && lock == 3)
+                return 6;
+            else if (key == 3 && lock == 6)
+                return 7;
+            else if (key == 3 && lock == 9)
+                return 8;
+            else if (key == 3)
+                return 9;
+            else if (key == 4 && lock == 4)
+                return 10;
+            else if (key == 4 && lock == 8)
+                return 11;
+            else if (key == 4)
+                return 12;
+            else if (key == 5 && lock == 5)
+                return 13;
+            else if (key == 5 && lock == 10)
+                return 14;
+            else if (key == 5)
+                return 15;
+            else if (key == 6 && lock == 6)
+                return 16;
+            else if (key == 6)
+                return 17;
+            else if (key == 7)
+                return 18;
+            else if (key == 8 && lock == 8)
+                return 19;
+            else if (key == 8)
+                return 20;
+            else if (key == 9)
+                return 21;
+            else if (key == 10)
+                return 22;
+            throw new Error("Ray index not found for link ".concat(key, " - ").concat(lock));
+        };
+        Rays.IMAGES_PER_ROW = 5;
+        return Rays;
+    }());
+    exports.Rays = Rays;
+});
+define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks", "components/Rays"], function (require, exports, StaticLoveLinks_2, Rays_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Bracelet = void 0;
@@ -362,18 +434,44 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             return false;
         };
         Bracelet.prototype.prependLink = function (link) {
+            var _this = this;
             this.links.splice(0, 0, link);
             this.registerLink(link);
+            if (this.links.length >= 2) {
+                var link1_1 = this.links[0];
+                var link2_1 = this.links[1];
+                setTimeout(function () {
+                    _this.addRays(link1_1, link2_1);
+                }, 1000);
+            }
         };
         Bracelet.prototype.appendLink = function (link) {
+            var _this = this;
             this.links.push(link);
             this.registerLink(link);
+            if (this.links.length >= 2) {
+                var n = this.links.length;
+                var link1_2 = this.links[n - 2];
+                var link2_2 = this.links[n - 1];
+                setTimeout(function () {
+                    _this.addRays(link1_2, link2_2);
+                }, 1000);
+            }
         };
         Bracelet.prototype.canBeCompleted = function () {
             return (this.links.length >= 5);
         };
         Bracelet.prototype.setComplete = function (state) {
+            var _this = this;
             this.isComplete = state;
+            if (this.isComplete) {
+                var n = this.links.length;
+                var link1_3 = this.links[n - 1];
+                var link2_3 = this.links[0];
+                setTimeout(function () {
+                    _this.addRays(link1_3, link2_3);
+                }, 1000);
+            }
             this.updateDisplay();
         };
         Bracelet.prototype.setBlinking = function (state) {
@@ -391,7 +489,17 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             link.divs.lock.offsetHeight;
             link.divs.gemstone.offsetHeight;
         };
+        Bracelet.prototype.addRays = function (link1, link2) {
+            if (!this.containsLink(link1) || !this.containsLink(link2)) {
+                return;
+            }
+            var lock_div = link1.divs.lock;
+            var key_div = link2.divs.key;
+            lock_div.appendChild(Rays_1.Rays.getRayImage(link2.key, link1.lock));
+            key_div.appendChild(Rays_1.Rays.getRayImage(link2.key, link1.lock));
+        };
         Bracelet.prototype.updateDisplay = function () {
+            var _a, _b, _c, _d;
             this.calculateDisplayProperties();
             for (var i = 0; i < this.links.length; i++) {
                 var link = this.links[i];
@@ -443,6 +551,8 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 dojo.setStyle(link.divs.gemstone, 'top', "".concat(coords.gemstone.top - this.GEMSTONE_HEIGHT / 2, "px"));
                 dojo.setStyle(link.divs.gemstone, 'rotate', "".concat(coords.gemstone.rotate, "rad"));
                 this.setRotate(link.divs.gemstone, coords.gemstone.rotate);
+                (_b = (_a = this.lock_link.divs) === null || _a === void 0 ? void 0 : _a.lock.querySelector(".lovelinks-rays")) === null || _b === void 0 ? void 0 : _b.remove();
+                (_d = (_c = this.key_link.divs) === null || _c === void 0 ? void 0 : _c.key.querySelector(".lovelinks-rays")) === null || _d === void 0 ? void 0 : _d.remove();
             }
         };
         Bracelet.prototype.setRotate = function (element, angle) {

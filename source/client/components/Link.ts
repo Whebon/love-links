@@ -19,7 +19,7 @@ export interface LinkDivs {
 export class Link {
     private static UNIQUE_ID: number = 999;
     private static links: Map<number, Link> = new Map<number, Link>();
-    private static MASTER = 240;
+    private static readonly MASTER = 240;
 
     public id: number;
     public key: number;

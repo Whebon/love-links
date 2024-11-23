@@ -228,6 +228,18 @@
     transition: rotate 1s ease-out, top 1s ease-out, left 1s ease-out, opacity 1s ease-out, width 1s ease-out, height 1s ease-out;
 	position: absolute;
 
+    .lovelinks-rays {
+        background-image: url("img/rays.png");
+        background-size: 500% 500%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50%;
+        height: 50%;
+        z-index: 4;
+        position: absolute;
+    }
+
     .lovelinks-number {
         position: absolute;
         user-select: none;
@@ -237,6 +249,10 @@
         transform: translate(-50%, -50%);
         text-align: center;
         font-size: large;
+    }
+
+    .lovelinks-number:not(:only-child) {
+        display: none;
     }
 
     &.lovelinks-bronze {
