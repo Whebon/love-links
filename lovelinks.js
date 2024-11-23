@@ -1535,6 +1535,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.notif_newBracelet = function (notif) {
+            var _a;
             console.log('notif_newBracelet', notif);
             if (this.bracelets.containsLink(Link_3.Link.ofId(notif.args.link_id))) {
                 console.log("pulse");
@@ -1544,6 +1545,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 console.log("new bracelet");
                 var bracelet = this.bracelets.createBracelet(notif.args.link_id);
                 bracelet.appendLink(Link_3.Link.ofId(notif.args.link_id, notif.args.player_id));
+            }
+            if (notif.args.player_id == 0) {
+                (_a = this.supply) === null || _a === void 0 ? void 0 : _a.remove(Link_3.Link.ofId(notif.args.link_id));
             }
         };
         LoveLinks.prototype.notif_refillStock = function (notif) {

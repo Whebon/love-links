@@ -795,6 +795,10 @@ class LoveLinks extends Gamegui
 			const bracelet = this.bracelets.createBracelet(notif.args.link_id);
 			bracelet.appendLink(Link.ofId(notif.args.link_id, notif.args.player_id));
 		}
+		if (notif.args.player_id == 0) {
+			//if this bracelet was created from the supply, remove a dot
+			this.supply?.remove(Link.ofId(notif.args.link_id));
+		}
 	}
 
 	notif_refillStock(notif: NotifFrom<'refillStock'>) {
