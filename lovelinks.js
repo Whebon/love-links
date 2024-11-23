@@ -1221,6 +1221,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.onClickOtherStock = function (bracelet, link, side) {
+            if (!this.checkLock()) {
+                return;
+            }
             switch (this.gamedatas.gamestate.name) {
                 case 'newBracelet':
                 case 'client_placeLink':
@@ -1232,6 +1235,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.onClickMyStock = function (playerBracelet, link, side) {
+            if (!this.checkLock()) {
+                return;
+            }
             if (!this.isCurrentPlayerActive()) {
                 this.showMessage(_("It is not your turn"), 'error');
                 return;
@@ -1263,6 +1269,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.onClickBracelet = function (bracelet, link, side) {
+            if (!this.checkLock()) {
+                return;
+            }
             if (!this.isCurrentPlayerActive()) {
                 this.showMessage(_("It is not your turn"), 'error');
                 return;

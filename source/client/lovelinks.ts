@@ -327,6 +327,9 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickOtherStock(bracelet: Bracelet, link: Link, side: Side) {
+		if (!this.checkLock()) {
+			return;
+		}
 		switch(this.gamedatas.gamestate.name) {
 			case 'newBracelet':
 			case 'client_placeLink':
@@ -345,6 +348,9 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickMyStock(playerBracelet: Bracelet, link: Link, side: Side) {
+		if (!this.checkLock()) {
+			return;
+		}
 		if(!this.isCurrentPlayerActive()) {
 			this.showMessage(_("It is not your turn"), 'error');
 			return;
@@ -384,6 +390,9 @@ class LoveLinks extends Gamegui
 	 * @param side side
 	 */
 	public onClickBracelet(bracelet: Bracelet, link: Link, side: Side) {
+		if (!this.checkLock()) {
+			return;
+		}
 		if(!this.isCurrentPlayerActive()) {
 			this.showMessage(_("It is not your turn"), 'error');
 			return;
