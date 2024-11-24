@@ -268,18 +268,18 @@
     }
 
     &.lovelinks-key {
-        z-index: 2;
-        background-position-y: -100%;
-        .lovelinks-number {
-            color: white;
-        }
-    }
-    
-    &.lovelinks-lock {
         z-index: 1;
         background-position-y: 0%;
         .lovelinks-number {
             color: black;
+        }
+    }
+
+    &.lovelinks-lock {
+        z-index: 2;
+        background-position-y: -100%;
+        .lovelinks-number {
+            color: white;
         }
     }
 }
