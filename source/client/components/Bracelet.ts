@@ -476,6 +476,12 @@ export class Bracelet {
             dojo.setStyle(link.divs.gemstone, 'top', `${coords.gemstone.top  - this.GEMSTONE_HEIGHT/2}px`);
             dojo.setStyle(link.divs.gemstone,  'rotate', `${coords.gemstone.rotate}rad`);
             this.setRotate(link.divs.gemstone, coords.gemstone.rotate);
+            if (i == this.links.length - 1) {
+                link.divs.gemstone.addEventListener('click', this.onClickGemstoneBound);
+            }
+            else {
+                link.divs.gemstone.removeEventListener('click', this.onClickGemstoneBound);
+            }
 
             //remove rays at the end points of the bracelet
             this.lock_link.divs?.lock.querySelector(".lovelinks-rays")?.remove();
@@ -578,6 +584,14 @@ export class Bracelet {
      */
     private onClickLockBound = this.onClickLock.bind(this);
     private onClickLock() {
+        this.onClickBracelet(this, this.links[this.links.length-1]!, 'lock');
+    }
+
+    /**
+     * Click gemstone callback function (same as clicking on a lock)
+    */
+    private onClickGemstoneBound = this.onClickGemstone.bind(this);
+    private onClickGemstone() {
         this.onClickBracelet(this, this.links[this.links.length-1]!, 'lock');
     }
 

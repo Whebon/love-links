@@ -11,6 +11,9 @@
 #player_boards {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
+#player_boards .lovelinks-gemstoneholder {
+  cursor: pointer;
+}
 
 .lovelinks-points {
   pointer-events: none;

@@ -213,6 +213,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             this.radius = -1;
             this.onClickKeyBound = this.onClickKey.bind(this);
             this.onClickLockBound = this.onClickLock.bind(this);
+            this.onClickGemstoneBound = this.onClickGemstone.bind(this);
             this.links = [];
             this.container = document.createElement("div");
             this.container.classList.add("lovelinks-bracelet");
@@ -551,6 +552,12 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 dojo.setStyle(link.divs.gemstone, 'top', "".concat(coords.gemstone.top - this.GEMSTONE_HEIGHT / 2, "px"));
                 dojo.setStyle(link.divs.gemstone, 'rotate', "".concat(coords.gemstone.rotate, "rad"));
                 this.setRotate(link.divs.gemstone, coords.gemstone.rotate);
+                if (i == this.links.length - 1) {
+                    link.divs.gemstone.addEventListener('click', this.onClickGemstoneBound);
+                }
+                else {
+                    link.divs.gemstone.removeEventListener('click', this.onClickGemstoneBound);
+                }
                 (_b = (_a = this.lock_link.divs) === null || _a === void 0 ? void 0 : _a.lock.querySelector(".lovelinks-rays")) === null || _b === void 0 ? void 0 : _b.remove();
                 (_d = (_c = this.key_link.divs) === null || _c === void 0 ? void 0 : _c.key.querySelector(".lovelinks-rays")) === null || _d === void 0 ? void 0 : _d.remove();
             }
@@ -624,6 +631,9 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             this.onClickBracelet(this, this.links[0], 'key');
         };
         Bracelet.prototype.onClickLock = function () {
+            this.onClickBracelet(this, this.links[this.links.length - 1], 'lock');
+        };
+        Bracelet.prototype.onClickGemstone = function () {
             this.onClickBracelet(this, this.links[this.links.length - 1], 'lock');
         };
         return Bracelet;
