@@ -1632,6 +1632,20 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 var number_of_slots = this.gamedatas.round == 1 ? 5 : 4;
                 this.stocks[player_id].removeBraceletIdsAbove(number_of_slots);
             }
+            if (notif.args.round == 2) {
+                var popin = new ebg.popindialog();
+                popin.create("lovelinks-popin-round-2");
+                popin.setTitle(_("Round Completed"));
+                popin.setContent(_("Bronze round complete, the silver round has begun."));
+                popin.show(true);
+            }
+            if (notif.args.round == 3) {
+                var popin = new ebg.popindialog();
+                popin.create("lovelinks-popin-round-3");
+                popin.setTitle(_("Round Completed"));
+                popin.setContent(_("Silver round complete, the gold round has begun."));
+                popin.show(true);
+            }
         };
         LoveLinks.prototype.notif_debugMessage = function (notif) {
             console.log('notif_debugMessage', notif);

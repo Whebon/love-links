@@ -912,7 +912,14 @@ class Game extends \Table
         }
         $round += 1;
         $this->setGameStateValue("round", $round);
-        $this->notifyAllPlayers("startRound", '', array("round" => $round));
+        $msg = '';
+        if ($round == 2) {
+            $msg = clienttranslate('Bronze round complete, the silver round has begun');
+        }
+        else if ($round == 3) {
+            $msg = clienttranslate('Silver round complete, the gold round has begun');
+        }
+        $this->notifyAllPlayers("startRound", $msg, array("round" => $round));
 
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $player_id => $player) {

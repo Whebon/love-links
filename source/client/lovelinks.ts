@@ -875,10 +875,27 @@ class LoveLinks extends Gamegui
 	notif_startRound(notif: NotifFrom<'startRound'>) {
 		console.log('notif_startRound', notif);
 		this.gamedatas.round = notif.args.round;
+
 		//reduce the number of slots at the start of the round
 		for (let player_id of this.gamedatas.playerorder) {
 			const number_of_slots = this.gamedatas.round == 1 ? 5 : 4;
 			this.stocks[player_id]!.removeBraceletIdsAbove(number_of_slots);
+		}
+
+		//show a popin
+		if (notif.args.round == 2) {
+			const popin = new ebg.popindialog();
+			popin.create("lovelinks-popin-round-2");
+			popin.setTitle(_("Round Completed"));
+			popin.setContent(_(`Bronze round complete, the silver round has begun.`));
+			popin.show(true);
+		}
+		if (notif.args.round == 3) {
+			const popin = new ebg.popindialog();
+			popin.create("lovelinks-popin-round-3");
+			popin.setTitle(_("Round Completed"));
+			popin.setContent(_(`Silver round complete, the gold round has begun.`));
+			popin.show(true);
 		}
 	}
 
