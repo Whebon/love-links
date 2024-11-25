@@ -333,12 +333,12 @@
 .lovelinks-supply-table {
   background-image: url(img/supply.png);
   background-size: contain;
-  width: calc(var(--lovelinks-supply-table-scale) * 1182px);
+  width: calc(var(--lovelinks-supply-table-scale) * 1152px);
   height: calc(var(--lovelinks-supply-table-scale) * 829px);
   padding-left: calc(var(--lovelinks-supply-table-scale) * 186px);
   padding-top: calc(var(--lovelinks-supply-table-scale) * 170px);
   display: grid;
-  grid-template-columns: repeat(10, calc(var(--lovelinks-supply-table-scale) * 118px));
+  grid-template-columns: repeat(10, calc(var(--lovelinks-supply-table-scale) * 115px));
   grid-template-rows: repeat(9, calc(var(--lovelinks-supply-table-scale) * 92px));
   gap: 0px;
 }
