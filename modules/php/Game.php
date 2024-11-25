@@ -1228,11 +1228,9 @@ class Game extends \Table
                 $key_link_id = reset($bracelet)["id"];
                 $lock_link_id = end($bracelet)["id"];
                 if ($this->isValidConnection($key_link_id, $playerLink["id"])) {
-                    die("a".$key_link_id);
                     return true;
                 }
                 if ($this->isValidConnection($playerLink["id"], $lock_link_id)) {
-                    die("b".$key_link_id);
                     return true;
                 }
             }
