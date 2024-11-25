@@ -1078,11 +1078,12 @@ class Game extends \Table
                         $opponentGemstones += 1;
                     }
                 }
-                $points = -5*max(0, $opponentGemstones - $playerGemstones);
+                $points = $opponentGemstones > $playerGemstones ? -5 : 0;
                 $this->scoreBracelet($opponent_id, $bracelet_id, $points, 'gemstones', 
-                    clienttranslate('${points} Gemstone points: ${player_name} loses ${points} points, because they have ${opponentGemstones} gemstones in the bracelet (And the active player has ${playerGemstones} gemstones in the bracelet).'), array(
+                    clienttranslate('${points} Gemstone points: ${player_name} loses ${negative_points} points, because they have ${opponentGemstones} gemstones in the bracelet (And the active player has ${playerGemstones} gemstones in the bracelet).'), array(
                         "opponentGemstones" => $opponentGemstones,
-                        "playerGemstones" => $playerGemstones
+                        "playerGemstones" => $playerGemstones,
+                        "negative_points" => -$points
                     )
                 );
                 $this->incStat($points, "gemstone_points", $player_id);
