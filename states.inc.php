@@ -50,6 +50,7 @@ $machinestates = array(
 		'type' => 'activeplayer',
 		'possibleactions' => ['actMultipleActions', 'actPlaceLink', 'actNewBracelet'],
 		'transitions' => array(
+			'trPlayerTurn' => 3,
 			'trNewBracelet' => 33,
 			'trEndTurn' => 4,
 		),

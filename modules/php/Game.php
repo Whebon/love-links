@@ -68,6 +68,7 @@ class Game extends \Table
             "placements" => 11,
             "mandatory_new_bracelet" => 12,
             "is_second_perfect_match" => 13,
+            "zombie_turn" => 14,
             "game_length" => 100,
             "allow_undo" => 101
         ]);        
@@ -753,6 +754,8 @@ class Game extends \Table
             $this->dummyNextState("trEndTurn");
             return;
         }
+
+        $this->dummyNextState("trPlayerTurn"); //needed for the zombie turn check...
     }
 
     /**
@@ -951,6 +954,7 @@ class Game extends \Table
         // Reset the placements game state variable
         $this->setGameStateValue("placements", 0);
         $this->setGameStateValue("is_second_perfect_match", 0);
+        $this->setGameStateValue("zombie_turn", 0);
 
         // Update the points per turn statistic
         $half_turns = $this->dbGetPlacements($player_id);
@@ -1269,7 +1273,7 @@ class Game extends \Table
      * Returns true based on the game option
      */
     function allowUndo() {
-        return $this->getGameStateValue("allow_undo") == 1;
+        return $this->getGameStateValue("allow_undo") == 1 && $this->getGameStateValue("zombie_turn") == 0;
     }
 
     /**
@@ -1743,23 +1747,51 @@ class Game extends \Table
     {
         $state_name = $state["name"];
 
+        $this->setGameStateValue("zombie_turn", 1);
+
         if ($state["type"] === "activeplayer") {
             switch ($state_name) {
-                default:
-                {
-                    $this->gamestate->nextState("zombiePass");
-                    break;
-                }
+                case "newBracelet":
+                    //start a new bracelet
+                    $links = $this->deck->getCardsInLocation(STOCK.$active_player);
+                    $link_id = array_rand($links);
+                    $this->actNewBracelet($link_id);
+                    $this->setGameStateValue("zombie_turn", 0);
+                    return;
+                case "playerTurn":
+                    //place the first link possible
+                    $bracelets = $this->deck->getBracelets(BRACELET);
+                    $playerLinks = $this->deck->getCardsInLocation(STOCK.$active_player);
+                    foreach ($playerLinks as $playerLink) {
+                        foreach ($bracelets as $bracelet_id => $bracelet) {
+                            $key_link_id = reset($bracelet)["id"];
+                            $lock_link_id = end($bracelet)["id"];
+                            if ($this->isValidConnection($key_link_id, $playerLink["id"])) {
+                                $this->actPlaceLink((int)$playerLink["id"], (int)$bracelet_id, "key");
+                                $this->setGameStateValue("zombie_turn", 0);
+                                return;
+                            }
+                            if ($this->isValidConnection($playerLink["id"], $lock_link_id)) {
+                                $this->actPlaceLink((int)$playerLink["id"], (int)$bracelet_id, "lock");
+                                $this->setGameStateValue("zombie_turn", 0);
+                                return;
+                            }
+                        }
+                    }
+                    //else, start a new bracelet
+                    $links = $this->deck->getCardsInLocation(STOCK.$active_player);
+                    $link_id = array_rand($links);
+                    $this->actNewBracelet($link_id);
+                    $this->setGameStateValue("zombie_turn", 0);
+                    return;
             }
-
-            return;
         }
 
-        // Make sure player is in a non-blocking status for role turn.
-        if ($state["type"] === "multipleactiveplayer") {
-            $this->gamestate->setPlayerNonMultiactive($active_player, '');
-            return;
-        }
+        // // Make sure player is in a non-blocking status for role turn.
+        // if ($state["type"] === "multipleactiveplayer") {
+        //     $this->gamestate->setPlayerNonMultiactive($active_player, '');
+        //     return;
+        // }
 
         throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
     }

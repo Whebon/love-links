@@ -53,7 +53,7 @@
 				{ "name": "link_id", "type": "AT_int" }
 			]
 		},
-		"transitions": { "trNewBracelet": 33, "trEndTurn": 4 }
+		"transitions": { "trPlayerTurn": 3, "trNewBracelet": 33, "trEndTurn": 4 }
 	},
 
 	"33": {
