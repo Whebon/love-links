@@ -956,7 +956,7 @@ class Game extends \Table
         $half_turns = $this->dbGetPlacements($player_id);
         $turns = $half_turns/2;
         $total_score = $this->dbGetScore($player_id);
-        $points_per_turn = $total_score / $turns;
+        $points_per_turn = $total_score / max(1, $turns);
         $this->setStat($points_per_turn, "points_per_turn", $player_id);
 
         // Give some extra time to the active player when he completed an action
@@ -1096,7 +1096,7 @@ class Game extends \Table
                 return; //skip domination points if any gemstone is non-empty, non-owned
             }
         }
-        $this->scoreBracelet($player_id, $bracelet_id, 10, 'domination', clienttranslate('${points} Diamond points: ${player_name} scores ${points} points'), array());
+        $this->scoreBracelet($player_id, $bracelet_id, 10, 'domination', clienttranslate('${points} Domination points: ${player_name} scores ${points} points'), array());
         $this->incStat(10, "domination_points", $player_id);
     }
 

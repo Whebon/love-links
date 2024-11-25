@@ -182,6 +182,9 @@ class LoveLinks extends Gamegui
 	override onEnteringState(stateName: GameStateName, args: CurrentStateArgs): void
 	{
 		console.log( 'Entering state: '+stateName );
+
+		if(!this.isCurrentPlayerActive())
+			return;
 		
 		switch(stateName) {
 			case 'playerTurn':

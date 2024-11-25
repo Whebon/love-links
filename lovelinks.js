@@ -1120,6 +1120,8 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         };
         LoveLinks.prototype.onEnteringState = function (stateName, args) {
             console.log('Entering state: ' + stateName);
+            if (!this.isCurrentPlayerActive())
+                return;
             switch (stateName) {
                 case 'playerTurn':
                     this.nextAction();
