@@ -229,6 +229,7 @@ class LoveLinks extends Gamegui
 		
 		switch(stateName) {
 			case 'newBracelet':
+				this.bracelets.container.removeEventListener('click', this.onNewBraceletBound);
 				for (const bracelet of this.myStock.bracelets) {
 					bracelet.setBlinking(false);
 				}
@@ -255,6 +256,7 @@ class LoveLinks extends Gamegui
 
 		switch(stateName) {
 			case 'newBracelet':
+				this.bracelets.container.addEventListener('click', this.onNewBraceletBound);
 				this.addActionButton("new-bracelet-button", _("New Bracelet"), "onNewBracelet");
 				if (this.commandManager.hasCommands()) {
 					this.addUndoButton();
@@ -517,6 +519,7 @@ class LoveLinks extends Gamegui
 		- make a call to the game server
 	*/
 
+	public onNewBraceletBound = this.onNewBracelet.bind(this);
 	public onNewBracelet() {
 		if (!this.selected) {
 			this.showMessage(_("Please select a link from your stock"), 'error');

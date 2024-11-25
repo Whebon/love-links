@@ -1045,6 +1045,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             _this.stocks = {};
             _this.commandManager = new CommandManager_1.CommandManager();
             _this.allowUndo = false;
+            _this.onNewBraceletBound = _this.onNewBracelet.bind(_this);
             StaticLoveLinks_4.StaticLoveLinks.page = _this;
             console.log('lovelinks constructor');
             return _this;
@@ -1161,6 +1162,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             console.log('Leaving state: ' + stateName);
             switch (stateName) {
                 case 'newBracelet':
+                    this.bracelets.container.removeEventListener('click', this.onNewBraceletBound);
                     for (var _i = 0, _a = this.myStock.bracelets; _i < _a.length; _i++) {
                         var bracelet = _a[_i];
                         bracelet.setBlinking(false);
@@ -1182,6 +1184,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 return;
             switch (stateName) {
                 case 'newBracelet':
+                    this.bracelets.container.addEventListener('click', this.onNewBraceletBound);
                     this.addActionButton("new-bracelet-button", _("New Bracelet"), "onNewBracelet");
                     if (this.commandManager.hasCommands()) {
                         this.addUndoButton();
