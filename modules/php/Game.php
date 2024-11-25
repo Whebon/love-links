@@ -953,7 +953,7 @@ class Game extends \Table
         $this->setStat($points_per_turn, "points_per_turn", $player_id);
 
         // Give some extra time to the active player when he completed an action
-        $this->giveExtraTime($player_id);
+        $this->giveExtraTime($player_id, 60);
 
         // Activate the next player with a non-empty stock
         $locations = $this->deck->countCardsInLocations(STOCK.$player_id);
