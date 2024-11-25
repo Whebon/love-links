@@ -58,8 +58,8 @@
 
 	"33": {
 		"name": "newBracelet",
-		"description": "${actplayer} must start a new bracelet",
-		"descriptionmyturn": "${you} must start a new bracelet",
+		"description": "${actplayer} choose a link to start a new bracelet",
+		"descriptionmyturn": "${you} choose a link to start a new bracelet",
 		"type": "activeplayer",
 		"possibleactions": {
 			"actNewBracelet": [

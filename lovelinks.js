@@ -1126,11 +1126,15 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     break;
                 case 'newBracelet':
                     this.myStock.deselectAll();
+                    for (var _i = 0, _a = this.myStock.bracelets; _i < _a.length; _i++) {
+                        var bracelet = _a[_i];
+                        bracelet.setBlinking(true);
+                    }
                     break;
                 case 'client_placeLink':
                     this.myStock.deselectAll();
-                    for (var _i = 0, _a = this.myStock.bracelets; _i < _a.length; _i++) {
-                        var slot = _a[_i];
+                    for (var _b = 0, _c = this.myStock.bracelets; _b < _c.length; _b++) {
+                        var slot = _c[_b];
                         if (slot.size() > 0) {
                             console.log(slot);
                             var possible_moves = this.bracelets.highlightPossibleLinks(slot.lock_link);
@@ -1143,7 +1147,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                         }
                     }
                     this.setClientState('newBracelet', {
-                        descriptionmyturn: _("${you} must select a link to start a new bracelet (because you cannot extend any bracelet)")
+                        descriptionmyturn: _("${you} must choose a link to start a new bracelet (because you cannot extend any bracelet)")
                     });
                     break;
                 case 'client_completeBracelet':
@@ -1154,6 +1158,12 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         LoveLinks.prototype.onLeavingState = function (stateName) {
             console.log('Leaving state: ' + stateName);
             switch (stateName) {
+                case 'newBracelet':
+                    for (var _i = 0, _a = this.myStock.bracelets; _i < _a.length; _i++) {
+                        var bracelet = _a[_i];
+                        bracelet.setBlinking(false);
+                    }
+                    break;
                 case 'client_placeLink':
                     this.bracelets.deselectAll();
                     this.myStock.deselectAll();
@@ -1396,7 +1406,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
             else if (this.commandManager.lastCommandIsACompletion()) {
                 this.setClientState('newBracelet', {
-                    descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
+                    descriptionmyturn: _("${you} must choose a link to start a new bracelet (because you completed a bracelet)")
                 });
                 return;
             }

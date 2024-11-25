@@ -189,6 +189,9 @@ class LoveLinks extends Gamegui
 				break;
 			case 'newBracelet':
 				this.myStock.deselectAll();
+				for (const bracelet of this.myStock.bracelets) {
+					bracelet.setBlinking(true);
+				}
 				break;
 			case 'client_placeLink':
 				this.myStock.deselectAll();
@@ -207,7 +210,7 @@ class LoveLinks extends Gamegui
 				}
 				//no moves are possible, move to newBracelet instead
 				this.setClientState('newBracelet', {
-					descriptionmyturn: _("${you} must select a link to start a new bracelet (because you cannot extend any bracelet)")
+					descriptionmyturn: _("${you} must choose a link to start a new bracelet (because you cannot extend any bracelet)")
 				})
 				break;
 			case 'client_completeBracelet':
@@ -222,6 +225,11 @@ class LoveLinks extends Gamegui
 		console.log( 'Leaving state: '+stateName );
 		
 		switch(stateName) {
+			case 'newBracelet':
+				for (const bracelet of this.myStock.bracelets) {
+					bracelet.setBlinking(false);
+				}
+				break;
 			case 'client_placeLink':
 				this.bracelets.deselectAll();
 				this.myStock.deselectAll();
@@ -575,7 +583,7 @@ class LoveLinks extends Gamegui
 		else if (this.commandManager.lastCommandIsACompletion()) {
 			//When the last action was a complete bracelet action, you must place a new bracelet
 			this.setClientState('newBracelet', {
-				descriptionmyturn: _("${you} must select a link to start a new bracelet (because you completed a bracelet)")
+				descriptionmyturn: _("${you} must choose a link to start a new bracelet (because you completed a bracelet)")
 			})
 			return;
 		}
