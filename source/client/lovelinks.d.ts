@@ -74,7 +74,8 @@ declare global {
 		'completed': {[bracelet_id: number]: {[i: number]: DbCard}}
 		'bronze_remaining': {[link_id: number]: DbCard},
 		'silver_remaining': {[link_id: number]: DbCard},
-		'gold_remaining': {[link_id: number]: DbCard}
+		'gold_remaining': {[link_id: number]: DbCard},
+		'allow_undo': boolean
 	}
 
 	//

@@ -56,6 +56,9 @@ class LoveLinks extends Gamegui
 	/** Action performed in this turn */
 	public commandManager: CommandManager = new CommandManager();
 
+	/** Holds whether or not the 'allow_undo' game option is true */
+	public allowUndo: boolean = false;
+
 	/** Stock of the current player */
 	public get myStock(): BraceletArea {
 		const stock = this.stocks[this.player_id];
@@ -162,6 +165,9 @@ class LoveLinks extends Gamegui
 		for (const link_id in gamedatas.gold_remaining) {
 			this.supply.add(Link.ofId(+link_id));
 		}
+
+		// Load game option(s)
+		this.allowUndo = this.gamedatas.allow_undo;
 
 		// Setup game notifications to handle (see "setupNotifications" method below)
 		this.setupNotifications();
@@ -531,8 +537,33 @@ class LoveLinks extends Gamegui
 		});
 	}
 
+	public onSendSingleAction() {
+		const acts = this.commandManager.toActs();
+		if (acts.length != 1) {
+			this.showMessage(`Internal Error: unable to send ${acts.length} actions to the server`, "error");
+			return;
+		}
+		const act = acts[0]!;
+		console.log("onSendSingleAction");
+		console.log(act.name);
+		console.log(act.args);
+		this.bgaPerformAction(act.name, act.args);
+		// .then(() => {
+		// 	this.commandManager.clearAll();
+		// });
+		this.commandManager.clearAll();
+		this.bracelets.setBlinking(false);
+	}
+
 	public nextAction() {
+		console.trace();
 		console.log("nextAction");
+		console.log(`this.allowUndo = ${this.allowUndo}`);
+		if (!this.allowUndo && this.commandManager.hasCommands()) {
+			// Send one action and wait for the server to determine the next action
+			this.onSendSingleAction();
+			return;
+		}
 		const placements = this.commandManager.numberOfPlacements();
 		if (this.myStock.countNonEmptyBracelets() == 0) {
 			//When a stock is empty, prematurely end the player's turn
@@ -772,7 +803,9 @@ class LoveLinks extends Gamegui
 				throw new Error(`Link #${notif.args.link.id} as not found in ${name}'s Stock`);
 			}
 			//the link is already in place, play a pulse animation instead
-			this.pulseLink(+notif.args.link.id);
+			if (this.allowUndo) {
+				this.pulseLink(+notif.args.link.id);
+			}
 			return;
 		}
 		//link = slot!.key_link; //get the link from the slot //TODO: safely remove this, this should be handled by Link.ofDbCard now
@@ -796,7 +829,9 @@ class LoveLinks extends Gamegui
 		if (this.bracelets.containsLink(Link.ofId(notif.args.link_id))) {
 			//the link is already in place, play a pulse animation instead
 			console.log("pulse");
-			this.pulseLink(+notif.args.link_id);
+			if (this.allowUndo) {
+				this.pulseLink(+notif.args.link_id);
+			}
 		}
 		else {
 			//actually create a new bracelet

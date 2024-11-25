@@ -1576,6 +1576,8 @@ class Game extends \Table
             $result["stocks"][$player_id] = $this->deck->getCardsInLocation(STOCK.$player_id);
         }
 
+        $result["allow_undo"] = $this->allowUndo();
+
         return $result;
     }
 

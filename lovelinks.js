@@ -508,7 +508,6 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                     throw new Error("Link ".concat(link.id, " is not registered"));
                 }
                 this.reflowLink(link);
-                dojo.setStyle(link.divs.key, 'opacity', this.isComplete || i > 0 ? '0.5' : '1');
                 if (!this.isBlinking) {
                     link.divs.key.classList.remove("lovelinks-blinking");
                 }
@@ -531,6 +530,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
                 if (!this.isBlinking) {
                     link.divs.lock.classList.remove("lovelinks-blinking");
                 }
+                dojo.setStyle(link.divs.lock, 'opacity', this.isComplete || i < this.links.length - 1 ? '0.5' : '1');
                 dojo.setStyle(link.divs.lock, 'left', "".concat(coords.lock.left - this.LINK_WIDTH / 2, "px"));
                 dojo.setStyle(link.divs.lock, 'top', "".concat(coords.lock.top - this.LINK_HEIGHT / 2, "px"));
                 this.setRotate(link.divs.lock, coords.lock.rotate);
@@ -1034,6 +1034,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             _this.opponentGemstoneCounters = {};
             _this.stocks = {};
             _this.commandManager = new CommandManager_1.CommandManager();
+            _this.allowUndo = false;
             StaticLoveLinks_4.StaticLoveLinks.page = _this;
             console.log('lovelinks constructor');
             return _this;
@@ -1103,6 +1104,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             for (var link_id in gamedatas.gold_remaining) {
                 this.supply.add(Link_3.Link.ofId(+link_id));
             }
+            this.allowUndo = this.gamedatas.allow_undo;
             this.setupNotifications();
             console.log("Ending game setup");
         };
@@ -1353,8 +1355,28 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 _this.commandManager.clearAll();
             });
         };
+        LoveLinks.prototype.onSendSingleAction = function () {
+            var acts = this.commandManager.toActs();
+            if (acts.length != 1) {
+                this.showMessage("Internal Error: unable to send ".concat(acts.length, " actions to the server"), "error");
+                return;
+            }
+            var act = acts[0];
+            console.log("onSendSingleAction");
+            console.log(act.name);
+            console.log(act.args);
+            this.bgaPerformAction(act.name, act.args);
+            this.commandManager.clearAll();
+            this.bracelets.setBlinking(false);
+        };
         LoveLinks.prototype.nextAction = function () {
+            console.trace();
             console.log("nextAction");
+            console.log("this.allowUndo = ".concat(this.allowUndo));
+            if (!this.allowUndo && this.commandManager.hasCommands()) {
+                this.onSendSingleAction();
+                return;
+            }
             var placements = this.commandManager.numberOfPlacements();
             if (this.myStock.countNonEmptyBracelets() == 0) {
                 this.setClientState('client_confirm', {
@@ -1526,7 +1548,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     var name_1 = this.gamedatas.players[notif.args.player_id].name;
                     throw new Error("Link #".concat(notif.args.link.id, " as not found in ").concat(name_1, "'s Stock"));
                 }
-                this.pulseLink(+notif.args.link.id);
+                if (this.allowUndo) {
+                    this.pulseLink(+notif.args.link.id);
+                }
                 return;
             }
             var bracelet = this.bracelets.get(notif.args.bracelet_id);
@@ -1548,7 +1572,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             console.log('notif_newBracelet', notif);
             if (this.bracelets.containsLink(Link_3.Link.ofId(notif.args.link_id))) {
                 console.log("pulse");
-                this.pulseLink(+notif.args.link_id);
+                if (this.allowUndo) {
+                    this.pulseLink(+notif.args.link_id);
+                }
             }
             else {
                 console.log("new bracelet");
