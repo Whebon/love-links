@@ -235,11 +235,21 @@
 .lovelinks-gemstoneholder.lovelinks-nobonus {
   background-position-y: 0%;
 }
-.lovelinks-gemstoneholder.lovelinks-emerald {
-  background-position-y: -100%;
+
+.lovelinks-bonus {
+  pointer-events: none;
+  background-image: url(img/bonus.png);
+  background-size: 200% 100%;
+  z-index: 5;
 }
-.lovelinks-gemstoneholder.lovelinks-diamond {
-  background-position-y: -200%;
+.lovelinks-bonus.lovelinks-nobonus {
+  display: none;
+}
+.lovelinks-bonus.lovelinks-emerald {
+  background-position-x: 0;
+}
+.lovelinks-bonus.lovelinks-diamond {
+  background-position-x: -100%;
 }
 
 .lovelinks-player-board-icon-1 {

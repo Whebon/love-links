@@ -239,6 +239,13 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(Bracelet.prototype, "GEMSTONE_BONUS_FACTOR", {
+            get: function () {
+                return 140 / 135;
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(Bracelet.prototype, "LINK_WIDTH", {
             get: function () {
                 return (this.player_id == 0) ? 66 : 44;
@@ -308,7 +315,7 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
             var color = StaticLoveLinks_2.StaticLoveLinks.page.getGemstoneColor(link.gemstone);
             var metal = link.metal;
             var bonus = link.bonus;
-            this.container.insertAdjacentHTML('afterbegin', "\n            <div style=\"width: ".concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-key lovelinks-").concat(metal, "\" id=\"lovelinks-key-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.key_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-lock lovelinks-").concat(metal, "\" id=\"lovelinks-lock-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.lock_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.GEMSTONE_WIDTH, "px; height: ").concat(this.GEMSTONE_HEIGHT, "px;\" class=\"lovelinks-gemstoneholder lovelinks-").concat(metal, " lovelinks-").concat(bonus, "\" id=\"lovelinks-gemstone-").concat(link.id, "\">\n                <div style=\"width: ").concat(this.GEMSTONE_WIDTH * this.GEMSTONE_FACTOR, "px; height: ").concat(this.GEMSTONE_HEIGHT * this.GEMSTONE_FACTOR, "px;\" \n                class=\"lovelinks-gemstone lovelinks-gemstone-color-").concat(color, "\"></div>\n            </div>\n        "));
+            this.container.insertAdjacentHTML('afterbegin', "\n            <div style=\"width: ".concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-key lovelinks-").concat(metal, "\" id=\"lovelinks-key-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.key_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.LINK_WIDTH, "px; height: ").concat(this.LINK_HEIGHT, "px;\" class=\"lovelinks-heart lovelinks-lock lovelinks-").concat(metal, "\" id=\"lovelinks-lock-").concat(link.id, "\">\n                <div class=\"lovelinks-number\">").concat(link.lock_displayed(), "</div>\n            </div>\n            <div style=\"width: ").concat(this.GEMSTONE_WIDTH, "px; height: ").concat(this.GEMSTONE_HEIGHT, "px;\" class=\"lovelinks-gemstoneholder lovelinks-").concat(metal, "\" id=\"lovelinks-gemstone-").concat(link.id, "\">\n                <div style=\"width: ").concat(this.GEMSTONE_WIDTH * this.GEMSTONE_FACTOR, "px; height: ").concat(this.GEMSTONE_HEIGHT * this.GEMSTONE_FACTOR, "px;\" \n                class=\"lovelinks-gemstone lovelinks-gemstone-color-").concat(color, "\"></div>\n                <div style=\"width: ").concat(this.GEMSTONE_WIDTH * this.GEMSTONE_BONUS_FACTOR, "px; height: ").concat(this.GEMSTONE_HEIGHT * this.GEMSTONE_BONUS_FACTOR, "px;\" \n                class=\"lovelinks-bonus lovelinks-").concat(bonus, "\"></div>\n            </div>\n        "));
             var prevDivs = link.divs;
             var newDivs = {
                 key: this.container.querySelector(".lovelinks-key"),

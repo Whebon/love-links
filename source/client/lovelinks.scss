@@ -314,14 +314,32 @@
         background-position-y: 0%;
     }
 
-    &.lovelinks-emerald {
-        background-position-y: -100%;
-    }
+    //TODO: safely remove this
+    // &.lovelinks-emerald {
+    //     background-position-y: -100%;
+    // }
+    // &.lovelinks-diamond {
+    //     background-position-y: -200%;
+    // }
+}
 
+.lovelinks-bonus {
+    pointer-events: none;
+    background-image: url(img/bonus.png);
+    background-size: 200% 100%;
+    z-index: 5;
+
+    &.lovelinks-nobonus {
+        display: none;
+    }
+    &.lovelinks-emerald {
+        background-position-x: 0;
+    }
     &.lovelinks-diamond {
-        background-position-y: -200%;
+        background-position-x: -100%;
     }
 }
+
 
 .lovelinks-player-board-icon-1 {
     height: 20px;
