@@ -478,7 +478,7 @@ class Game extends \Table
             ],
             68 => [
                 "key" => 5,
-                "lock" => 9,
+                "lock" => 7,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
@@ -490,7 +490,7 @@ class Game extends \Table
             ],
             70 => [
                 "key" => 5,
-                "lock" => 10,
+                "lock" => 9,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
@@ -501,126 +501,138 @@ class Game extends \Table
                 "bonus" => NOBONUS
             ],
             72 => [
-                "key" => 6,
-                "lock" => 8,
+                "key" => 5,
+                "lock" => 10,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             73 => [
-                "key" => 6,
-                "lock" => 10,
+                "key" => 5,
+                "lock" => MASTER,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             74 => [
                 "key" => 6,
-                "lock" => 10,
+                "lock" => 8,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             75 => [
-                "key" => 7,
-                "lock" => 8,
+                "key" => 6,
+                "lock" => 10,
                 "metal" => GOLD,
-                "bonus" => EMERALD
+                "bonus" => NOBONUS
             ],
             76 => [
-                "key" => 7,
-                "lock" => 8,
+                "key" => 6,
+                "lock" => 10,
                 "metal" => GOLD,
-                "bonus" => EMERALD
+                "bonus" => NOBONUS
             ],
             77 => [
                 "key" => 7,
-                "lock" => 9,
+                "lock" => 8,
                 "metal" => GOLD,
                 "bonus" => EMERALD
             ],
             78 => [
                 "key" => 7,
-                "lock" => 10,
+                "lock" => 8,
                 "metal" => GOLD,
                 "bonus" => EMERALD
             ],
             79 => [
                 "key" => 7,
-                "lock" => 10,
+                "lock" => 9,
                 "metal" => GOLD,
                 "bonus" => EMERALD
             ],
             80 => [
-                "key" => 8,
-                "lock" => 6,
+                "key" => 7,
+                "lock" => 10,
                 "metal" => GOLD,
-                "bonus" => NOBONUS
+                "bonus" => EMERALD
             ],
             81 => [
-                "key" => 8,
-                "lock" => 9,
+                "key" => 7,
+                "lock" => 10,
                 "metal" => GOLD,
-                "bonus" => NOBONUS
+                "bonus" => EMERALD
             ],
             82 => [
                 "key" => 8,
-                "lock" => 10,
+                "lock" => 6,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             83 => [
                 "key" => 8,
-                "lock" => 10,
+                "lock" => 9,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             84 => [
-                "key" => 9,
-                "lock" => 6,
+                "key" => 8,
+                "lock" => 10,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             85 => [
-                "key" => 9,
-                "lock" => 8,
+                "key" => 8,
+                "lock" => 10,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             86 => [
                 "key" => 9,
-                "lock" => 8,
+                "lock" => 6,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             87 => [
                 "key" => 9,
-                "lock" => 10,
+                "lock" => 8,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             88 => [
                 "key" => 9,
-                "lock" => 10,
+                "lock" => 8,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
             89 => [
+                "key" => 9,
+                "lock" => 10,
+                "metal" => GOLD,
+                "bonus" => NOBONUS
+            ],
+            90 => [
+                "key" => 9,
+                "lock" => 10,
+                "metal" => GOLD,
+                "bonus" => NOBONUS
+            ],
+            91 => [
                 "key" => 10,
                 "lock" => 4,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
-            90 => [
+            92 => [
                 "key" => 10,
                 "lock" => 7,
                 "metal" => GOLD,
                 "bonus" => DIAMOND
             ],
-            91 => [
+            93 => [
                 "key" => 10,
                 "lock" => 8,
                 "metal" => GOLD,
                 "bonus" => NOBONUS
             ],
-            92 => [
+            94 => [
                 "key" => 10,
                 "lock" => 9,
                 "metal" => GOLD,
