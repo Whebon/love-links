@@ -14,6 +14,8 @@ export class BraceletArea {
 
     public bracelets: Bracelet[];
     private onClickBracelet: (bracelet: Bracelet, link: Link, side: Side) => void;
+
+    private static PLACEHOLDER_BRACELET_ID = -1;
     
     /**
      * @param parent HTML parent of the area
@@ -164,17 +166,49 @@ export class BraceletArea {
     }
 
     /**
+     * Remove the placeholder bracelet if it exists
+     */
+    public removePlaceholderBracelet() {
+        const placeholderBracelet = this.getOrNull(BraceletArea.PLACEHOLDER_BRACELET_ID);
+        if (placeholderBracelet) {
+            this.remove(placeholderBracelet);
+        }
+    }
+
+    /**
+     * Create a new placeholder bracelet (only 1 placeholder can exist)
+     */
+    public createPlaceholderBracelet() {
+        const placeholderBracelet = this.createBracelet(BraceletArea.PLACEHOLDER_BRACELET_ID);
+        placeholderBracelet.container.classList.add("lovelinks-placeholder-bracelet");
+        return placeholderBracelet
+    }
+
+    /**
      * @param bracelet_id (optional) server id associated with this bracelet
      * @returns 
      */
     public createBracelet(bracelet_id: number): Bracelet {
+        this.removePlaceholderBracelet();
         const bracelet = new Bracelet(this.container, bracelet_id, this.player_id, this.onClickBracelet);
         this.bracelets.push(bracelet);
         return bracelet;
     }
 
     /**
-     * Get a bracelet by id
+     * Get a bracelet by id. If it does not exist, return null
+     */
+    public getOrNull(bracelet_id: number): Bracelet | null {
+        for (const bracelet of this.bracelets) {
+            if (bracelet.bracelet_id == bracelet_id) {
+                return bracelet;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get a bracelet by id. If it does not exist, throw an error
      */
     public get(bracelet_id: number): Bracelet {
         for (const bracelet of this.bracelets) {

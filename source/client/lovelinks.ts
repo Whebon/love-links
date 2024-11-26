@@ -195,6 +195,7 @@ class LoveLinks extends Gamegui
 				for (const bracelet of this.myStock.bracelets) {
 					bracelet.setBlinking(true);
 				}
+				this.bracelets.createPlaceholderBracelet();
 				break;
 			case 'client_placeLink':
 				this.myStock.deselectAll();

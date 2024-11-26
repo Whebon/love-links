@@ -69,8 +69,8 @@ $machinestates = array(
 	),
 	33 => array(
 		'name' => 'newBracelet',
-		'description' => clienttranslate('${actplayer} choose a link to start a new bracelet'),
-		'descriptionmyturn' => clienttranslate('${you} choose a link to start a new bracelet'),
+		'description' => clienttranslate('${actplayer} must choose a link to start a new bracelet'),
+		'descriptionmyturn' => clienttranslate('${you} must choose a link to start a new bracelet'),
 		'type' => 'activeplayer',
 		'possibleactions' => ['actNewBracelet'],
 		'transitions' => array(

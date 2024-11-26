@@ -758,10 +758,31 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
                 bracelet.deselectAll();
             }
         };
+        BraceletArea.prototype.removePlaceholderBracelet = function () {
+            var placeholderBracelet = this.getOrNull(BraceletArea.PLACEHOLDER_BRACELET_ID);
+            if (placeholderBracelet) {
+                this.remove(placeholderBracelet);
+            }
+        };
+        BraceletArea.prototype.createPlaceholderBracelet = function () {
+            var placeholderBracelet = this.createBracelet(BraceletArea.PLACEHOLDER_BRACELET_ID);
+            placeholderBracelet.container.classList.add("lovelinks-placeholder-bracelet");
+            return placeholderBracelet;
+        };
         BraceletArea.prototype.createBracelet = function (bracelet_id) {
+            this.removePlaceholderBracelet();
             var bracelet = new Bracelet_1.Bracelet(this.container, bracelet_id, this.player_id, this.onClickBracelet);
             this.bracelets.push(bracelet);
             return bracelet;
+        };
+        BraceletArea.prototype.getOrNull = function (bracelet_id) {
+            for (var _i = 0, _a = this.bracelets; _i < _a.length; _i++) {
+                var bracelet = _a[_i];
+                if (bracelet.bracelet_id == bracelet_id) {
+                    return bracelet;
+                }
+            }
+            return null;
         };
         BraceletArea.prototype.get = function (bracelet_id) {
             for (var _i = 0, _a = this.bracelets; _i < _a.length; _i++) {
@@ -773,6 +794,7 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
             console.log(this.container);
             throw new Error("Bracelet " + bracelet_id + " does not exist in this BraceletArea");
         };
+        BraceletArea.PLACEHOLDER_BRACELET_ID = -1;
         return BraceletArea;
     }());
     exports.BraceletArea = BraceletArea;
@@ -1140,6 +1162,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                         var bracelet = _a[_i];
                         bracelet.setBlinking(true);
                     }
+                    this.bracelets.createPlaceholderBracelet();
                     break;
                 case 'client_placeLink':
                     this.myStock.deselectAll();
