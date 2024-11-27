@@ -43,7 +43,7 @@ if (!defined('STOCK')) {
 
 class Game extends \Table
 {
-    private static int $SHORT_GAME_POINTS_TO_WIN = 90;
+    private static int $SHORT_GAME_POINTS_TO_WIN = 1;
     private static array $CARD_TYPES;
     private static int $PLACEMENTS_PER_TURN = 2;
     private LoveLinksDeck $deck;
@@ -1428,7 +1428,9 @@ class Game extends \Table
     }
 
     /**
-     * example: debugBracelet(2,7,7,10,10,4,4,7)
+     * examples: 
+     * debugBracelet(2,7,7,10,10,4,4,7)
+     * debugBracelet(2,7,7,10,10,M,10,3)
      */
     function debugBracelet(...$key_lock_values) {
         $this->debugDestroyBracelets();

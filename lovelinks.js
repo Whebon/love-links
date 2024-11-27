@@ -1110,6 +1110,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             console.log(gamedatas);
             TPL_1.TPL.init(this);
             var gamePlayArea = document.getElementById("game_play_area");
+            if (this.isTeamBasedGame()) {
+                this.losers_not_ranked = true;
+            }
             this.bracelets = new BraceletArea_1.BraceletArea(gamePlayArea, 0, _("Bracelets-in-assembly"), this.onClickBracelet.bind(this));
             for (var player_id in gamedatas.players) {
                 var player = gamedatas.players[player_id];

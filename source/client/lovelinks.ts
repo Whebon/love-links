@@ -105,6 +105,11 @@ class LoveLinks extends Gamegui
 		TPL.init(this);
 		const gamePlayArea = document.getElementById("game_play_area")!;
 
+		//Setup teams
+		if (this.isTeamBasedGame()) {
+			this.losers_not_ranked = true; //this should be a game info setting. but in this game's case, it only applies to 4 player games
+		}
+
 		//Create the bracelet area
 		this.bracelets = new BraceletArea(gamePlayArea, 0, _("Bracelets-in-assembly"), this.onClickBracelet.bind(this));
 		for (const player_id in gamedatas.players) {
