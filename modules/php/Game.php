@@ -49,6 +49,11 @@ class Game extends \Table
     private LoveLinksDeck $deck;
     private ?string $dummyTransition; //used for the undo feature
 
+    const TEAM_1_3 = 1;
+	const TEAM_1_2 = 2;
+	const TEAM_1_4 = 3;
+	const TEAM_RANDOM = 4;
+
     /**
      * Your global variables labels:
      *
@@ -70,7 +75,8 @@ class Game extends \Table
             "is_second_perfect_match" => 13,
             "zombie_turn" => 14,
             "game_length" => 100,
-            "allow_undo" => 101
+            "allow_undo" => 101,
+            "teams" => 102,
         ]);        
 
         self::$CARD_TYPES = [
@@ -822,57 +828,6 @@ class Game extends \Table
     }
 
     /**
-     * Player action, example content.
-     *
-     * In this scenario, each time a player plays a card, this method will be called. This method is called directly
-     * by the action trigger on the front side with `bgaPerformAction`.
-     *
-     * @throws BgaUserException
-     */
-    public function actPlayCard(int $card_id): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // check input values
-        $args = $this->argPlayerTurn();
-        $playableCardsIds = $args['playableCardsIds'];
-        if (!in_array($card_id, $playableCardsIds)) {
-            throw new \BgaUserException('Invalid card choice');
-        }
-
-        // Add your game logic to play a card here.
-        $card_name = self::$CARD_TYPES[$card_id]['card_name'];
-
-        // Notify all players about the card played.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-            "card_name" => $card_name,
-            "card_id" => $card_id,
-            "i18n" => ['card_name'],
-        ]);
-
-        // at the end of the action, move to the next state
-        $this->gamestate->nextState("playCard");
-    }
-
-    public function actPass(): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} passes'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-        ]);
-
-        // at the end of the action, move to the next state
-        $this->gamestate->nextState("pass");
-    }
-
-    /**
      * Game state arguments, example content.
      *
      * This method returns some additional information that is very specific to the `playerTurn` game state.
@@ -1196,7 +1151,7 @@ class Game extends \Table
                 $points++;
             }
         }
-        $sql = "UPDATE player SET player_score_aux=player_score_aux+$points WHERE player_id='$player_id'";
+        $sql = "UPDATE player SET player_score_aux=player_score_aux+$points WHERE player_id='$player_id' OR player_teammate_id='$player_id'";
         $this->DbQuery($sql);
         $this->incStat($points, "captured_gemstones", $player_id);
     }
@@ -1226,7 +1181,7 @@ class Game extends \Table
             "keyword" => $keyword
         ), $additionalNotificationArgs);
         $this->notifyAllPlayers('scoreBracelet', $notificationLog, $notificationArgs);
-        $sql = "UPDATE player SET player_score = player_score + $points WHERE player_id='$player_id'";
+        $sql = "UPDATE player SET player_score = player_score + $points WHERE player_id='$player_id' OR player_teammate_id='$player_id'";
         $this->DbQuery($sql);
     }
 
@@ -1698,19 +1653,77 @@ class Game extends \Table
             ]);
         }
 
-        // Create players based on generic information.
-        //
-        // NOTE: You can add extra field on player table in the database (see dbmodel.sql) and initialize
-        // additional fields directly here.
-        static::DbQuery(
-            sprintf(
-                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES %s",
-                implode(",", $query_values)
-            )
-        );
+        // Create the players
+        if (count($players) < 4) {
+            // Free for all (2 or 3 players)
+            static::DbQuery(
+                sprintf(
+                    "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES %s",
+                    implode(",", $query_values)
+                )
+            );
+    
+            $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
+            $this->reloadPlayersBasicInfos();
+        }
+        else {
+            // Team based game (4 players, 2v2)
+            // Retrieve inital player order ([0=>playerId1, 1=>playerId2, ...])
+            $playerInitialOrder = [];
+            foreach ($players as $playerId => $player) {
+                $playerInitialOrder[$player['player_table_order']] = $playerId;
+            }
+            ksort($playerInitialOrder);
+            $playerInitialOrder = array_flip(array_values($playerInitialOrder));
+            // Player order based on 'teams' option
+            $playerOrder = [0, 1, 2, 3];
+            switch (self::getGameStateValue('teams')) {
+                case self::TEAM_1_2:
+                    $playerOrder = [0, 2, 1, 3];
+                    break;
+                case self::TEAM_1_4:
+                    $playerOrder = [0, 1, 3, 2];
+                    break;
+                case self::TEAM_RANDOM:
+                    shuffle($playerOrder);
+                    break;
+                case self::TEAM_1_3:
+                    break;
+            }
 
-        $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
-        $this->reloadPlayersBasicInfos();
+            $teammateIds = [];
+            foreach( $players as $playerId => $player){
+                $no = ($playerOrder[$playerInitialOrder[$playerId]] + 2) % 4;
+                $teammateIds[$no] = $playerId;
+            }
+
+            // Create players
+            // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialized it there.
+            $sql = "INSERT INTO player (player_id, player_canal, player_name, player_avatar, player_no, player_teammate_id) VALUES ";
+            $values = array();
+            foreach( $players as $playerId => $player )
+            {
+                $no = $playerOrder[$playerInitialOrder[$playerId]];
+                $values[] = 
+                "('".$playerId."'
+                ,'".$player['player_canal'].
+                "','".addslashes( $player['player_name'] ).
+                "','".addslashes( $player['player_avatar'] ).
+                "','".$no.
+                "','".$teammateIds[$no]."'
+                )";
+            }
+            $sql .= implode( ',', $values );
+            self::DbQuery( $sql );
+
+            //update team colors
+            self::DbQuery (" UPDATE player SET player_color = 'ff0000' WHERE player_no = 0 ");
+            self::DbQuery (" UPDATE player SET player_color = '008000' WHERE player_no = 1 ");
+            self::DbQuery (" UPDATE player SET player_color = 'ff0000' WHERE player_no = 2 ");
+            self::DbQuery (" UPDATE player SET player_color = '008000' WHERE player_no = 3 ");
+
+            $this->reloadPlayersBasicInfos();
+        }
 
         // Init global values with their initial values.
 

@@ -68,6 +68,28 @@ class LoveLinks extends Gamegui
 		return stock;
 	}
 
+	/**
+	 * Returns the scoreCtrl of this player's teammate
+	 */
+	public scoreCtrl_teammate(player_id: number): Counter | undefined {
+		if(!this.isTeamBasedGame()) {
+			return undefined;
+		}
+		const teammate_id = this.getTeammateId(player_id);
+		return this.scoreCtrl[teammate_id];
+	}
+
+	/**
+	 * Returns the scoreCtrl of this player's teammate
+	 */
+	public opponentGemstoneCounters_teammate(player_id: number): Counter | undefined {
+		if(!this.isTeamBasedGame()) {
+			return undefined;
+		}
+		const teammate_id = this.getTeammateId(player_id);
+		return this.opponentGemstoneCounters[teammate_id];
+	}
+
 	/** @gameSpecific See {@link Gamegui} for more information. */
 	constructor(){
 		super();
@@ -306,6 +328,9 @@ class LoveLinks extends Gamegui
 			<span id="lovelinks-opponent-gemstone-counter-${player_id}">123</span>
 			<i id="${getUniqueId()}" class="lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-${iconcount} lovelinks-gemstone lovelinks-gemstone-color-${this.getGemstoneColor(next_opponent_id)}">
 		`;
+		if (this.isTeamBasedGame()) {
+			return html+`</i>`; //Workaround (teambased): in a teambased game, only show 1 icon
+		}
 		for (const opponent_id of other_opponent_ids) {
 			iconcount++;
 			html += `<i id="${getUniqueId()}" class="lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-${iconcount} lovelinks-gemstone lovelinks-gemstone-color-${this.getGemstoneColor(opponent_id)}"></i>` //nested i
@@ -339,6 +364,16 @@ class LoveLinks extends Gamegui
 		Here, you can defines some utility methods that you can use everywhere in your typescript
 		script.
 	*/
+
+	public getTeammateId(player_id: number): number {
+		const player_index = this.gamedatas.playerorder.indexOf(player_id);
+		const teammate_index = (player_index + 2) % 4;
+		return this.gamedatas.playerorder[teammate_index]!;
+	}
+
+	public isTeamBasedGame(): boolean {
+		return Object.keys(this.gamedatas.players).length == 4;
+	}
 
 	/**
 	 * Player clicks on a bracelet in another stock
@@ -788,6 +823,7 @@ class LoveLinks extends Gamegui
 			label.remove();
 		}, 2000);
 		this.scoreCtrl[notif.args.player_id]?.incValue(notif.args.points);
+		this.scoreCtrl_teammate(notif.args.player_id)?.incValue(notif.args.points);
 	}
 
 	notif_removeBracelet(notif: NotifFrom<'removeBracelet'>) {
@@ -803,8 +839,7 @@ class LoveLinks extends Gamegui
 			}
 		}
 		this.opponentGemstoneCounters[notif.args.player_id]!.incValue(capturedGemstones);
-		// this.braceletCounters[notif.args.player_id]!.incValue(1);
-		// this.linkCounters[notif.args.player_id]!.incValue(notif.args.nbr_links);
+		this.opponentGemstoneCounters_teammate(notif.args.player_id)?.incValue(capturedGemstones);
 	}
 
 	notif_placeLink(notif: NotifFrom<'placeLink'>) {

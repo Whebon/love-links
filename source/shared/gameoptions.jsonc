@@ -41,5 +41,28 @@
 		  }
 		},
 		"default": 1
+	},
+
+	"102": {
+		"name": "Teams",
+		"values": {
+		  "1": {
+			"name": "By table order (1st/3rd versus 2nd/4th)"
+		  },
+		  "2": {
+			"name": "By table order (1st/2nd versus 3rd/4th)"
+		  },
+		  "3": {
+			"name": "By table order (1st/4th versus 2nd/3rd)"
+		  },
+		  "4": {
+			"name": "At random"
+		  }
+		},
+		"default": 1,
+		"displaycondition": [{
+			"type": "minplayers",
+			"value": 4
+		}]
 	}
 }

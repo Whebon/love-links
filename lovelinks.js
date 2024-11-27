@@ -1090,6 +1090,20 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             enumerable: false,
             configurable: true
         });
+        LoveLinks.prototype.scoreCtrl_teammate = function (player_id) {
+            if (!this.isTeamBasedGame()) {
+                return undefined;
+            }
+            var teammate_id = this.getTeammateId(player_id);
+            return this.scoreCtrl[teammate_id];
+        };
+        LoveLinks.prototype.opponentGemstoneCounters_teammate = function (player_id) {
+            if (!this.isTeamBasedGame()) {
+                return undefined;
+            }
+            var teammate_id = this.getTeammateId(player_id);
+            return this.opponentGemstoneCounters[teammate_id];
+        };
         LoveLinks.prototype.setup = function (gamedatas) {
             var _this = this;
             console.log("Starting game setup");
@@ -1251,6 +1265,9 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             var next_opponent_id = other_opponent_ids.splice(0, 1)[0];
             var iconcount = 1;
             var html = " \u2022 \n\t\t\t<span id=\"lovelinks-opponent-gemstone-counter-".concat(player_id, "\">123</span>\n\t\t\t<i id=\"").concat((0, common_1.getUniqueId)(), "\" class=\"lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-").concat(iconcount, " lovelinks-gemstone lovelinks-gemstone-color-").concat(this.getGemstoneColor(next_opponent_id), "\">\n\t\t");
+            if (this.isTeamBasedGame()) {
+                return html + "</i>";
+            }
             for (var _b = 0, other_opponent_ids_1 = other_opponent_ids; _b < other_opponent_ids_1.length; _b++) {
                 var opponent_id = other_opponent_ids_1[_b];
                 iconcount++;
@@ -1276,6 +1293,14 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 var elem_id = _a[_i];
                 _loop_1(elem_id);
             }
+        };
+        LoveLinks.prototype.getTeammateId = function (player_id) {
+            var player_index = this.gamedatas.playerorder.indexOf(player_id);
+            var teammate_index = (player_index + 2) % 4;
+            return this.gamedatas.playerorder[teammate_index];
+        };
+        LoveLinks.prototype.isTeamBasedGame = function () {
+            return Object.keys(this.gamedatas.players).length == 4;
         };
         LoveLinks.prototype.onClickOtherStock = function (bracelet, link, side) {
             if (!this.checkLock()) {
@@ -1529,7 +1554,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
         };
         LoveLinks.prototype.notif_scoreBracelet = function (notif) {
-            var _a;
+            var _a, _b;
             console.log('notif_scoreBracelet', notif);
             var label = document.createElement('div');
             var keyword = "???";
@@ -1579,8 +1604,10 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 label.remove();
             }, 2000);
             (_a = this.scoreCtrl[notif.args.player_id]) === null || _a === void 0 ? void 0 : _a.incValue(notif.args.points);
+            (_b = this.scoreCtrl_teammate(notif.args.player_id)) === null || _b === void 0 ? void 0 : _b.incValue(notif.args.points);
         };
         LoveLinks.prototype.notif_removeBracelet = function (notif) {
+            var _a;
             console.log('notif_removeBracelet', notif);
             this.bracelets.fadeOutBraceletId(notif.args.bracelet_id);
             var capturedGemstones = 0;
@@ -1592,6 +1619,7 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 }
             }
             this.opponentGemstoneCounters[notif.args.player_id].incValue(capturedGemstones);
+            (_a = this.opponentGemstoneCounters_teammate(notif.args.player_id)) === null || _a === void 0 ? void 0 : _a.incValue(capturedGemstones);
         };
         LoveLinks.prototype.notif_placeLink = function (notif) {
             console.log('notif_placeLink', notif);
