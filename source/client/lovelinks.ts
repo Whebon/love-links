@@ -611,7 +611,6 @@ class LoveLinks extends Gamegui
 	}
 
 	public nextAction() {
-		console.trace();
 		console.log("nextAction");
 		console.log(`this.allowUndo = ${this.allowUndo}`);
 		if (!this.allowUndo && this.commandManager.hasCommands()) {

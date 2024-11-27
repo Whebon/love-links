@@ -1453,7 +1453,6 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             this.bracelets.setBlinking(false);
         };
         LoveLinks.prototype.nextAction = function () {
-            console.trace();
             console.log("nextAction");
             console.log("this.allowUndo = ".concat(this.allowUndo));
             if (!this.allowUndo && this.commandManager.hasCommands()) {

@@ -43,7 +43,7 @@ if (!defined('STOCK')) {
 
 class Game extends \Table
 {
-    private static int $SHORT_GAME_POINTS_TO_WIN = 1;
+    private static int $SHORT_GAME_POINTS_TO_WIN = 90;
     private static array $CARD_TYPES;
     private static int $PLACEMENTS_PER_TURN = 2;
     private LoveLinksDeck $deck;
@@ -1035,23 +1035,31 @@ class Game extends \Table
 
     public function scoreBraceletGemstone($player_id, $bracelet_id, $links) {
         $players = $this->loadPlayersBasicInfos();
+        $teammate_id = $this->getTeammateId($player_id);
         $playerGemstones = 0;
         foreach ($links as $link) {
-            if ($link["type_arg"] == $player_id) {
+            if ($link["type_arg"] == $player_id || $link["type_arg"] == $teammate_id) {
                 $playerGemstones += 1;
             }
         }
         foreach ($players as $opponent_id => $opponent) {
-            if ($opponent_id != $player_id) {
+            if ($opponent_id != $player_id && $opponent_id != $teammate_id) {
+                $opponent_teammate_id = $this->getTeammateId($opponent_id);
+                if ($opponent_teammate_id > $opponent_id) {
+                    continue; //symmetry breaking: only penalize the opponent team once
+                }
                 $opponentGemstones = 0;
                 foreach ($links as $link) {
-                    if ($link["type_arg"] == $opponent_id) {
+                    if ($link["type_arg"] == $opponent_id || $link["type_arg"] == $opponent_teammate_id) {
                         $opponentGemstones += 1;
                     }
                 }
+                //die("[playerGemstones: $playerGemstones] [opponentGemstones: $opponentGemstones]");
                 $points = $opponentGemstones > $playerGemstones ? -5 : 0;
-                $this->scoreBracelet($opponent_id, $bracelet_id, $points, 'gemstones', 
-                    clienttranslate('${points} Gemstone points: ${player_name} loses ${negative_points} points, because they have ${opponentGemstones} gemstones in the bracelet (And the active player has ${playerGemstones} gemstones in the bracelet).'), array(
+                $msg = ($teammate_id == 0) ? 
+                    clienttranslate('${points} Gemstone points: ${player_name}\' team loses ${negative_points} points, because they have ${opponentGemstones} gemstones in the bracelet (and the active player has ${playerGemstones} gemstones in the bracelet).') :
+                    clienttranslate('${points} Gemstone points: ${player_name} loses ${negative_points} points, because they have ${opponentGemstones} gemstones in the bracelet (and the active team has ${playerGemstones} gemstones in the bracelet).');
+                $this->scoreBracelet($opponent_id, $bracelet_id, $points, 'gemstones', $msg, array(
                         "opponentGemstones" => $opponentGemstones,
                         "playerGemstones" => $playerGemstones,
                         "negative_points" => -$points
@@ -1063,8 +1071,9 @@ class Game extends \Table
     }
 
     public function scoreBraceletDomination($player_id, $bracelet_id, $links) {
+        $teammate_id = $this->getTeammateId($player_id);
         foreach ($links as $link_id => $link) {
-            if ($link["type_arg"] != 0 && $link["type_arg"] != $player_id) {
+            if ($link["type_arg"] != 0 && $link["type_arg"] != $player_id && $link["type_arg"] != $teammate_id) {
                 return; //skip domination points if any gemstone is non-empty, non-owned
             }
         }
@@ -1146,8 +1155,9 @@ class Game extends \Table
     public function scoreBraceletTiebreaking($player_id, $bracelet_id, $links) {
         //count gemstones of other players
         $points = 0;
+        $teammate_id = $this->getTeammateId($player_id);
         foreach ($links as $link) {
-            if ($link["type_arg"] != 0 && $link["type_arg"] != $player_id) {
+            if ($link["type_arg"] != 0 && $link["type_arg"] != $player_id && $link["type_arg"] != $teammate_id) {
                 $points++;
             }
         }
@@ -1187,6 +1197,19 @@ class Game extends \Table
 
     /////////////////////////////////////////////////
     ///////  ~utility
+    
+    /**
+     * Return the the player_id of the teammate of the given player_id. In non-teambased games, return -1 instead.
+     */
+    public function getTeammateId($player_id) {
+        if (count($this->players) < 4) {
+            return -1;
+        }
+        $sql = "SELECT player_teammate_id teammate_id FROM player WHERE player_id='$player_id'";
+        $dbres = self::DbQuery( $sql );
+        $row = mysql_fetch_assoc( $dbres );
+        return $row['teammate_id'] > 0 ? $row['teammate_id'] : -1;
+    }
 
     /**
      * Returns true if the given player_id is able to place down a piece
