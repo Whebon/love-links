@@ -92,6 +92,9 @@ export class Link {
     public static isValidConnection(key_link: Link, lock_link: Link) {
         const key = key_link.key;
         const lock = lock_link.lock;
+        if (lock == this.MASTER) {
+            return [2,3,4,5,6,8].includes(key);
+        }
         return lock % key == 0;
     }
 

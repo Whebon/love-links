@@ -115,6 +115,9 @@ define("components/Link", ["require", "exports", "components/StaticLoveLinks"], 
         Link.isValidConnection = function (key_link, lock_link) {
             var key = key_link.key;
             var lock = lock_link.lock;
+            if (lock == this.MASTER) {
+                return [2, 3, 4, 5, 6, 8].includes(key);
+            }
             return lock % key == 0;
         };
         Link.UNIQUE_ID = 999;

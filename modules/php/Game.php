@@ -1594,6 +1594,9 @@ class Game extends \Table
     public function isValidConnection(mixed $key_link_id, mixed $lock_link_id)  {
         $key = self::$CARD_TYPES[$key_link_id]["key"];
         $lock = self::$CARD_TYPES[$lock_link_id]["lock"];
+        if ($lock == MASTER) {
+            return in_array($key, [2, 3, 4, 5, 6, 8]);
+        }
         return $lock % $key === 0;
     }
 
