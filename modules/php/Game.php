@@ -1580,6 +1580,8 @@ class Game extends \Table
 
         $result["allow_undo"] = $this->allowUndo();
 
+        $result["points_to_win"] = $this->isLongGame() ? 0 : self::$SHORT_GAME_POINTS_TO_WIN;
+
         return $result;
     }
 

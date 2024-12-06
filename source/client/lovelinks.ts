@@ -143,6 +143,14 @@ class LoveLinks extends Gamegui
 			this.opponentGemstoneCounters[player_id].create(bracelet_counter_span);
 			this.opponentGemstoneCounters[player_id].setValue((gamedatas.players[player_id]! as unknown as any).score_aux);
 
+			//Add maximum score (for short games)
+			if (gamedatas.points_to_win) {
+				star_icon.insertAdjacentHTML('beforebegin', `
+					<span class="lovelinks-maximum-score" id="lovelinks-maximum-score-${player_id}">/ ${gamedatas.points_to_win}</span>
+				`);
+				this.addTooltip(`lovelinks-maximum-score-${player_id}`, _("Target score. The first player to reach this score wins."), '');
+			}
+
 			// //bracelet counters
 			// const bracelet_counter_span = document.createElement('span');
 			// player_board_div.insertAdjacentHTML('afterbegin', `<i class="lovelinks-bracelet-counter" id="lovelinks-bracelet-counter-${player_id}"></i>`);

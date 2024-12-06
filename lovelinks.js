@@ -1140,6 +1140,10 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                 this.opponentGemstoneCounters[player_id] = new ebg.counter();
                 this.opponentGemstoneCounters[player_id].create(bracelet_counter_span);
                 this.opponentGemstoneCounters[player_id].setValue(gamedatas.players[player_id].score_aux);
+                if (gamedatas.points_to_win) {
+                    star_icon.insertAdjacentHTML('beforebegin', "\n\t\t\t\t\t<span class=\"lovelinks-maximum-score\" id=\"lovelinks-maximum-score-".concat(player_id, "\">/ ").concat(gamedatas.points_to_win, "</span>\n\t\t\t\t"));
+                    this.addTooltip("lovelinks-maximum-score-".concat(player_id), _("Target score. The first player to reach this score wins."), '');
+                }
                 this.addTooltip('icon_point_' + player_id, _("Score. The player with the highest score wins."), '');
             }
             var opponentGemstoneIcons = document.querySelectorAll(".lovelinks-player-board-icon-1");
