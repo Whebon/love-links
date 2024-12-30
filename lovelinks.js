@@ -1158,7 +1158,10 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
                     bracelet.appendLink(Link_3.Link.ofDbCard(link));
                 }
             }
-            this.supply = new Supply_1.Supply(gamePlayArea, _("Links still to come"));
+            var horizontalFlex = document.createElement('div');
+            gamePlayArea.appendChild(horizontalFlex);
+            horizontalFlex.classList.add('lovelinks-horizontal-flex');
+            this.supply = new Supply_1.Supply(horizontalFlex, _("Links still to come"));
             for (var link_id in gamedatas.bronze_remaining) {
                 this.supply.add(Link_3.Link.ofId(+link_id));
             }
@@ -1167,6 +1170,13 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
             }
             for (var link_id in gamedatas.gold_remaining) {
                 this.supply.add(Link_3.Link.ofId(+link_id));
+            }
+            for (var _i = 0, _a = [[1, _("Link connections")]]; _i < _a.length; _i++) {
+                var _b = _a[_i], index = _b[0], title = _b[1];
+                var wrap = document.createElement('div');
+                wrap.classList.add("whiteblock");
+                horizontalFlex.appendChild(wrap);
+                wrap.innerHTML = "\n\t\t\t\t<h3 class=\"lovelinks-title\">".concat(title, "</h3>\n\t\t\t\t<div class=\"lovelinks-table-").concat(index, "\"></div>\n\t\t\t");
             }
             this.allowUndo = this.gamedatas.allow_undo;
             this.setupNotifications();

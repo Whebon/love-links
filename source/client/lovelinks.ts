@@ -189,8 +189,13 @@ class LoveLinks extends Gamegui
 			}
 		}
 
+		// Create a parent for the reference tables
+		const horizontalFlex = document.createElement('div');
+		gamePlayArea.appendChild(horizontalFlex);
+		horizontalFlex.classList.add('lovelinks-horizontal-flex')
+
 		// Create the supply
-		this.supply = new Supply(gamePlayArea, _("Links still to come"));
+		this.supply = new Supply(horizontalFlex, _("Links still to come"));
 		for (const link_id in gamedatas.bronze_remaining) {
 			this.supply.add(Link.ofId(+link_id));
 		}
@@ -200,6 +205,19 @@ class LoveLinks extends Gamegui
 		for (const link_id in gamedatas.gold_remaining) {
 			this.supply.add(Link.ofId(+link_id));
 		}
+
+		// Create the other one reference tables
+		// , [2, _("Scoring")]]
+		for (const [index, title] of [[1, _("Link connections")]]) {
+			const wrap = document.createElement('div');
+			wrap.classList.add("whiteblock");
+			horizontalFlex.appendChild(wrap);
+			wrap.innerHTML = `
+				<h3 class="lovelinks-title">${title}</h3>
+				<div class="lovelinks-table-${index}"></div>
+			`;
+		}
+
 
 		// Load game option(s)
 		this.allowUndo = this.gamedatas.allow_undo;
