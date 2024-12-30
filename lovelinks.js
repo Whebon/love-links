@@ -742,7 +742,7 @@ define("components/BraceletArea", ["require", "exports", "components/Bracelet", 
             var count = 0;
             for (var i = 0; i < this.bracelets.length; i++) {
                 var bracelet = this.bracelets[i];
-                if (!bracelet.isComplete) {
+                if (!bracelet.isComplete && bracelet.size() > 0) {
                     if (Link_1.Link.isValidConnection(bracelet.key_link, link)) {
                         (_a = bracelet.key_link.divs) === null || _a === void 0 ? void 0 : _a.key.classList.add("lovelinks-highlighted");
                         count += 1;

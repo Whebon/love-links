@@ -144,7 +144,7 @@ export class BraceletArea {
         let count = 0;
         for (let i = 0; i < this.bracelets.length; i++) {
             const bracelet = this.bracelets[i]!;
-            if (!bracelet.isComplete) {
+            if (!bracelet.isComplete && bracelet.size() > 0) {
                 if (Link.isValidConnection(bracelet.key_link, link)) {
                     bracelet.key_link.divs?.key.classList.add("lovelinks-highlighted");
                     count += 1;
