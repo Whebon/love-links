@@ -230,21 +230,21 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
         }
         Object.defineProperty(Bracelet.prototype, "GEMSTONE_FACTOR", {
             get: function () {
-                return 0.875;
+                return 0.8;
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(Bracelet.prototype, "GEMSTONE_WIDTH", {
             get: function () {
-                return (this.player_id == 0) ? 28 : 24;
+                return (this.player_id == 0) ? 30 : 24;
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(Bracelet.prototype, "GEMSTONE_BONUS_FACTOR", {
             get: function () {
-                return 140 / 135;
+                return 145 / 135;
             },
             enumerable: false,
             configurable: true

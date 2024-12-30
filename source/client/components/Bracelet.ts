@@ -20,21 +20,21 @@ export class Bracelet {
      * Proportial size of the gemstone within the gemstone holder
      */
     private get GEMSTONE_FACTOR() {
-        return 0.875; //factor 
+        return 0.8; //factor 
     }
 
     /**
      * Width of the gemstone (+holder) in pixels
      */
     private get GEMSTONE_WIDTH() {
-        return (this.player_id == 0) ? 28 : 24;
+        return (this.player_id == 0) ? 30 : 24;
     }
 
     /**
      * Width of the gemstone (+holder) in pixels
      */
     private get GEMSTONE_BONUS_FACTOR() {
-        return 140/135;
+        return 145/135;
     }
 
     /**
