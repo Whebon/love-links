@@ -348,11 +348,13 @@ class LoveLinks extends Gamegui
 
 	public getOpponentGemstoneCounterHTML(player_id: number): string {
 		let index = 0;
-		for (const opponent_id of this.gamedatas.playerorder) {
+		//const player_ids = this.gamedatas.playerorder; //doesn't work in spectator mode
+		const player_ids = Object.keys(this.gamedatas.players).map(key => parseInt(key, 10));
+		for (const opponent_id of player_ids) {
 			if (opponent_id == player_id) break;
 			index++;
 		}
-		const other_opponent_ids = [...this.gamedatas.playerorder.slice(index + 1), ...this.gamedatas.playerorder.slice(0, index)].reverse()
+		const other_opponent_ids = [...player_ids.slice(index + 1), ...player_ids.slice(0, index)].reverse()
 		const next_opponent_id = other_opponent_ids.splice(0, 1)[0]!;
 		let iconcount = 1;
 		let html = ` • 

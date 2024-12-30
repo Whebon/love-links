@@ -1275,21 +1275,22 @@ define("bgagame/lovelinks", ["require", "exports", "ebg/core/gamegui", "componen
         };
         LoveLinks.prototype.getOpponentGemstoneCounterHTML = function (player_id) {
             var index = 0;
-            for (var _i = 0, _a = this.gamedatas.playerorder; _i < _a.length; _i++) {
-                var opponent_id = _a[_i];
+            var player_ids = Object.keys(this.gamedatas.players).map(function (key) { return parseInt(key, 10); });
+            for (var _i = 0, player_ids_1 = player_ids; _i < player_ids_1.length; _i++) {
+                var opponent_id = player_ids_1[_i];
                 if (opponent_id == player_id)
                     break;
                 index++;
             }
-            var other_opponent_ids = __spreadArray(__spreadArray([], this.gamedatas.playerorder.slice(index + 1), true), this.gamedatas.playerorder.slice(0, index), true).reverse();
+            var other_opponent_ids = __spreadArray(__spreadArray([], player_ids.slice(index + 1), true), player_ids.slice(0, index), true).reverse();
             var next_opponent_id = other_opponent_ids.splice(0, 1)[0];
             var iconcount = 1;
             var html = " \u2022 \n\t\t\t<span id=\"lovelinks-opponent-gemstone-counter-".concat(player_id, "\">123</span>\n\t\t\t<i id=\"").concat((0, common_1.getUniqueId)(), "\" class=\"lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-").concat(iconcount, " lovelinks-gemstone lovelinks-gemstone-color-").concat(this.getGemstoneColor(next_opponent_id), "\">\n\t\t");
             if (this.isTeamBasedGame()) {
                 return html + "</i>";
             }
-            for (var _b = 0, other_opponent_ids_1 = other_opponent_ids; _b < other_opponent_ids_1.length; _b++) {
-                var opponent_id = other_opponent_ids_1[_b];
+            for (var _a = 0, other_opponent_ids_1 = other_opponent_ids; _a < other_opponent_ids_1.length; _a++) {
+                var opponent_id = other_opponent_ids_1[_a];
                 iconcount++;
                 html += "<i id=\"".concat((0, common_1.getUniqueId)(), "\" class=\"lovelinks-opponent-gemstone-icon lovelinks-player-board-icon-").concat(iconcount, " lovelinks-gemstone lovelinks-gemstone-color-").concat(this.getGemstoneColor(opponent_id), "\"></i>");
             }
