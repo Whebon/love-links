@@ -503,9 +503,9 @@ export class Bracelet {
      * Update the rotation by making the smallest turn
      */
     public setRotate(element: HTMLElement, angle: number) {
-        const style = dojo.getStyle(element, 'rotate')! as string;
-        const matchRad = style.match(/[-+]?[0-9]*\.?[0-9]+rad/);
-        const matchDeg = style.match(/[-+]?[0-9]*\.?[0-9]+deg/);
+        const style = dojo.getStyle(element, 'rotate')! as string | undefined;
+        const matchRad = style?.match(/[-+]?[0-9]*\.?[0-9]+rad/);
+        const matchDeg = style?.match(/[-+]?[0-9]*\.?[0-9]+deg/);
         const prevAngle = matchRad ? parseFloat(matchRad[0]) : matchDeg ? parseFloat(matchDeg[0]) / 180 * Math.PI : 0;
         while (angle - prevAngle < -Math.PI) {
             console.log("+");

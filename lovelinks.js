@@ -574,8 +574,8 @@ define("components/Bracelet", ["require", "exports", "components/StaticLoveLinks
         };
         Bracelet.prototype.setRotate = function (element, angle) {
             var style = dojo.getStyle(element, 'rotate');
-            var matchRad = style.match(/[-+]?[0-9]*\.?[0-9]+rad/);
-            var matchDeg = style.match(/[-+]?[0-9]*\.?[0-9]+deg/);
+            var matchRad = style === null || style === void 0 ? void 0 : style.match(/[-+]?[0-9]*\.?[0-9]+rad/);
+            var matchDeg = style === null || style === void 0 ? void 0 : style.match(/[-+]?[0-9]*\.?[0-9]+deg/);
             var prevAngle = matchRad ? parseFloat(matchRad[0]) : matchDeg ? parseFloat(matchDeg[0]) / 180 * Math.PI : 0;
             while (angle - prevAngle < -Math.PI) {
                 console.log("+");
